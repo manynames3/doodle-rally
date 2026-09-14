@@ -1,0 +1,19 @@
+# Local operating-system and Python files.
+.DS_Store
+__pycache__/
+*.py[cod]
+
+# Godot caches and generated builds; retain .uid and .import sidecars.
+**/.godot/
+/builds/
+/test-output/
+*.zip
+
+# Local credentials and signing material.
+.env
+.env.*
+*.p12
+*.pfx
+*.key
+*.pem
+export_credentials.cfg

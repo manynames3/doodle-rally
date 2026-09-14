@@ -1,0 +1,88 @@
+{
+  "sources": {
+    "base_distance": 820.0,
+    "camera_near": 0.25,
+    "course": 1,
+    "kart": "res://scripts/kart_visual.gd",
+    "main": "res://scripts/main.gd",
+    "mode": "cats",
+    "objects": "res://scripts/race_objects.gd",
+    "render_hz": 120,
+    "renderer": "gl_compatibility",
+    "sha256": {
+      "res://scripts/kart_fur.gdshader": "b366dbfe5d8a8c137baa9caee0aef5db2db60aa0c566385ce39d7eb97b6a12a5",
+      "res://scripts/kart_visual.gd": "4a0b5bc70147569c6060d998b429c3694e4bb307b94ba87eb4285770ec1884c9",
+      "res://scripts/main.gd": "978bcbaed772ca4a5be0f55d7aad00c3c036c7f736dfd4a8bb37e01fa28e0efb",
+      "res://scripts/race_objects.gd": "0aa4760c5a8d6e65f8c291d8321ddf4f5488d813448a3c749ff6eb3562035d7b",
+      "res://scripts/race_sim.gd": "e544bb6d3fcebda3002f3b00b079c8f896687a6dc6c698d6c76d55732b2f7dd9",
+      "res://scripts/track_world.gd": "e2bf3e0b370784c9731a61b17881f69f74671c6e86d3e1df2b4a2925de34c0b3"
+    },
+    "sim": "res://scripts/race_sim.gd"
+  },
+  "summary": {
+    "barrier_pack": {
+      "boost_samples": 0,
+      "camera_inside_rival_frames": 0,
+      "camera_near_margin_frames": 0,
+      "hop_samples": 0,
+      "max_camera_angle_step_degrees": 0.898746066346191,
+      "max_camera_offset_step": 0.0759615451097488,
+      "max_pairs": 0,
+      "max_penetration": 0.0,
+      "overlap_frames": 0,
+      "player_visual_bounds": "[P: (-1.496927, 0.000144, -1.979), S: (2.993857, 3.62343, 3.890875)]",
+      "rival_occlusion_frames": 0,
+      "samples": 180,
+      "solid_meshes": 484,
+      "stun_samples": 0
+    },
+    "effects_contact": {
+      "boost_samples": 172,
+      "camera_inside_rival_frames": 0,
+      "camera_near_margin_frames": 0,
+      "hop_samples": 60,
+      "max_camera_angle_step_degrees": 1.28267932388566,
+      "max_camera_offset_step": 0.0989051014184952,
+      "max_pairs": 0,
+      "max_penetration": 0.0,
+      "overlap_frames": 0,
+      "player_visual_bounds": "[P: (-1.496927, 0.000148, -1.979), S: (2.993853, 3.623426, 3.890875)]",
+      "rival_occlusion_frames": 0,
+      "samples": 180,
+      "solid_meshes": 484,
+      "stun_samples": 70
+    },
+    "rear_end": {
+      "boost_samples": 0,
+      "camera_inside_rival_frames": 0,
+      "camera_near_margin_frames": 0,
+      "hop_samples": 0,
+      "max_camera_angle_step_degrees": 1.14192438629562,
+      "max_camera_offset_step": 0.0952924340963364,
+      "max_pairs": 0,
+      "max_penetration": 0.0,
+      "overlap_frames": 0,
+      "player_visual_bounds": "[P: (-1.496934, 0.000146, -1.979), S: (2.993861, 3.623428, 3.890875)]",
+      "rival_occlusion_frames": 0,
+      "samples": 180,
+      "solid_meshes": 484,
+      "stun_samples": 0
+    },
+    "side_contact": {
+      "boost_samples": 0,
+      "camera_inside_rival_frames": 0,
+      "camera_near_margin_frames": 0,
+      "hop_samples": 0,
+      "max_camera_angle_step_degrees": 1.20333493728832,
+      "max_camera_offset_step": 0.106059566140175,
+      "max_pairs": 0,
+      "max_penetration": 0.0,
+      "overlap_frames": 0,
+      "player_visual_bounds": "[P: (-1.496923, 0.000146, -1.979), S: (2.993857, 3.623428, 3.890874)]",
+      "rival_occlusion_frames": 11,
+      "samples": 180,
+      "solid_meshes": 484,
+      "stun_samples": 0
+    }
+  }
+}

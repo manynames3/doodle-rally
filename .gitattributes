@@ -1,0 +1,20 @@
+* text=auto
+
+*.gd text eol=lf
+*.gdshader text eol=lf
+*.godot text eol=lf
+*.tscn text eol=lf
+*.tres text eol=lf
+*.cfg text eol=lf
+*.import text eol=lf
+*.uid text eol=lf
+*.py text eol=lf
+*.md text eol=lf
+*.json text eol=lf
+*.svg text eol=lf
+
+*.png binary
+*.wav binary
+*.ttf binary
+*.zip binary
+*.pck binary

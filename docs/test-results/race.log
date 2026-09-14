@@ -1,0 +1,7 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+Full races: normal 73.70s, repeated 73.70s, Minecraft expert 136.12s
+Real course 0: length 1294.7m; three laps 99.50s; fence impacts 0; max lane 3.60m
+Real course 1: length 1298.5m; three laps 96.00s; fence impacts 0; max lane 3.60m
+Real course 2: length 1296.3m; three laps 99.63s; fence impacts 0; max lane 3.60m
+RACE_TESTS_PASS: 174 checks; deterministic three-lap races, controls, items, pause, and isolated persistence

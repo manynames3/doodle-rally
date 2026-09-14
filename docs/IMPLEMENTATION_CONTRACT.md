@@ -1,0 +1,19 @@
+# Doodle Rally: Cat Racers — implementation contract
+
+Standalone Godot 4.7.2 project. All gameplay is real-time 3D. Desktop native, Compatibility renderer; 1440×900 UI reference, canvas_items stretch. Source project is read-only. Each owner edits their files only.
+
+## Shared roster order
+0 You / red / tuxedo / All-rounder; 1 Luna / blue / grey tabby / Balanced; 2 Milo / pink / white / Speedster; 3 Biscuit / orange / ginger / Power; 4 Mochi / purple / siamese / Drifter; 5 Pumpkin / green / orange-white / Trickster; 6 Nori / yellow / grey-white / Technical; 7 Shadow / graphite / black / Wild card.
+Course indices: 0 Desktop Dojo, 1 Block Quarry, 2 Glitch Core.
+
+## track_world.gd (world owner)
+extends Node3D. Methods build(course_index: int); sample(distance: float, lane: float = 0.0) -> Vector3; tangent(distance: float) -> Vector3; frame(distance: float) -> Basis (local -Z forward, X right, Y up). Public length: float; road_width: float = 18.0; curve: Curve3D. sample accepts wraparound distances and world metres lateral lane. Road is bank-free for arcade simulation. Build includes road, barriers, scenery, lighting, ground/sky; NOT camera or vehicles. Origin and elevations arbitrary; camera uses sample. Expose item_spots: Array[Dictionary] each {distance: float, lane: float}; boost_spots likewise. Main places gameplay item visuals. Build should be deterministic; assume eight karts approx 2.8m wide, 4m long. Track length target 950-1350m and 3 laps at 30-45 m/s. Broad flat start straight around distance 0, first 100m inviting scenic vista; sun lit mountain world + tunnel / wooden bridges / waterfalls for quarry, desktop world (oversized books/pencils/mugs) and neon tech world. Use own procedural helpers under scripts/world_* if desired. No autoload dependencies.
+
+## kart_visual.gd (kart owner)
+extends Node3D. Methods build(character_index: int); animate(delta: float, speed: float, steer: float, drift: float, boosting: bool). Local -Z faces forward. Contact ground at y=0; 2.8m width, 4.0m length, cat total height 3.4m. Build detailed readable rounded kart and cute cat driver, visible from front/side and rear, glossy bright body, four wheels, spoiler, exhausts, paw logo, ears, eyes, muzzle, paws, tail. animate handles wheel spin, lean and boost exhaust; scale uniform if needed. No autoload dependencies.
+
+## menu_ui.gd (UI owner)
+extends Control. Signals: start_race(character_index: int, course_index: int); quit_requested; settings_changed(values: Dictionary). Methods show_title(); show_characters(); show_tracks(); show_settings(); set_preferences(values: Dictionary). Stores selected_character (default 0), selected_course (default 1). Game hands this full rect Control, menus cover screen. UI handles back navigation and keyboard/gamepad selection in menus. A single start signal on confirmed track. Use real buttons and responsive layout matching supplied visual direction. Can use embedded 3D SubViewports with kart_visual.gd loaded dynamically for character previews. Generated intro/menu art optional and encouraged. UI owns assets/art, scripts/menu_ui.gd, scripts/ui_*. Main owns HUD and race. Settings values keys master_volume [0..1], music_volume [0..1], reduced_motion bool, auto_accelerate bool (default false), difficulty int 0/1/2 (default 0). Existing prefs arrive via set_preferences. No autoload dependencies.
+
+## Root owns
+Main app, race simulation, gameplay objects/effects, HUD, sound adapter from Rally, project config, exports, tests, persistence, README/BUILD_STATUS. Wire signals between components, render review and final Mac release.

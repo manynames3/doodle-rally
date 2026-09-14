@@ -1,0 +1,6 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+OpenGL API 4.1 Metal - 90.5 - Compatibility - Using Device: Apple - Apple M1
+
+QA_DRIVE distance=545.457115816286 speed=38.0 fps=120.0
+QA_SCREENSHOT <project-root>/screenshots/release_minecraft_drive.png result=0
+QA_STATE racing screen=drive mode=minecraft

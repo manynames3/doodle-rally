@@ -1,0 +1,173 @@
+extends SceneTree
+## Portable menu integration test: godot --headless --path game --script res://tests/test_menu.gd
+## Exercises actual menu routes, native control signals, keyboard/pad events, and layout.
+var ui: Control
+var launches: Array = []
+var settings: Array = []
+var quit_count := 0
+var checks := 0
+var failures := 0
+
+func _initialize() -> void:
+	_go.call_deferred()
+
+func _check(condition: bool, description: String) -> void:
+	checks += 1
+	if not condition:
+		failures += 1
+		push_error("Menu check failed: " + description)
+
+func _action(action: String) -> void:
+	var event := InputEventAction.new()
+	event.action = action
+	event.pressed = true
+	ui.call("_input",event)
+
+func _key(code: int) -> void:
+	var event := InputEventKey.new()
+	event.keycode = code
+	event.pressed = true
+	Input.parse_input_event(event)
+	await process_frame
+	event = InputEventKey.new()
+	event.keycode = code
+	event.pressed = false
+	Input.parse_input_event(event)
+	await process_frame
+
+func _joy(button: int) -> void:
+	var event := InputEventJoypadButton.new()
+	event.button_index = button
+	event.pressed = true
+	Input.parse_input_event(event)
+	await process_frame
+	event = InputEventJoypadButton.new()
+	event.button_index = button
+	event.pressed = false
+	Input.parse_input_event(event)
+	await process_frame
+
+func _click(control: Control) -> void:
+	var point := control.get_global_rect().get_center()
+	var motion := InputEventMouseMotion.new()
+	motion.position = point
+	motion.global_position = point
+	Input.parse_input_event(motion)
+	for pressed: bool in [true,false]:
+		var event := InputEventMouseButton.new()
+		event.button_index = MOUSE_BUTTON_LEFT
+		event.position = point
+		event.global_position = point
+		event.pressed = pressed
+		Input.parse_input_event(event)
+		await process_frame
+
+func _axis(value: float) -> void:
+	var event := InputEventJoypadMotion.new()
+	event.axis = JOY_AXIS_LEFT_X
+	event.axis_value = value
+	ui.call("_input",event)
+
+func _press_title(name: String) -> void:
+	ui.get_node("MenuStage/Menu_" + name.replace(" ","_")).pressed.emit()
+
+func _go() -> void:
+	root.size = Vector2i(960,600)
+	ui = Control.new()
+	ui.set_script(load("res://scripts/menu_ui.gd"))
+	root.add_child(ui)
+	ui.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	ui.start_race.connect(func(character: int,course: int): launches.append([character,course,ui.selected_mode]))
+	ui.settings_changed.connect(func(values: Dictionary): settings.append(values))
+	ui.quit_requested.connect(func(): quit_count += 1)
+	ui.set_preferences({"master_volume":0.25,"music_volume":0.5,"reduced_motion":true,"difficulty":2})
+	ui.show_title()
+	await process_frame
+	await process_frame
+	await _key(KEY_ENTER)
+	_check(ui.screen == "characters" and ui.selected_mode == "cats", "focused title Start Game accepts keyboard Enter")
+	ui.show_title()
+	_press_title("Minecraft Racing")
+	_check(ui.screen == "characters" and ui.selected_mode == "minecraft", "Minecraft title route selects voxel roster")
+	await _key(KEY_RIGHT)
+	_check(ui.selected_character == 3, "keyboard selects next visible character")
+	await _joy(JOY_BUTTON_A)
+	_check(ui.screen == "tracks", "gamepad confirm opens track selection")
+	await _joy(JOY_BUTTON_DPAD_RIGHT)
+	_check(ui.selected_course == 2, "gamepad d-pad chooses track")
+	await _joy(JOY_BUTTON_B)
+	_check(ui.screen == "characters" and ui.selected_mode == "minecraft", "gamepad back preserves roster and selection")
+	_axis(0.9)
+	var axis_selection: int = ui.selected_character
+	_axis(0.95)
+	_check(ui.selected_character == axis_selection, "held analog axis does not skip through every character")
+	_axis(0.0)
+	_axis(0.9)
+	_check(ui.selected_character != axis_selection, "analog axis re-arms after neutral")
+	_axis(0.0)
+	ui.show_tracks()
+	ui.call("_choose_course",1)
+	var chosen: int = ui.selected_character
+	ui.call("_launch")
+	ui.call("_launch")
+	_check(launches.size() == 1 and launches[0] == [chosen,1,"minecraft"], "track confirmation emits one race with correct roster")
+	for route in ["Character Select","Track Select","Garage","Options"]:
+		ui.show_title()
+		_press_title(route)
+		var expected: String = {"Character Select":"characters","Track Select":"tracks","Garage":"garage","Options":"settings"}[route]
+		_check(ui.screen == expected,"title route " + route)
+	ui.show_settings()
+	var stage: Control = ui.get_node("MenuStage")
+	var sliders := 0
+	var toggles := 0
+	for child in stage.get_children():
+		if child is HSlider:
+			child.value = 0.7
+			sliders += 1
+		if child is Button and child.toggle_mode and not child is OptionButton:
+			child.button_pressed = not child.button_pressed
+			toggles += 1
+	_check(sliders == 2 and toggles == 2 and settings.size() == 4,"native sliders and toggles emit preference changes")
+	_check(is_equal_approx(ui.preferences.master_volume,0.7) and ui.preferences.auto_accelerate,"preference payload contains changed values")
+	_action("ui_cancel")
+	_check(ui.screen == "title", "settings cancel returns to title")
+	ui.call("_show_garage")
+	var previous: int = ui.selected_character
+	_action("ui_left")
+	_check(ui.screen == "garage" and ui.selected_character == posmod(previous-1,8),"Garage cycles the actual racer")
+	_action("ui_accept")
+	_check(ui.screen == "tracks","Garage confirm continues to tracks")
+	ui.show_title()
+	for child in ui.get_node("MenuStage").get_children():
+		if child is Button and child.text == "How to play":
+			child.pressed.emit()
+			break
+	_check(ui.screen == "controls", "How to play button opens controls")
+	_action("ui_cancel")
+	ui.show_title()
+	for child in ui.get_node("MenuStage").get_children():
+		if child is Button and child.text == "Quit":
+			child.pressed.emit()
+	_check(quit_count == 1, "Quit requests application shutdown")
+	ui.show_title()
+	await process_frame
+	await _click(ui.get_node("MenuStage/Menu_Character_Select"))
+	_check(ui.screen == "characters","native mouse click opens Character Select")
+	ui.selected_mode = "minecraft"
+	ui.show_title()
+	await process_frame
+	await process_frame
+	await _joy(JOY_BUTTON_DPAD_DOWN)
+	await _joy(JOY_BUTTON_A)
+	_check(ui.screen == "characters" and ui.selected_mode == "minecraft","title native focus navigates and confirms with gamepad")
+	ui.show_title()
+	_press_title("Start Game")
+	_check(ui.selected_mode == "cats","Start Game returns to cat roster")
+	_check(ui.get_node("MenuStage").size.x * ui.get_node("MenuStage").scale.x <= ui.size.x + 1.0,"960x600 layout fits viewport")
+	root.content_scale_size = Vector2i(1600,900)
+	root.size = Vector2i(1280,720)
+	await process_frame
+	_check(ui.get_node("MenuStage").size.y * ui.get_node("MenuStage").scale.y <= ui.size.y + 1.0,"16:9 layout fits viewport")
+	await process_frame
+	print("MENU QA: %d checks; %d failures" % [checks,failures])
+	quit(1 if failures else 0)
