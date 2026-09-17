@@ -1,63 +1,34 @@
-extends SubViewportContainer
+extends "res://scripts/ui_racer_stage.gd"
+## The Garage shares the native lineup's lighting and resolution handling.
 var character_index := 0
-var mode := "cats"
 var active := false
-var reduced_motion := false
 var kart: Node3D
-var _elapsed := 0.0
-var _viewport: SubViewport
 
 func _ready() -> void:
-	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	stretch = true
-	_viewport = SubViewport.new()
-	_viewport.size = Vector2i(300, 380)
-	_viewport.transparent_bg = true
-	_viewport.own_world_3d = true
-	_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
-	_viewport.msaa_3d = Viewport.MSAA_2X
-	add_child(_viewport)
-	var root := Node3D.new()
-	_viewport.add_child(root)
-	var world_environment := WorldEnvironment.new()
-	var environment := Environment.new()
-	environment.background_mode = Environment.BG_COLOR
-	environment.background_color = Color(0, 0, 0, 0)
-	environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	environment.ambient_light_color = Color("c4d8ff")
-	environment.ambient_light_energy = 0.55
-	environment.tonemap_mode = Environment.TONE_MAPPER_FILMIC
-	world_environment.environment = environment
-	root.add_child(world_environment)
-	var key := DirectionalLight3D.new()
-	key.rotation_degrees = Vector3(-38, -30, 0)
-	key.light_color = Color("ffe8c3")
-	key.light_energy = 1.5
-	root.add_child(key)
-	var fill := DirectionalLight3D.new()
-	fill.rotation_degrees = Vector3(-20, 160, 0)
-	fill.light_color = Color("a3d7ff")
-	fill.light_energy = 0.55
-	root.add_child(fill)
-	var camera := Camera3D.new()
-	camera.position = Vector3(5.0, 4.0, -9.0)
-	camera.fov = 34
-	root.add_child(camera)
-	camera.look_at(Vector3(0, 1.6, 0))
-	camera.current = true
-	var source := load("res://scripts/kart_visual.gd") as Script
-	if source:
-		kart = Node3D.new()
-		kart.set_script(source)
-		root.add_child(kart)
-		kart.call("build", character_index, mode)
-
-func _process(delta: float) -> void:
-	if not is_instance_valid(kart):
-		return
-	_elapsed += delta
-	if active and not reduced_motion:
-		kart.rotation.y = sin(_elapsed * 0.75) * 0.18
-		kart.call("animate", delta, 0.0, 0.0, 0.0, false)
-	elif absf(kart.rotation.y) > 0.001:
-		kart.rotation.y = lerpf(kart.rotation.y, 0.0, delta * 4.0)
+	characters.assign([character_index])
+	selected_character=character_index
+	single_preview=true
+	super._ready()
+	if not karts.is_empty(): kart=karts[0]
+	# The garage is a close-up showcase for every supplied asset-sheet cat.
+	# Their transparent front-left sprites preserve the expressive fur, mouth,
+	# and halo detail at this large scale; the live kart remains the fallback for
+	# the two characters without a supplied sheet.
+	if mode == "cats" and REFERENCE_SPRITES.has(character_index):
+		if is_instance_valid(kart): kart.visible=false
+		var sprite := TextureRect.new()
+		sprite.name = "ReferenceGarageSprite"
+		var garage_path: String = str(REFERENCE_GARAGE_SPRITES.get(character_index, REFERENCE_SPRITES[character_index]))
+		sprite.texture = load(garage_path if ResourceLoader.exists(garage_path) else str(REFERENCE_SPRITES[character_index]))
+		sprite.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		sprite.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		# Garage previews are displayed several times larger than the roster cards.
+		# Use the premultiplied 3x reference canvas with mipmapped bilinear sampling
+		# so fur strands, paws and tire edges stay crisp instead of turning into a
+		# low-resolution matte when the menu is resized.
+		sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+		sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		sprite.position = Vector2(8, -4)
+		sprite.size = size - Vector2(16, -8)
+		sprite.z_index = 0
+		add_child(sprite)

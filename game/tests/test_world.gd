@@ -12,7 +12,7 @@ func _initialize() -> void:
 			world.build(index, mode)
 			var checked_surfaces: int = 0
 			for child in world.get_children():
-				if child is MeshInstance3D and child.mesh is ArrayMesh:
+				if child is MeshInstance3D and child.name.begins_with("RacingSurface_") and child.mesh is ArrayMesh:
 					var arrays: Array = child.mesh.surface_get_arrays(0)
 					var normals: PackedVector3Array = arrays[Mesh.ARRAY_NORMAL]
 					for normal in normals:

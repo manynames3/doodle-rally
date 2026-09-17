@@ -1,6 +1,6 @@
 extends RefCounted
 
-var values: Dictionary = {"master_volume": 0.7, "music_volume": 0.55, "reduced_motion": false, "auto_accelerate": false, "difficulty": 0}
+var values: Dictionary = {"master_volume": 0.7, "music_volume": 0.55, "reduced_motion": false, "auto_accelerate": false, "difficulty": 2}
 var records: Dictionary = {}
 var selected_character := 0
 var selected_course := 1

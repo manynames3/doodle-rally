@@ -7,6 +7,9 @@ uniform vec4 coat_color : source_color = vec4(0.15, 0.14, 0.16, 1.0);
 uniform vec4 dark_color : source_color = vec4(0.04, 0.03, 0.04, 1.0);
 uniform vec4 cream_color : source_color = vec4(0.92, 0.89, 0.84, 1.0);
 uniform int coat_pattern = 0;
+uniform sampler2D fur_texture : filter_linear_mipmap, repeat_enable;
+uniform bool use_fur_texture = false;
+uniform bool groom_geometry = false;
 varying vec3 fur_position;
 
 float hash31(vec3 p) {
@@ -52,14 +55,89 @@ void fragment() {
 		float blaze = 1.0 - smoothstep(taper, taper + 0.055, abs(p.x));
 		blaze *= (1.0 - smoothstep(-0.35, -0.22, p.z)) * smoothstep(2.30, 2.42, p.y) * (1.0 - smoothstep(2.88, 3.01, p.y));
 		fur = mix(fur, cream_color.rgb, blaze);
+	} else if (coat_pattern == 4 || coat_pattern == 5) {
+		// The photographed calico has irregular tortoiseshell islands rather
+		// than tabby stripes. Coordinates stay fixed to the animated driver.
+		vec3 black_fur = vec3(0.032, 0.025, 0.023);
+		vec3 ginger_fur = vec3(0.38, 0.145, 0.045);
+		float island = soft_noise(p * vec3(3.3, 3.0, 3.8) + vec3(1.4, 3.6, 0.8));
+		float small_edge = soft_noise(p * 18.0) * 0.075;
+		float orange_island = smoothstep(0.59, 0.66, island + small_edge);
+		if (coat_pattern == 5) {
+			orange_island = smoothstep(0.70, 0.79, island + small_edge) * (1.0 - smoothstep(0.18, 0.34, p.y)) * 0.65;
+		}
+		fur = mix(black_fur, ginger_fur, orange_island);
+		if (coat_pattern == 4) {
+			float front = 1.0 - smoothstep(-0.22, 0.05, p.z);
+			// Positive X appears on the image-left from the front: black.
+			// The orange forehead sweeps up the image-right of the nose.
+			float orange_forehead = (1.0 - smoothstep(-0.06, 0.035, p.x + sin(p.y * 11.0) * 0.032));
+			orange_forehead *= 1.0 - smoothstep(0.54, 0.80, abs(p.x));
+			orange_forehead *= smoothstep(2.52, 2.83, p.y);
+			vec3 face = mix(black_fur, ginger_fur, orange_forehead);
+			float cheek_white = smoothstep(0.16, 0.50, abs(p.x)) * (1.0 - smoothstep(2.41, 2.58, p.y)) * smoothstep(1.98, 2.10, p.y);
+			face = mix(face, cream_color.rgb, cheek_white);
+			float blaze_width = mix(0.125, 0.036, smoothstep(2.45, 3.10, p.y));
+			float blaze_offset = -0.035 - smoothstep(2.62, 3.1, p.y) * 0.04;
+			float blaze = 1.0 - smoothstep(blaze_width, blaze_width + 0.025, abs(p.x - blaze_offset + (soft - 0.5) * 0.025));
+			blaze *= smoothstep(2.46, 2.53, p.y) * (1.0 - smoothstep(3.05, 3.21, p.y));
+			face = mix(face, cream_color.rgb, blaze);
+			// Ginger moustache with a white fringe; black beneath the mouth.
+			float muzzle = (1.0 - smoothstep(0.35, 0.51, abs(p.x))) * smoothstep(2.09, 2.145, p.y) * (1.0 - smoothstep(2.47, 2.55, p.y));
+			face = mix(face, ginger_fur * (0.90 + soft * 0.19), muzzle);
+			float cheek_ginger = (1.0 - smoothstep(0.21, 0.41, abs(p.x - 0.23))) * smoothstep(2.02, 2.12, p.y) * (1.0 - smoothstep(2.25, 2.39, p.y));
+			face = mix(face, ginger_fur * (0.82 + soft * 0.16), cheek_ginger);
+			float throat = (1.0 - smoothstep(0.29, 0.45, abs(p.x))) * (1.0 - smoothstep(2.20, 2.26, p.y)) * smoothstep(-0.76, -0.59, p.z);
+			face = mix(face, black_fur, throat);
+			fur = mix(fur, face, front * smoothstep(1.98, 2.11, p.y));
+			// Carry Mak-Doong's asymmetric black/ginger/white design over the
+			// crown and rear of the head. The old noise-only mask made the back
+			// read as unrelated circular spots in the chase camera.
+			float rear_head = smoothstep(-0.12, 0.18, p.z) * smoothstep(2.00, 2.38, p.y);
+			// Broad, asymmetrical islands carry Mak-Doong's calico pattern over the
+			// crown. The old narrow masks looked like random spots from the chase
+			// camera and broke continuity with the front reference portrait.
+			float back_patch_a = 1.0 - smoothstep(0.08, 0.64, length(vec2((p.x + 0.30) * 1.15, (p.y - 2.60) * 0.78)));
+			back_patch_a *= smoothstep(2.14, 2.34, p.y) * (1.0 - smoothstep(3.02, 3.18, p.y));
+			float back_patch_b = 1.0 - smoothstep(0.10, 0.56, length(vec2((p.x - 0.28) * 1.10, (p.y - 2.48) * 0.82)));
+			back_patch_b *= smoothstep(2.18, 2.54, p.y) * (1.0 - smoothstep(2.92, 3.13, p.y));
+			float back_ginger = max(back_patch_a * 0.78, back_patch_b * 0.60);
+			vec3 rear_face = mix(black_fur, ginger_fur, back_ginger);
+			// The supplied rear sheet carries orange over the crown with black
+			// shoulders; a bright white center stripe made the in-game head look
+			// like a different cat from the front portrait, so keep the pale bib
+			// below the neck instead of painting it onto the skull.
+			fur = mix(fur, rear_face, rear_head);
+		}
 	} else if (coat_pattern == 3) {
 		vec2 mask_point = vec2(p.x / 0.86, (p.y - 2.61) / 0.69);
 		float mask = (1.0 - smoothstep(0.70, 1.12, length(mask_point))) * (1.0 - smoothstep(-0.35, -0.13, p.z));
 		fur = mix(fur, dark_color.rgb, mask * 0.90);
 	}
-	ALBEDO = fur * (0.925 + soft * 0.08 + grain * 0.025 + fibre * 0.025);
-	ROUGHNESS = 0.86 + grain * 0.10;
-	SPECULAR = 0.18;
-	RIM = 0.16;
+	if (coat_pattern == 9) {
+		float edge = smoothstep(0.20,0.34,UV.x)*(1.0-smoothstep(0.66,0.80,UV.x))*smoothstep(0.13,0.29,UV.y)*(1.0-smoothstep(0.75,0.91,UV.y));
+		fur = mix(dark_color.rgb,coat_color.rgb,edge);
+	}
+	float face_front = 1.0 - smoothstep(-0.29,-0.12,p.z);
+	if (coat_pattern == 6) {
+		float chin = (1.0-smoothstep(0.62,1.05,length(vec2(p.x/0.40,(p.y-2.08)/0.34)))) * face_front;
+		fur = mix(fur,cream_color.rgb,chin);
+	} else if (coat_pattern == 8 || coat_pattern == 1) {
+		float pads = (1.0-smoothstep(0.33,0.57,abs(p.x))) * (1.0-smoothstep(2.48,2.57,p.y)) * smoothstep(2.08,2.17,p.y) * face_front;
+		fur = mix(fur,cream_color.rgb,pads);
+	}
+	float fur_value = 0.5;
+	if (use_fur_texture && !groom_geometry) {
+		vec2 texuv = UV * vec2(5.0,3.0);
+		fur_value = texture(fur_texture,texuv).r;
+		float texel = 0.0008;
+		float dx = texture(fur_texture,texuv+vec2(texel,0)).r - texture(fur_texture,texuv-vec2(texel,0)).r;
+		float dy = texture(fur_texture,texuv+vec2(0,texel)).r - texture(fur_texture,texuv-vec2(0,texel)).r;
+		NORMAL_MAP = normalize(vec3(dx*1.6,dy*1.6,1.0)) * 0.5 + 0.5;
+	}
+	ALBEDO = fur * (0.79 + soft * 0.08 + grain * 0.015 + fur_value * 0.28);
+	ROUGHNESS = groom_geometry ? 0.96 : 0.82 + grain * 0.12;
+	SPECULAR = groom_geometry ? 0.07 : 0.15;
+	RIM = groom_geometry ? 0.10 : 0.18;
 	RIM_TINT = 0.65;
 }

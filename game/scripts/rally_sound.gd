@@ -38,7 +38,10 @@ func play_theme(course: int) -> void:
 	var name_text: String = ["desk", "castle", "sky"][clampi(course, 0, 2)]
 	var stream: AudioStreamWAV = load("res://assets/music/%s.wav" % name_text)
 	stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
-	stream.loop_end = stream.data.size() / 4
+	# Godot may import WAVs as compressed samples, so data.size()/4 is not the
+	# frame count. Use the decoded duration to keep the full 64-bar arrangement.
+	stream.loop_begin = 0
+	stream.loop_end = maxi(1, int(round(stream.get_length() * stream.mix_rate)))
 	music.stream = stream
 	if not silent: music.play()
 

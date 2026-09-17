@@ -4,10 +4,11 @@ import numpy as np
 import wave
 RATE=22050
 OUT=Path(__file__).parent
+BARS=64
 rng=np.random.default_rng(260913)
 def frequency(m): return 440*2**((m-69)/12)
 def build(theme,bpm,roots,motif):
- beat=60/bpm; duration=64*beat; n=round(duration*RATE); mix=np.zeros((n,2),np.float64)
+ beat=60/bpm; duration=BARS*4*beat; n=round(duration*RATE); mix=np.zeros((n,2),np.float64)
  def put(note,start,length,gain,kind='pluck',pan=0):
   count=round(length*RATE); t=np.arange(count)/RATE
   if kind=='kick':
@@ -24,29 +25,38 @@ def build(theme,bpm,roots,motif):
   v*=np.minimum(t/.005,1)*np.minimum((length-t)/.015,1)*gain
   ix=(round(start*RATE)+np.arange(count))%n
   np.add.at(mix[:,0],ix,v*np.sqrt((1-pan)/2));np.add.at(mix[:,1],ix,v*np.sqrt((1+pan)/2))
- for bar in range(16):
+ for bar in range(BARS):
+  section=bar//16
   root=roots[(bar//2)%len(roots)]
-  for third in [0,4 if theme!='castle' else 3,7]: put(root+third+12,bar*4*beat,4.1*beat,.037,'pad',third/10-.35)
+  # Four 16-bar sections give the loop a real arc instead of a short phrase
+  # repeating unchanged. The harmony returns to the opening progression at
+  # bar 48, while register, pad weight, and response notes continue evolving.
+  pad_gain=.034 + section*.004
+  for third in [0,4 if theme!='castle' else 3,7]: put(root+third+12,bar*4*beat,4.1*beat,pad_gain,'pad',third/10-.35)
   for b in range(4):
    at=(bar*4+b)*beat
-   put(root-12+(7 if b==3 else 0),at,beat*.85,.18,'bass')
-   if theme!='sky' or b%2==0: put(0,at,.21,.3,'kick')
-   if b%2==1: put(0,at,.18,.12,'snare',.1)
-   for half in range(2): put(0,at+half*beat/2,.065,.055,'hat',-.3 if half else .3)
-  phrase=motif if bar%4<2 else list(reversed(motif))
+   put(root-12+(7 if b==3 else 0),at,beat*.85,.18 + section*.008,'bass')
+   if theme!='sky' or b%2==0: put(0,at,.21,.3 + section*.01,'kick')
+   if b%2==1: put(0,at,.18,.12 + section*.006,'snare',.1)
+   for half in range(2): put(0,at+half*beat/2,.065,.055 + section*.003,'hat',-.3 if half else .3)
+  phrase=motif if (bar//4 + section)%2==0 else list(reversed(motif))
   for j,degree in enumerate(phrase):
-   if degree is None or (bar in [7,15] and j>5): continue
-   # Four phrases vary register, rhythm and instrumental response.
-   octave=12 if 8<=bar<12 else 0
+   if degree is None or (bar%16 in [7,15] and j>5): continue
+   # Each section changes register and adds a light answering bell line.
+   octave=12 if section in [1,3] else 0
    start=(bar*4+j*.5)*beat
-   put(root+12+degree+octave,start,beat*(.7 if j%2 else 1.0),.145,'bell' if theme=='sky' else 'pluck',.2)
-   if bar>=4 and j%2==1: put(root+24+degree,start+beat*.22,beat*.55,.032,'bell',-.5)
+   put(root+12+degree+octave,start,beat*(.7 if j%2 else 1.0),.145 + section*.008,'bell' if theme=='sky' else 'pluck',.2)
+   if bar%16>=4 and j%2==1: put(root+24+degree,start+beat*.22,beat*.55,.032 + section*.004,'bell',-.5)
   if bar%4==3:
    for j in range(4): put(0,(bar*4+3+j/4)*beat,.1,.07,'snare',j/6-.3)
  mix=np.tanh(mix*1.2)
  mix*=.88/max(.88,float(np.max(np.abs(mix))))
- # Fade only the last/first 2ms to remove a numerical seam, inaudible at the downbeat.
- fade=int(.002*RATE);mix[:fade]*=np.linspace(0,1,fade)[:,None];mix[-fade:]*=np.linspace(1,0,fade)[:,None]
+ # Crossfade the final second into the opening second. Unlike a fade to zero,
+ # this preserves the musical bed at the loop boundary and removes the click.
+ fade=min(int(.9*RATE),n//4)
+ for k in range(fade):
+  weight=(k+1)/float(fade)
+  mix[n-fade+k]=mix[n-fade+k]*(1-weight)+mix[k]*weight
  pcm=np.asarray(mix*32767,dtype='<i2')
  with wave.open(str(OUT/(theme+'.wav')),'wb') as w: w.setnchannels(2);w.setsampwidth(2);w.setframerate(RATE);w.writeframes(pcm.tobytes())
  print(theme,round(duration,2),'seconds, peak',round(float(abs(mix).max()),3))

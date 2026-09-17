@@ -1,0 +1,26 @@
+intro: 0
+character_select: 0
+angel_character_select: 0
+minecraft_characters: 0
+track_select: 0
+tuxedo_garage: 0
+angel_garage: 0
+quarry_race: 0
+angel_race: 0
+desktop_race: 0
+glitch_race: 0
+Traceback (most recent call last):
+  File "<project-root>/tools/test_release.py", line 37, in <module>
+    result = subprocess.run(command, capture_output=True, text=True, timeout=75)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<python-runtime>/lib/python3.12/subprocess.py", line 550, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<python-runtime>/lib/python3.12/subprocess.py", line 1209, in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<python-runtime>/lib/python3.12/subprocess.py", line 2116, in _communicate
+    self._check_timeout(endtime, orig_timeout, stdout, stderr)
+  File "<python-runtime>/lib/python3.12/subprocess.py", line 1253, in _check_timeout
+    raise TimeoutExpired(
+subprocess.TimeoutExpired: Command '['<project-root>/builds/Doodle Rally 1.2.app/Contents/MacOS/Doodle Rally — Cat Racers', '--', '--qa', '--qa-screen=race', '--qa-mode=minecraft', '--qa-course=1', '--qa-character=0', '--qa-distance=65', '--qa-output=<project-root>/screenshots/1.2/minecraft_race.png', '--qa-quit']' timed out after 75 seconds

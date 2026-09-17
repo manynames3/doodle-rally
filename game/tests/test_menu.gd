@@ -90,7 +90,7 @@ func _go() -> void:
 	_press_title("Minecraft Racing")
 	_check(ui.screen == "characters" and ui.selected_mode == "minecraft", "Minecraft title route selects voxel roster")
 	await _key(KEY_RIGHT)
-	_check(ui.selected_character == 3, "keyboard selects next visible character")
+	_check(ui.selected_character == 6, "keyboard selects the next visible character beside the centered Zizi")
 	await _joy(JOY_BUTTON_A)
 	_check(ui.screen == "tracks", "gamepad confirm opens track selection")
 	await _joy(JOY_BUTTON_DPAD_RIGHT)

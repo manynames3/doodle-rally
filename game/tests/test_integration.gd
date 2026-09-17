@@ -28,11 +28,46 @@ func run() -> void:
 	await frame(8)
 	check(main.state == "menu" and main.menu.screen == "title", "App starts at intro")
 	check(not main.preferences.enabled, "QA uses isolated preferences")
+	main._show_startup()
+	var splash: CanvasLayer = main.startup_splash
+	splash.set_process(false)
+	check(main.state == "splash" and not main.menu.visible, "Studio splash blocks the title menu")
+	splash._process(.8)
+	check(splash.artwork.modulate.a == 1 and main.state == "splash", "Logo holds at full visibility")
+	splash._process(1.3)
+	await frame(2)
+	check(main.state == "menu" and main.menu.screen == "title" and main.startup_splash == null, "Splash automatically enters title after about two seconds")
+	for input_kind in ["keyboard", "mouse", "controller"]:
+		main._show_startup()
+		splash = main.startup_splash
+		splash.set_process(false)
+		splash._process(.5)
+		var event: InputEvent
+		if input_kind == "keyboard":
+			event = InputEventKey.new()
+			event.keycode = KEY_ENTER
+			event.physical_keycode = KEY_ENTER
+		elif input_kind == "mouse":
+			event = InputEventMouseButton.new()
+			event.button_index = MOUSE_BUTTON_LEFT
+			event.position = Vector2(220, 340)
+		else:
+			event = InputEventJoypadButton.new()
+			event.button_index = JOY_BUTTON_A
+		event.pressed = true
+		Input.parse_input_event(event)
+		await frame(2)
+		check(splash.skipping, input_kind + " skips studio splash")
+		event.pressed = false
+		Input.parse_input_event(event)
+		splash._process(.17)
+		await frame(2)
+		check(main.state == "menu" and main.menu.screen == "title", input_kind + " skip does not activate a title button")
 	main.menu._start_blocks()
 	check(main.menu.selected_mode == "minecraft" and main.menu.screen == "characters", "Minecraft title route")
 	await key(KEY_RIGHT, true)
 	await key(KEY_RIGHT, false)
-	check(main.menu.selected_character == 3, "Character arrows use display order")
+	check(main.menu.selected_character == 6, "Character arrows use display order with Zizi and Mak-Doong centered")
 	await key(KEY_ENTER, true)
 	await key(KEY_ENTER, false)
 	check(main.menu.screen == "tracks", "Enter opens track selection")

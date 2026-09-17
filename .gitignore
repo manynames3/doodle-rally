@@ -6,7 +6,7 @@ __pycache__/
 # Godot caches and generated builds; retain .uid and .import sidecars.
 **/.godot/
 /builds/
-/test-output/
+**/test-output/
 *.zip
 
 # Local credentials and signing material.

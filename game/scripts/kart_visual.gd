@@ -2,11 +2,14 @@ extends Node3D
 ## Shared, self-contained 3D kart model. Coordinates: -Z forward, Y up.
 ## Every visible part is geometry; all eight drivers can be viewed from any angle.
 
-const PALETTE: Array[Color] = [Color("e52f37"), Color("168ff0"), Color("f159b0"), Color("ff921d"), Color("9446e8"), Color("48b73d"), Color("ffd044"), Color("343849")]
-const COATS: Array[Color] = [Color("24262e"), Color("9296a4"), Color("ddd7d0"), Color("e99136"), Color("e6d2b3"), Color("eb8e30"), Color("90918c"), Color("232631")]
-const IRIS: Array[Color] = [Color("edcb45"), Color("9edd83"), Color("63c9ed"), Color("b8d75f"), Color("67bff9"), Color("92db76"), Color("80bcac"), Color("c9df4b")]
+const PALETTE: Array[Color] = [Color("e52f37"), Color("168ff0"), Color("f159b0"), Color("ff921d"), Color("9446e8"), Color("48b73d"), Color("ffd044"), Color("efbf3c")]
+const COATS: Array[Color] = [Color("1b1d22"), Color("9296a4"), Color("ddd7d0"), Color("e99136"), Color("e6d2b3"), Color("c97931"), Color("29211e"), Color("85818b")]
+const IRIS: Array[Color] = [Color("bdc45f"), Color("9edd83"), Color("63c9ed"), Color("b8d75f"), Color("67bff9"), Color("92db76"), Color("9d9e60"), Color("9edb76")]
 const VOXEL_DRIVER = preload("res://scripts/kart_voxel_driver.gd")
 const FUR_SHADER = preload("res://scripts/kart_fur.gdshader")
+const GROOM_SHADER = preload("res://scripts/kart_groom.gdshader")
+const CAT_SCULPT = preload("res://scripts/kart_cat_sculpt.gd")
+const IRIS_SHADER = preload("res://scripts/kart_iris.gdshader")
 static var _materials: Dictionary = {}
 static var _meshes: Dictionary = {}
 
@@ -14,6 +17,7 @@ var character_index: int = 0
 var mode: String = "cats"
 var _body: Node3D
 var _driver: Node3D
+var _head: Node3D
 var _tail: Node3D
 var _steering: Node3D
 var _front_pivots: Array[Node3D] = []
@@ -51,6 +55,8 @@ func build(index: int, selected_mode: String = "cats") -> void:
 	# The moving parts are separate branches; merging reduces draw calls without
 	# preventing wheels, the driver, steering, eyes, and tail from moving.
 	_merge_static(_driver)
+	if mode == "cats":
+		_merge_static(_head)
 	_merge_static(_tail)
 	_merge_static(_steering)
 	for wheel: Node3D in _wheels:
@@ -119,7 +125,7 @@ func _build_kart() -> void:
 	# visible suspension and a large rear shield beneath the spoiler.
 	_rounded_box(_body, Vector3(0, 0.53, 0.02), Vector3(1.88, 0.26, 3.02), graphite, 0.14)
 	_rounded_box(_body, Vector3(0, 0.82, 0.10), Vector3(1.95, 0.63, 2.73), paint, 0.22)
-	_rounded_box(_body, Vector3(0, 1.015, -1.235), Vector3(1.90, 0.84, 1.155), paint_light, 0.22)
+	_rounded_box(_body, Vector3(0, 1.015, -1.235), Vector3(1.90, 0.84, 1.155), paint_light, 0.31)
 	_sphere(_body, Vector3(0, 1.248, -1.02), Vector3(1.67, 0.36, 1.09), paint_light)
 	_rounded_box(_body, Vector3(0, 1.225, 0.33), Vector3(1.44, 0.17, 1.64), seat, 0.18)
 	# The hood badge is centered on the tall front panel, as in the references.
@@ -262,11 +268,14 @@ func _build_wheel(side: float, z: float, paint: StandardMaterial3D, chrome: Stan
 	var wheel: Node3D = _node(pivot, "SpinningWheel")
 	if mode == "cats": wheel.scale = Vector3(1.16, 1.17, 1.17)
 	_wheels.append(wheel)
-	var tire: MeshInstance3D = _cylinder(wheel, Vector3.ZERO, 0.47, 0.43, rubber)
-	tire.rotation.z = PI / 2.0
-	for x: float in [-0.175, 0.175]:
-		var shoulder: MeshInstance3D = _torus(wheel, Vector3(x, 0, 0), 0.32, 0.505, rubber)
-		shoulder.rotation.z = PI / 2.0
+	if mode == "cats":
+		_instance(wheel,CAT_SCULPT.tire(),Vector3.ZERO,Vector3.ONE,rubber)
+	else:
+		var tire: MeshInstance3D = _cylinder(wheel,Vector3.ZERO,0.47,0.43,rubber)
+		tire.rotation.z = PI/2.0
+		for x: float in [-0.175,0.175]:
+			var shoulder: MeshInstance3D = _torus(wheel,Vector3(x,0,0),0.32,0.505,rubber)
+			shoulder.rotation.z = PI/2.0
 	var rim: MeshInstance3D = _cylinder(wheel, Vector3(side * 0.239, 0, 0), 0.303, 0.025, chrome)
 	rim.rotation.z = PI / 2.0
 	var inset: MeshInstance3D = _cylinder(wheel, Vector3(side * 0.26, 0, 0), 0.248, 0.024, graphite)
@@ -275,115 +284,146 @@ func _build_wheel(side: float, z: float, paint: StandardMaterial3D, chrome: Stan
 	ring.rotation.z = PI / 2.0
 	for i: int in range(5):
 		var angle: float = i * TAU / 5.0
-		_cylinder_between(wheel, Vector3(side * 0.282, cos(angle) * 0.07, sin(angle) * 0.07), Vector3(side * 0.282, cos(angle + 0.17) * 0.22, sin(angle + 0.17) * 0.22), 0.029, chrome)
+		_cylinder_between(wheel, Vector3(side * (0.275 if mode == "cats" else 0.282), cos(angle) * 0.07, sin(angle) * 0.07), Vector3(side * (0.275 if mode == "cats" else 0.282), cos(angle + 0.17) * 0.22, sin(angle + 0.17) * 0.22), 0.047 if mode == "cats" else 0.029, chrome)
 		_sphere(wheel, Vector3(side * 0.316, cos(angle) * 0.095, sin(angle) * 0.095), Vector3(0.018, 0.026, 0.026), chrome)
 	var hub: MeshInstance3D = _cylinder(wheel, Vector3(side * 0.289, 0, 0), 0.08, 0.049, paint)
 	hub.rotation.z = PI / 2.0
 	var tread_material: StandardMaterial3D = _material(Color("303542"), 0.94)
 	for i: int in range(18):
 		var angle: float = i * TAU / 18.0
-		var tread: MeshInstance3D = _box(wheel, Vector3(0, cos(angle) * 0.479, sin(angle) * 0.479), Vector3(0.31, 0.025, 0.058), tread_material)
+		var tread: MeshInstance3D = _box(wheel, Vector3(0, cos(angle) * (0.498 if mode == "cats" else 0.479), sin(angle) * (0.498 if mode == "cats" else 0.479)), Vector3(0.34 if mode == "cats" else 0.31, 0.012 if mode == "cats" else 0.025, 0.035 if mode == "cats" else 0.058), tread_material)
 		tread.rotation.x = angle
 
 
 func _build_cat() -> void:
-	var base_color: Color = COATS[character_index]
-	var pattern: int = 1 if character_index in [1, 3, 5] else 2 if character_index in [0, 6] else 3 if character_index == 4 else 0
-	var coat: Material = _fur_material(base_color, pattern)
-	var soft_coat: Material = _fur_material(base_color.lightened(0.055), pattern)
-	var white: Material = _fur_material(Color("ded9d0"))
-	var pink: Material = _material(Color("d58d9b"), 0.72)
-	var mouth: Material = _material(Color("483237"), 0.82)
-	var point_coat: Material = _fur_material(Color("594849")) if character_index == 4 else coat
-	var muzzle_coat: Material = white if character_index != 7 else _fur_material(base_color.lightened(0.10))
+	var base: Color = COATS[character_index]
+	# Pumpkin uses a warm russet calico-like blaze so she reads as her own racer;
+	# the old orange tabby treatment made her indistinguishable from Biscuit.
+	var pattern: int = 6 if character_index == 0 else 4 if character_index == 6 else 2 if character_index == 5 else 1 if character_index in [1, 3, 7] else 3 if character_index == 4 else 8
+	var coat: Material = _fur_material(base, pattern)
+	var white: Material = _fur_material(Color("d9d3c7"))
+	var body_coat: Material = _fur_material(base, 4 if character_index == 6 else 1 if character_index in [1,3,7] else 0)
+	var points: Material = _fur_material(Color("594849")) if character_index == 4 else body_coat
+	var paws: Material = white if character_index in [0,2,5,6,7] else points
+	var nose: Material = _material(Color("16191d") if character_index in [0,7] else Color("ac7a67") if character_index == 6 else Color("c88f92"), 0.43)
+	var mouth: Material = _material(Color("1d0c11"), 0.82)
+	var tongue: Material = _material(Color("e07b86"), 0.70)
 	_driver = _node(_body, "CatDriver")
-	# The kitten sits deep in the buggy. A short pear-shaped body supports a
-	# broad baby-cat head, with a soft bib and paws rather than human arms.
-	_sphere(_driver, Vector3(0, 1.65, 0.29), Vector3(1.22, 1.01, 1.08), coat)
-	_sphere(_driver, Vector3(0, 1.64, -0.13), Vector3(0.82, 0.70, 0.26), muzzle_coat)
-	for side: float in [-1.0, 1.0]:
-		_sphere(_driver, Vector3(side * 0.39, 1.23, 0.13), Vector3(0.56, 0.43, 0.73), coat)
-		_sphere(_driver, Vector3(side * 0.34, 1.15, -0.24), Vector3(0.46, 0.29, 0.48), point_coat)
-	var scarf: Material = _material(PALETTE[character_index].lightened(0.07), 0.77)
-	_sphere(_driver, Vector3(0, 2.065, 0.14), Vector3(1.13, 0.15, 0.91), scarf)
-	var scarf_end: MeshInstance3D = _sphere(_driver, Vector3(0.46, 2.035, 0.71), Vector3(0.55, 0.15, 0.24), scarf)
-	scarf_end.rotation.y = -0.35
-	var scarf_end_two: MeshInstance3D = _sphere(_driver, Vector3(0.35, 1.975, 0.77), Vector3(0.49, 0.12, 0.20), scarf)
-	scarf_end_two.rotation.y = -0.70
-	_sphere(_driver, Vector3(0, 2.034, -0.348), Vector3(0.18, 0.18, 0.061), _material(Color("e7b942"), 0.31, 0.48))
-	_paw(_driver, Vector3(0, 2.04, -0.382), 0.11, _material(Color("91662c"), 0.48), true)
-	# An organic head silhouette and full cheek ruffs replace the smooth ball.
-	var head_center: Vector3 = Vector3(0, 2.64, 0.12)
-	var head_size: Vector3 = Vector3(1.89, 1.47, 1.42)
-	_fur_sphere(_driver, head_center, head_size, coat)
-	_fur_outline(_driver, head_center, head_size, coat, 192)
-	for side: float in [-1.0, 1.0]:
-		_fur_sphere(_driver, Vector3(side * 0.60, 2.36, -0.075), Vector3(0.70, 0.66, 0.78), soft_coat)
-		for j: int in range(4):
-			var fluff: MeshInstance3D = _sphere(_driver, Vector3(side * (0.79 + j * 0.012), 2.50 - j * 0.105, -0.08 + j * 0.028), Vector3(0.29, 0.15, 0.33), coat)
-			fluff.rotation.z = side * (0.12 + j * 0.20)
-		# Rounded triangular ears have a curved outer shell and inset velvet.
-		var ear: MeshInstance3D = _ear(_driver, Vector3(side * 0.63, 3.06, 0.12), Vector3(0.80, 0.57, 0.55), point_coat)
-		ear.rotation.z = -side * 0.16
-		var inside: MeshInstance3D = _ear(_driver, Vector3(side * 0.638, 3.109, -0.105), Vector3(0.52, 0.405, 0.065), pink)
-		inside.rotation.z = -side * 0.16
-		_sphere(_driver, Vector3(side * 0.59, 3.04, -0.13), Vector3(0.33, 0.21, 0.18), coat)
-		for j: int in range(8):
-			var ear_fuzz: MeshInstance3D = _instance(_driver, _meshes["fur_fibre"], Vector3(side * (0.49 + j * 0.021), 3.025 + j * 0.013, -0.20), Vector3(0.012, 0.11 + sin(j * 1.3) * 0.03, 0.018), soft_coat)
-			ear_fuzz.rotation.z = side * 0.54
-	if character_index == 5:
-		_sphere(_driver, Vector3(0, 2.29, -0.40), Vector3(1.39, 0.55, 0.49), white)
-	# Substantial paired whisker pads and a soft chin form a feline muzzle.
-	for side: float in [-1.0, 1.0]:
-		_build_eye(side)
-		_fur_sphere(_driver, Vector3(side * 0.235, 2.345, -0.598), Vector3(0.61, 0.395, 0.445), muzzle_coat)
-		for j: int in range(3):
-			_sphere(_driver, Vector3(side * (0.255 + (j % 2) * 0.072), 2.38 - (j / 2) * 0.064, -0.806 + j * 0.006), Vector3(0.019, 0.019, 0.012), mouth)
-		var whisker_material: Material = _material(Color("ddd3c4"), 0.85)
-		for j: int in range(3):
-			var start: Vector3 = Vector3(side * 0.39, 2.345 - j * 0.048, -0.763)
-			var middle: Vector3 = Vector3(side * 0.76, 2.40 - j * 0.11, -0.747)
-			var end: Vector3 = Vector3(side * (1.07 + (0.04 if j == 1 else 0.0)), 2.455 - j * 0.155, -0.676)
-			_polyline(_driver, [start, middle, end], 0.007, whisker_material)
-		# The forelegs are short soft ovals tucked against the body. Mittens
-		# drape over the wheel rim, with tiny toe grooves instead of fingers.
-		_soft_limb(_driver, Vector3(side * 0.44, 1.77, -0.04), Vector3(side * 0.385, 1.535, -0.48), 0.20, coat)
-		var paw_mat: Material = point_coat if character_index == 4 else white if character_index in [0, 2, 5, 6] else soft_coat
-		_fur_sphere(_driver, Vector3(side * 0.37, 1.545, -0.605), Vector3(0.43, 0.325, 0.40), paw_mat)
+	# Deep seated haunches and a softly tapering chest are mostly within the
+	# cockpit; shoulders and paws retain a natural compact feline posture.
+	_fur_sphere(_driver, Vector3(0,1.63,0.28),Vector3(1.14,1.01,1.08),body_coat)
+	_fur_sphere(_driver, Vector3(0,1.83,0.13),Vector3(0.88,0.88,0.77),body_coat)
+	# The two photographed hero cats have a generous white bib that rises into
+	# the jaw; keeping it broad makes the silhouette read from the race camera.
+	var bib_width: float = 0.86 if character_index == 0 else 0.98 if character_index == 6 else 0.70
+	var bib_height: float = 0.96 if character_index in [0,6] else 0.77
+	_fur_sphere(_driver, Vector3(0,1.80,-0.20),Vector3(bib_width,bib_height,0.34),white if character_index in [0,2,5,6] else points)
+	if character_index in [0,6]:
+		# A second soft lobe makes the white throat read beneath the larger head
+		# instead of disappearing behind the dashboard in the lineup camera.
+		_fur_sphere(_driver, Vector3(0,2.03,-0.25),Vector3(bib_width * 0.82,0.46,0.30),white)
+	for side: float in [-1.0,1.0]:
+		_fur_sphere(_driver,Vector3(side*0.36,1.26,0.07),Vector3(0.54,0.51,0.66),body_coat)
+		_fur_sphere(_driver,Vector3(side*0.36,1.18,-0.26),Vector3(0.40,0.28,0.54),paws)
+		_soft_limb(_driver,Vector3(side*0.38,1.83,-0.075),Vector3(side*0.37,1.53,-0.52),0.175,body_coat)
+		_fur_sphere(_driver,Vector3(side*0.365,1.55,-0.616),Vector3(0.39,0.30,0.385),paws)
 		for j: int in range(2):
-			_cylinder_between(_driver, Vector3(side * 0.37 - 0.052 + j * 0.104, 1.57, -0.795), Vector3(side * 0.37 - 0.052 + j * 0.104, 1.495, -0.779), 0.006, _material(base_color.darkened(0.28), 0.9))
-	_fur_sphere(_driver, Vector3(0, 2.208, -0.50), Vector3(0.80, 0.255, 0.47), muzzle_coat)
-	_sphere(_driver, Vector3(0, 2.458, -0.828), Vector3(0.181, 0.105, 0.082), pink)
-	_sphere(_driver, Vector3(0, 2.414, -0.835), Vector3(0.113, 0.084, 0.064), pink)
-	_sphere(_driver, Vector3(-0.025, 2.483, -0.866), Vector3(0.055, 0.025, 0.014), _material(Color("f4c2c8"), 0.50))
-	_polyline(_driver, [Vector3(0, 2.395, -0.846), Vector3(0, 2.333, -0.837), Vector3(-0.075, 2.286, -0.813), Vector3(-0.14, 2.306, -0.789)], 0.010, mouth)
-	_polyline(_driver, [Vector3(0, 2.333, -0.837), Vector3(0.075, 2.286, -0.813), Vector3(0.14, 2.306, -0.789)], 0.010, mouth)
-	_tail = _node(_driver, "FluffyTail", Vector3(0.38, 1.27, 0.66))
-	var tail_points: Array[Vector3] = [Vector3.ZERO, Vector3(0.21, 0.10, 0.15), Vector3(0.39, 0.28, 0.22), Vector3(0.48, 0.49, 0.20), Vector3(0.47, 0.67, 0.13), Vector3(0.35, 0.75, 0.03)]
-	_curved_tail(_tail, tail_points, point_coat if character_index == 4 else coat)
+			var x: float = side*0.365-0.047+j*0.094
+			_instance(_driver,CAT_SCULPT.curved_line([Vector3(x,1.60,-0.787),Vector3(x,1.54,-0.803),Vector3(x,1.49,-0.785)],0.0024),Vector3.ZERO,Vector3.ONE,_material(Color("8c8582"),0.91))
+	_head = _node(_driver,"SculptedFace")
+	# A slightly oversized kitten head matches the round, plush proportions of
+	# the reference render and keeps the driver's face readable in the lineup.
+	_head.scale = Vector3(1.39,1.39,1.25) if character_index == 0 else Vector3(1.22,1.25,1.16) if character_index == 6 else Vector3(1.28,1.28,1.17)
+	_head.rotation.z = deg_to_rad(-4.5 if character_index == 0 else 3.0 if character_index == 6 else 0.0)
+	_head.position.y = -2.64*0.20
+	# One connected surface contains the brow, sockets, nose bridge, cheeks,
+	# paired muzzle and tapered jaw; markings follow this continuous sculpture.
+	_instance(_head,CAT_SCULPT.head(character_index == 6),Vector3.ZERO,Vector3.ONE,coat)
+	var groom: MeshInstance3D = _instance(_head,CAT_SCULPT.groom(character_index == 6),Vector3.ZERO,Vector3.ONE,_fur_material(base,pattern,true))
+	groom.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	# Subpixel hair drops out beyond30m; the solid sculpt, eyes, ears and
+	# halo remain opaque and visible. Hysteresis avoids boundary flicker.
+	groom.visibility_range_end = 30.0
+	groom.visibility_range_end_margin = 3.0
+	groom.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED
+	for side: float in [-1.0,1.0]:
+		var ear_coat: Material = _fur_material(Color("24201e")) if character_index == 6 else points
+		var outer_ear: MeshInstance3D = _instance(_head,CAT_SCULPT.ear(side,false),Vector3.ZERO,Vector3.ONE,ear_coat)
+		var inner_ear: MeshInstance3D = _instance(_head,CAT_SCULPT.ear(side,true),Vector3.ZERO,Vector3.ONE,_fur_material(Color("6b404b") if character_index == 0 else Color("4a3b3d") if character_index in [6,7] else Color("b58c8e"),9))
+		# A small outward cant breaks the mirrored mannequin silhouette while
+		# preserving the compact kitten ears from the reference renders.
+		outer_ear.rotation.z = side * deg_to_rad(5.0 if character_index in [0,6] else 3.0)
+		inner_ear.rotation.z = outer_ear.rotation.z
+		_build_eye(side)
+		# Whiskers arc, taper and droop; they have no segmented-cylinder joints.
+		for j: int in range(6):
+			var origin: Vector3 = Vector3(side*(0.23+j*0.013),2.42-j*0.026,-0.797+j*0.012)
+			var end: Vector3 = Vector3(side*(0.91+sin(j*2.1)*0.10),2.56-j*0.071,-0.56+sin(j)*0.035)
+			_instance(_head,CAT_SCULPT.curved_line([origin,origin+Vector3(side*0.31,0.035-j*0.012,-0.03),end],0.0026),Vector3.ZERO,Vector3.ONE,_material(Color("bdb8ac"),0.88))
+			_sphere(_head,origin+Vector3(0,0,-0.006),Vector3(0.009,0.009,0.007),mouth)
+	# A tiny triangular velvet nose follows the bridge, with recessed nostrils.
+	var nose_mesh: MeshInstance3D = _sphere(_head,Vector3(0,2.489,-0.819),Vector3(0.155,0.075,0.075),nose)
+	nose_mesh.rotation.z = 0.0
+	_sphere(_head,Vector3(0,2.455,-0.823),Vector3(0.090,0.065,0.064),nose)
+	for side: float in [-1.0,1.0]:
+		_sphere(_head,Vector3(side*0.042,2.471,-0.851),Vector3(0.024,0.012,0.008),mouth)
+	if character_index == 6:
+		for point: Vector3 in [Vector3(-0.041,2.50,-0.84),Vector3(0.021,2.512,-0.84)]:
+			_sphere(_head,point,Vector3(0.014,0.011,0.006),mouth)
+	_instance(_head,CAT_SCULPT.curved_line([Vector3(0,2.445,-0.844),Vector3(0,2.382,-0.827),Vector3(-0.064,2.352,-0.805),Vector3(-0.13,2.372,-0.784)],0.0040),Vector3.ZERO,Vector3.ONE,mouth)
+	_instance(_head,CAT_SCULPT.curved_line([Vector3(0,2.382,-0.827),Vector3(0.064,2.352,-0.805),Vector3(0.13,2.372,-0.784)],0.0040),Vector3.ZERO,Vector3.ONE,mouth)
+	# Give Zizi and Mak-Doong the open, friendly expression in the reference
+	# art. The cavity is shallow so it remains readable without becoming a
+	# floating prop when the head turns in the race.
+	if character_index in [0,6]:
+		# Recessed oval cavity and tongue sit just in front of the sculpted muzzle;
+		# the extra depth keeps them visible after the head is enlarged and tilted.
+		_sphere(_head,Vector3(0,2.285,-1.005),Vector3(0.40,0.285,0.10),mouth)
+		_sphere(_head,Vector3(0,2.225,-1.075),Vector3(0.235,0.125,0.052),tongue)
+	# A cloth collar, small tag, and softly curled tail finish the silhouette.
+	var scarf: Material = _material(PALETTE[character_index].darkened(0.12),0.88)
+	_sphere(_driver,Vector3(0,2.058,0.12),Vector3(0.92,0.105,0.73),scarf)
+	var scarf_tail: MeshInstance3D = _sphere(_driver,Vector3(0.29,2.018,0.58),Vector3(0.45,0.08,0.25),scarf)
+	scarf_tail.rotation.y = -0.35
+	_sphere(_driver,Vector3(0,2.01,-0.305),Vector3(0.12,0.15,0.045),_material(Color("b78c36"),0.32,0.54))
+	_tail = _node(_driver,"FluffyTail",Vector3(0.36,1.27,0.64))
+	var tail_points: Array[Vector3] = [Vector3.ZERO,Vector3(0.20,0.10,0.15),Vector3(0.36,0.30,0.22),Vector3(0.43,0.52,0.18),Vector3(0.39,0.70,0.08),Vector3(0.27,0.77,0.025)]
+	_curved_tail(_tail,tail_points,_fur_material(Color("211d1b"),5) if character_index == 6 else points,1.30 if character_index == 6 else 0.90)
+	if character_index == 6:
+		# Keep the halo clearly above both ears. A thinner, smoother torus reads as
+		# a soft accessory in the chase camera instead of a thick floating arch.
+		var halo_mat := _material(Color("f6d56c"),0.20,0.35,0.65)
+		var halo: MeshInstance3D = _torus(_driver,Vector3(0,4.46,0.17),0.55,0.63,halo_mat)
+		halo.name = "GoldenHalo"
+		halo.rotation.x = -deg_to_rad(10.0)
+		halo.scale = Vector3(1.0,0.46,1.0)
+		halo.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		var halo_light := OmniLight3D.new()
+		halo_light.name = "HaloGlow"
+		halo_light.position = Vector3(0,4.40,0.16)
+		halo_light.light_color = Color("ffd96e")
+		halo_light.light_energy = 0.22
+		halo_light.omni_range = 3.8
+		halo_light.shadow_enabled = false
+		_driver.add_child(halo_light)
 	if character_index == 2:
-		_build_bow(_driver, Vector3(-0.40, 3.257, -0.13), _material(Color("e563ab"), 0.61))
+		_build_bow(_driver,Vector3(-0.38,3.22,-0.05),_material(Color("d873a5"),0.74))
 
 
 func _build_eye(side: float) -> void:
-	var eye: Node3D = _node(_driver, "Eye", Vector3(side * 0.409, 2.71, -0.523))
-	eye.scale.z = 0.42
+	var eye: Node3D = _node(_head,"Eye",Vector3(side*0.361,2.734,-0.468))
+	# The lens is embedded in the sculpted socket and has a continuous curved
+	# glossy iris. No stacked medallion rings, brows or floating highlights.
+	eye.rotation.z = -side*0.10
+	eye.rotation.y = side*0.11
+	# The reference uses soft illustrated eyes; a smaller lens leaves more of the
+	# sculpted socket visible and avoids the oversized glass-doll impression.
+	eye.scale = Vector3.ONE * 0.88
 	_eyes.append(eye)
-	var lid_color: Color = Color("655155") if character_index == 4 else COATS[character_index]
-	var lid: Material = _fur_material(lid_color)
-	# Eyes sit in the face behind a thin dark lash line; no beige eyeball rings.
-	_sphere(eye, Vector3(0, 0, 0.018), Vector3(0.603, 0.636, 0.13), lid)
-	_sphere(eye, Vector3(0, -0.012, -0.04), Vector3(0.543, 0.581, 0.129), _material(Color("1e1c24"), 0.64))
-	_sphere(eye, Vector3(-side * 0.013, -0.007, -0.085), Vector3(0.496, 0.538, 0.113), _material(IRIS[character_index].darkened(0.26), 0.30))
-	_sphere(eye, Vector3(-side * 0.013, -0.009, -0.104), Vector3(0.449, 0.495, 0.092), _material(IRIS[character_index].darkened(0.05), 0.25))
-	_sphere(eye, Vector3(-side * 0.012, -0.002, -0.143), Vector3(0.340, 0.440, 0.058), _material(Color("12151c"), 0.16))
-	_sphere(eye, Vector3(-0.084, 0.116, -0.178), Vector3(0.101, 0.123, 0.028), _material(Color("fffaf1"), 0.12))
-	_sphere(eye, Vector3(0.075, -0.111, -0.177), Vector3(0.030, 0.038, 0.013), _material(Color("d6e9f5"), 0.14))
-	var brow: MeshInstance3D = _sphere(eye, Vector3(0, 0.283, 0.003), Vector3(0.515, 0.095, 0.16), lid)
-	brow.rotation.z = -side * 0.07
-	if character_index == 2:
-		for j: int in range(2):
-			_cylinder_between(eye, Vector3(side * 0.23, 0.12 + j * 0.056, -0.027), Vector3(side * (0.30 + j * 0.006), 0.17 + j * 0.080, -0.018), 0.014, _material(Color("66505f"), 0.92))
+	var material: ShaderMaterial = ShaderMaterial.new()
+	material.shader = IRIS_SHADER
+	material.set_shader_parameter("iris_color",IRIS[character_index])
+	_instance(eye,CAT_SCULPT.lens(),Vector3.ZERO,Vector3.ONE,material)
 
 
 func _build_bow(parent: Node3D, point: Vector3, mat: Material) -> void:
@@ -475,16 +515,20 @@ static func _material(color: Color, roughness: float = 0.7, metallic: float = 0.
 	return mat
 
 
-static func _fur_material(color: Color, pattern: int = 0) -> ShaderMaterial:
-	var key: String = "fur_%s_%d" % [color.to_html(), pattern]
+static func _fur_material(color: Color, pattern: int = 0, groomed: bool = false) -> ShaderMaterial:
+	var key: String = "fur_%s_%d_%s" % [color.to_html(), pattern, groomed]
 	if _materials.has(key):
 		return _materials[key]
 	var mat: ShaderMaterial = ShaderMaterial.new()
-	mat.shader = FUR_SHADER
+	mat.shader = GROOM_SHADER if groomed else FUR_SHADER
 	mat.set_shader_parameter("coat_color", color)
 	mat.set_shader_parameter("coat_pattern", pattern)
+	mat.set_shader_parameter("groom_geometry", groomed)
 	mat.set_shader_parameter("dark_color", Color("59474b") if pattern == 3 else color.darkened(0.58))
-	mat.set_shader_parameter("cream_color", Color("ded9d0"))
+	mat.set_shader_parameter("cream_color", Color("d9d3c7"))
+	if not groomed and ResourceLoader.exists("res://assets/characters/fur_microdetail.png"):
+		mat.set_shader_parameter("fur_texture",load("res://assets/characters/fur_microdetail.png"))
+		mat.set_shader_parameter("use_fur_texture",true)
 	_materials[key] = mat
 	return mat
 
@@ -504,6 +548,9 @@ static func _instance(parent: Node3D, mesh: Mesh, point: Vector3, dimensions: Ve
 	parent.add_child(result)
 	result.position = point
 	result.scale = dimensions
+	var physical_size: Vector3 = mesh.get_aabb().size * dimensions.abs()
+	if physical_size.x * physical_size.y * physical_size.z < 0.08 or mat is ShaderMaterial and mat.shader == IRIS_SHADER:
+		result.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	return result
 
 
@@ -538,7 +585,7 @@ static func _fur_sphere(parent: Node3D, point: Vector3, dimensions: Vector3, mat
 	return _instance(parent, _meshes["organic_fur"], point, dimensions, mat)
 
 
-static func _fur_outline(parent: Node3D, center: Vector3, dimensions: Vector3, mat: Material, count: int) -> void:
+static func _fur_outline(parent: Node3D, center: Vector3, dimensions: Vector3, mat: Material, count: int, length_scale: float = 1.0) -> void:
 	# Fine tapered solid fibres soften the edge without alpha shells or knobs.
 	if not _meshes.has("fur_fibre"):
 		var fibre: CylinderMesh = CylinderMesh.new()
@@ -551,7 +598,7 @@ static func _fur_outline(parent: Node3D, center: Vector3, dimensions: Vector3, m
 		var angle: float = float(i) * TAU / float(count)
 		var direction: Vector3 = Vector3(sin(angle), cos(angle), 0)
 		var point: Vector3 = center + Vector3(direction.x * dimensions.x * 0.493, direction.y * dimensions.y * 0.493, sin(i * 2.17) * dimensions.z * 0.021)
-		var tuft: MeshInstance3D = _instance(parent, _meshes["fur_fibre"], point, Vector3(0.012, 0.075 + sin(i * 3.7) * 0.019, 0.014), mat)
+		var tuft: MeshInstance3D = _instance(parent, _meshes["fur_fibre"], point, Vector3(0.012, (0.075 + sin(i * 3.7) * 0.019) * length_scale, 0.014), mat)
 		tuft.quaternion = Quaternion(Vector3.UP, direction)
 
 
@@ -560,7 +607,7 @@ static func _soft_limb(parent: Node3D, start: Vector3, end: Vector3, radius: flo
 	limb.quaternion = Quaternion(Vector3.UP, (end - start).normalized())
 
 
-static func _curved_tail(parent: Node3D, points: Array[Vector3], mat: Material) -> void:
+static func _curved_tail(parent: Node3D, points: Array[Vector3], mat: Material, thickness: float = 1.0) -> void:
 	var path: Curve3D = Curve3D.new()
 	for i: int in range(points.size()):
 		var before: Vector3 = points[maxi(0, i - 1)]
@@ -582,7 +629,7 @@ static func _curved_tail(parent: Node3D, points: Array[Vector3], mat: Material) 
 		var after: Vector3 = path.sample_baked(minf(length, u * length + 0.015))
 		var forward: Vector3 = (after - before).normalized()
 		var frame: Basis = Basis.looking_at(forward, Vector3.FORWARD)
-		var radius: float = lerpf(0.17, 0.075, u)
+		var radius: float = lerpf(0.17, 0.075, u) * thickness
 		for j: int in range(sides + 1):
 			var angle: float = float(j) / sides * TAU
 			var normal: Vector3 = frame.x * cos(angle) + frame.y * sin(angle)
@@ -602,7 +649,7 @@ static func _curved_tail(parent: Node3D, points: Array[Vector3], mat: Material) 
 	var mesh: ArrayMesh = ArrayMesh.new()
 	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 	_instance(parent, mesh, Vector3.ZERO, Vector3.ONE, mat)
-	_sphere(parent, points[-1], Vector3.ONE * 0.15, mat)
+	_sphere(parent, points[-1], Vector3.ONE * 0.15 * thickness, mat)
 
 
 static func _rounded_box(parent: Node3D, point: Vector3, dimensions: Vector3, mat: Material, bevel: float = 0.20) -> MeshInstance3D:
@@ -672,8 +719,8 @@ static func _torus(parent: Node3D, point: Vector3, inner: float, outer: float, m
 		var mesh: TorusMesh = TorusMesh.new()
 		mesh.inner_radius = inner
 		mesh.outer_radius = outer
-		mesh.rings = 24
-		mesh.ring_segments = 10
+		mesh.rings = 36
+		mesh.ring_segments = 18
 		_meshes[key] = mesh
 	return _instance(parent, _meshes[key], point, Vector3.ONE, mat)
 
@@ -717,22 +764,29 @@ static func _merge_static(parent: Node3D) -> void:
 	var originals: Array[MeshInstance3D] = []
 	for child: Node in parent.get_children():
 		if child is MeshInstance3D and child.mesh != null:
-			var mesh_instance: MeshInstance3D = child
-			var material: Material = mesh_instance.material_override
-			if not groups.has(material):
-				groups[material] = []
-			groups[material].append(mesh_instance)
-			originals.append(mesh_instance)
-	for material: Material in groups:
+			var part: MeshInstance3D = child
+			# Groom retains its own distance hysteresis. Everything else batches,
+			# including small trim with shadow casting disabled.
+			if part.visibility_range_end > 0.0 or part.visibility_range_begin > 0.0:
+				continue
+			var mat: Material = part.material_override
+			var key: String = "%s_%s" % [mat.get_instance_id(),part.cast_shadow]
+			if not groups.has(key):
+				groups[key] = {"material": mat,"shadow": part.cast_shadow,"parts": []}
+			groups[key].parts.append(part)
+			originals.append(part)
+	for key: String in groups:
+		var group: Dictionary = groups[key]
 		var builder: SurfaceTool = SurfaceTool.new()
 		builder.begin(Mesh.PRIMITIVE_TRIANGLES)
-		for part: MeshInstance3D in groups[material]:
+		for part: MeshInstance3D in group.parts:
 			for surface_index: int in range(part.mesh.get_surface_count()):
-				builder.append_from(part.mesh, surface_index, part.transform)
+				builder.append_from(part.mesh,surface_index,part.transform)
 		var combined: ArrayMesh = builder.commit()
 		var visible_mesh: MeshInstance3D = MeshInstance3D.new()
 		visible_mesh.mesh = combined
-		visible_mesh.material_override = material
+		visible_mesh.material_override = group.material
+		visible_mesh.cast_shadow = group.shadow
 		visible_mesh.extra_cull_margin = 0.15
 		parent.add_child(visible_mesh)
 	for old: MeshInstance3D in originals:

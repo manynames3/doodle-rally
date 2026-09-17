@@ -1,26 +1,40 @@
 # Doodle Rally — Cat Racers
 
-A standalone Mac 3D kart racer, rebuilt from Doodle Rally's racing direction and original music. The intro follows the supplied Cat Racers title rendering, including the wooden menu and alpine racing scene. The original Doodle Rumble project is separate and was not modified.
+**Doodle Rally** is a standalone single player 3D kart racer for macOS. Pick a cat, choose a course, and race seven rivals through a paper craft studio, an alpine quarry, or a neon block world. The game keeps the playful hand painted feel of the supplied Cat Racers references while using a real time 3D chase camera, physics based kart contact, items, drifting, boosts, and a second Minecraft Racing roster.
 
-## Play
+The current source and Universal Mac build are version **1.3.0**. The original Doodle Rumble project is separate and is not modified.
 
-Download **Doodle_Rally_1.1_Mac.zip** from the [v1.1.0 GitHub release](https://github.com/manynames3/doodle-rally/releases/tag/v1.1.0), unzip it, and open **Doodle Rally 1.1.app**. If you already have the local build, double-click **builds/Doodle Rally 1.1.app**. Godot is not required to play. The Universal build contains Apple Silicon and Intel executables. It is signed locally, not Apple-notarized; a copy transferred to another Mac may need **System Settings → Privacy & Security → Open Anyway**.
+## Screenshots
 
-Choose **Start Game** for cats or **Minecraft Racing** for block characters. Choose a racer, choose a track, then **LET'S RACE!** Hold W or ↑ to accelerate after the countdown. For a gentler start, turn on **Auto-accelerate** in Options.
+The visual review gallery is in [docs/SCREENSHOTS.md](docs/SCREENSHOTS.md). These captures come from the native QA build at 1280×800.
 
-## What's playable
+<table>
+  <tr>
+    <td><img src="screenshots/1.3/intro.png" alt="Cat Racers intro menu" width="320"></td>
+    <td><img src="screenshots/1.3/mak_doong_character_select.png" alt="Character Select with Zizi and Mak-Doong" width="320"></td>
+    <td><img src="screenshots/1.3/track_select.png" alt="Track Select" width="320"></td>
+  </tr>
+  <tr>
+    <td><img src="screenshots/1.3/quarry_race.png" alt="Block Quarry race" width="320"></td>
+    <td><img src="screenshots/1.3/desktop_race.png" alt="Desktop Dojo race" width="320"></td>
+    <td><img src="screenshots/1.3/minecraft_race.png" alt="Minecraft Racing race" width="320"></td>
+  </tr>
+</table>
 
-- Eight cats: the tuxedo player, Luna, Milo, Biscuit, Mochi, Pumpkin, Nori and Shadow. If the tuxedo is an AI rival, it is named Pepper.
-- Eight Minecraft-style drivers: Steve, Alex, Creeper, Enderman, Zombie, Skeleton, Pig and Villager. Their models are original procedural geometry, with square heads, pixel faces and angular karts.
-- Three scenic courses: **Desktop Dojo**, **Block Quarry**, and **Glitch Core**. Each has its own surface, scenery, lighting and music. They share the core circuit shape with different elevations. Minecraft mode adds block scenery to the alpine course and replaces the drivers on every course.
-- Three-lap races against seven AI rivals, three difficulty levels, actual acceleration/braking/steering, kart contact, drift hops, charged mini-turbos, refillable boosts and track boost pads.
-- Rotating item boxes provide a flying fish that hits a rival ahead, a yarn ball dropped behind you, catnip turbo or a protective bubble. Bubbles last eight seconds and absorb one hit. Fish range is 125 track metres.
-- Live standings, lap and race times, minimap, speedometer, boost gauge, item wheel, results, restart, track selection and a Garage model preview.
-- Saved preferences and personal bests separated by course, difficulty and racing mode. Pausing freezes gameplay, timers, item effects and scenery animation. Focus loss and controller disconnection automatically pause an active race.
+## Play the Mac build
 
-Version **1.1** fixes cars passing through each other during bump cooldowns. Solid, steering-aware contact now runs every simulation tick, AI steer according to their forward speed, and the chase camera lifts smoothly around close rivals. Rendering interpolates between physics ticks. Kitten proportions, eyes, coats, buggy bodies, printed paw badges, HUD typography and portraits, dust, forest materials and alpine scenery have also been revised toward the references.
+Unzip **Doodle_Rally_1.3_Mac.zip** and open **Doodle Rally 1.3.app**, or open the app inside `builds/Doodle Rally 1.3.app`. Godot is not required to play. The bundle contains Apple Silicon and Intel executables. It is signed locally and is not Apple notarized, so macOS may ask you to choose **Open Anyway** in **System Settings → Privacy & Security** when the ZIP came from another Mac.
 
-This release is single-player. The new game uses a chase camera and fully modeled, stylized 3D drivers and environments. Menu illustrations closely follow the supplied renderings; gameplay now includes textured coats and fine opaque fur details, modeled scenery and textured dirt, limestone, timber and pine branches. It still uses stylized procedural models rather than the cinematic sculpting, fur density and environmental complexity of the reference illustrations. The previous 2D course editor and local multiplayer were not ported into this new racer.
+Choose **Start Game** for the cat roster or **Minecraft Racing** for the block characters. Pick a racer, pick a track, then select **LET'S RACE!** The BenJam Games logo appears briefly when the app launches and can be skipped with any key, click, or controller button.
+
+## What is in the game
+
+- Eight distinct cats: **Zizi** (the tuxedo hero with a white chin, chest, and paws), Luna, Milo, Biscuit, **Mochi**, Pumpkin, **Mak-Doong** (the calico with a golden halo), and Nori. Zizi and Mak-Doong sit together in the middle of Character Select. Their names, colors, patterns, portraits, rear views, Garage previews, standings, and results stay consistent.
+- Eight Minecraft style drivers: Steve, Alex, Creeper, Enderman, Zombie, Skeleton, Pig, and Villager. Their block geometry and pixel faces are original procedural game assets.
+- Three courses: **Desktop Dojo**, **Block Quarry**, and **Glitch Core**. Each has its own surface, scenery, lighting, panorama, props, and soundtrack. Minecraft Racing swaps in block scenery and drivers on every course.
+- Three lap races with seven AI rivals, three difficulty levels, acceleration, braking, steering, drift hops, charged mini turbos, refillable boost, track boost pads, item boxes, barriers, minimap, speedometer, results, restart, and a Garage preview.
+- Items include a fish projectile, a yarn trap, catnip turbo, and a protective bubble. The game saves preferences and personal bests by course, difficulty, and roster.
+- A longer evolving soundtrack uses three arrangements with crossfaded loop boundaries so the music does not stop or restart abruptly.
 
 ## Controls
 
@@ -30,21 +44,40 @@ This release is single-player. The new game uses a chase camera and fully modele
 | Brake | S / ↓ | Left trigger |
 | Steer | A D / ← → | Left stick / D-pad |
 | Hop and drift | Hold Space while steering | Hold LB / L1 while steering |
-| Release drift for mini-turbo | Release Space after charge | Release LB / L1 |
+| Release drift for mini turbo | Release Space after charge | Release LB / L1 |
 | Spend boost reserve | Shift | RB / R1 |
-| Use held item | E | X / Square |
+| Use item | E | X / Square |
 | Recover to road center | R | Y / Triangle |
-| Look behind | Hold C | Hold right-stick click |
+| Look behind | Hold C | Right stick click |
 | Pause / resume | Esc | Start / Options |
 | Fullscreen | F11 (or Fn–F11) | — |
-| Select menu / go back | Enter / Esc | A / B (Cross / Circle) |
+| Select / back | Enter / Esc | A / B (Cross / Circle) |
 
-The first drift charge arrives after 0.75 seconds, with a stronger turbo after 1.6 seconds. Boost costs 30 of the 100-point reserve and refills over time. Road barriers keep the kart on the circuit; scraping them slows you down. Steering assistance varies with difficulty. There is no reverse gear; use R if you need to recover.
+## Technology
 
-## Source and rebuilding
+| Layer | Stack |
+| --- | --- |
+| Engine | Godot **4.7.2**, GDScript, Forward+ renderer |
+| Platform | macOS Universal build: Apple Silicon + Intel, Metal graphics driver |
+| 3D | Procedural meshes with `SurfaceTool`, `MultiMeshInstance3D`, `ShaderMaterial`, `PanoramaSkyMaterial`, custom fur and water shaders |
+| Game systems | Fixed 60 Hz simulation, interpolated render transforms, collision aware AI, deterministic course sampling, saved preferences |
+| Interface | Godot `Control`, `CanvasLayer`, `TextureRect`, `Label3D`, custom Kalam and Barlow fonts |
+| Audio | Godot audio buses and generated WAV arrangements; no external audio plugin |
+| Verification | Godot headless QA, Python 3 test/export helpers, native Mac smoke captures |
+| Distribution | Godot macOS export preset, locally signed `.app`, ZIP package |
 
-Clone the source with `git clone https://github.com/manynames3/doodle-rally.git`, then import **doodle-rally/game/project.godot** into standard **Godot 4.7.2** and press F5. For an existing local source folder, import **game/project.godot** directly. No add-ons, game account, network service or .NET runtime is needed to run the game. The desktop build uses the Compatibility renderer and fixed 60 Hz race simulation. Generated app bundles are distributed through GitHub Releases and are not stored in the source repository.
+No add ons, game account, network service, or .NET runtime is needed to run the game. The visual assets combine procedural geometry, supplied reference renderings, supplied asset sheets, and generated transparent presentation sprites. Source and license notes are in [docs/ASSET_PROVENANCE.md](docs/ASSET_PROVENANCE.md).
 
-Install matching Godot export templates, then export the **macOS** preset. Alternatively run `python3 tools/export_mac.py --godot /path/to/Godot.app/Contents/MacOS/Godot`; an optional `--template /path/to/macos.zip` supplies a template directly. The script restores the portable preset when finished and generates the app plus its ZIP.
+## Build from source
 
-Preferences live in Godot's separate **Doodle Rally Cat Racers** application-data folder as `rally_3d.cfg`. The app never reads or changes the original game's settings. Automated QA uses isolated preferences. See **BUILD_STATUS.md** for verification and **docs/ASSET_PROVENANCE.md** for source and license details.
+Use standard Godot **4.7.2** with matching macOS export templates. Open `game/project.godot` and press F6/F5, or run the supplied checks:
+
+```sh
+python3 tools/test.py --godot /path/to/Godot.app/Contents/MacOS/Godot
+python3 tools/export_mac.py --godot /path/to/Godot.app/Contents/MacOS/Godot --template /path/to/macos.zip
+python3 tools/test_release.py
+```
+
+`tools/test.py` runs simulation, menu, roster, integration, world, audio, and collision checks. `tools/test_release.py` launches the packaged app through the title, character, track, Garage, race, drive, and results screens and records fresh screenshots. The current verification record is [BUILD_STATUS.md](BUILD_STATUS.md), with release notes in [docs/releases/1.3.md](docs/releases/1.3.md).
+
+Preferences are stored in Godot's separate **Doodle Rally Cat Racers** application data folder as `rally_3d.cfg`. The app does not read or change the original game's settings. Generated app bundles and temporary telemetry are excluded from the source repository.

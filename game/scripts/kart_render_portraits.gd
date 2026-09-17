@@ -30,9 +30,10 @@ func _render_portraits() -> void:
 	env.environment.background_color = Color.TRANSPARENT
 	env.environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	env.environment.ambient_light_color = Color("ced9dd")
-	env.environment.ambient_light_energy = 0.34
+	env.environment.ambient_light_energy = 0.30
+	env.environment.tonemap_mode = Environment.TONE_MAPPER_ACES
 	scene.add_child(env)
-	for spec: Dictionary in [{"angle": Vector3(-25, 155, 0), "energy": 0.72, "color": Color("fff3df")}, {"angle": Vector3(-10, -120, 0), "energy": 0.28, "color": Color("b4d2e4")}, {"angle": Vector3(-40, 0, 0), "energy": 0.44, "color": Color("fff1d8")}]:
+	for spec: Dictionary in [{"angle": Vector3(-25, 155, 0), "energy": 1.05, "color": Color("fff3df")}, {"angle": Vector3(-10, -120, 0), "energy": 0.28, "color": Color("b4d2e4")}, {"angle": Vector3(-40, 0, 0), "energy": 0.44, "color": Color("fff1d8")}]:
 		var light: DirectionalLight3D = DirectionalLight3D.new()
 		light.rotation_degrees = spec.angle
 		light.light_energy = spec.energy
@@ -49,9 +50,12 @@ func _render_portraits() -> void:
 			scene.add_child(kart)
 			kart.build(index, mode)
 			kart._tail.visible = false
-			var center: float = 2.84 if mode == "cats" else 2.60 + (0.10 if index == 3 else 0.0)
-			_keep_head_geometry(kart, 2.04 if mode == "cats" else 2.005)
-			camera.size = 2.38 if mode == "cats" else 1.38
+			var center: float = (3.02 if index == 6 else 2.87) if mode == "cats" else 2.60 + (0.10 if index == 3 else 0.0)
+			if mode == "cats":
+				_isolate_cat_head(kart)
+			else:
+				_keep_head_geometry(kart,2.005)
+			camera.size = (3.10 if index == 6 else 2.85) if mode == "cats" else 1.38
 			camera.position = Vector3(0, center, -6)
 			camera.look_at(Vector3(0, center, 0))
 			await process_frame
@@ -99,3 +103,12 @@ func _keep_head_geometry(kart: Node3D, cutoff: float) -> void:
 			part.mesh = head
 		else:
 			part.visible = false
+
+
+func _isolate_cat_head(kart: Node3D) -> void:
+	# The sculpt now exposes a coherent head group: capture its entire jaw
+	# without the torso or a horizontal triangle crop. Keep the halo as well.
+	for part: MeshInstance3D in kart.find_children("*","MeshInstance3D",true,false):
+		var local_transform: Transform3D = kart.global_transform.affine_inverse()*part.global_transform
+		var bounds: AABB = local_transform*part.get_aabb()
+		part.visible = kart._head.is_ancestor_of(part) or bounds.position.y > 3.70

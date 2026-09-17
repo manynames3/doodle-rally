@@ -5,6 +5,7 @@ const Objects = preload("res://scripts/race_objects.gd")
 const Prefs = preload("res://scripts/preferences.gd")
 const Sound = preload("res://scripts/rally_sound.gd")
 const Data = preload("res://scripts/rally_data.gd")
+const Splash = preload("res://scripts/startup_splash.gd")
 const FONT = preload("res://assets/fonts/Kalam-Bold.ttf")
 
 var state := "menu"
@@ -32,9 +33,11 @@ var _qa_driver := false
 var _qa_drive_elapsed := 0.0
 var _qa_frame_times: Array[float] = []
 var _last_camera := Vector3.ZERO
+var _last_camera_aim := Vector3.ZERO
+var startup_splash: CanvasLayer
 
 func _ready() -> void:
-	get_window().title = "Doodle Rally — Cat Racers · 1.1"
+	get_window().title = "Doodle Rally — Cat Racers · 1.3"
 	_qa = "--qa" in OS.get_cmdline_user_args()
 	preferences.enabled = not _qa
 	preferences.load_data()
@@ -45,7 +48,6 @@ func _ready() -> void:
 	sound = Sound.new()
 	add_child(sound)
 	sound.set_mix(float(preferences.values.master_volume), float(preferences.values.music_volume))
-	sound.play_theme(1)
 	ui_layer = CanvasLayer.new()
 	add_child(ui_layer)
 	menu = load("res://scripts/menu_ui.gd").new()
@@ -58,8 +60,25 @@ func _ready() -> void:
 	menu.start_race.connect(_start_race)
 	menu.quit_requested.connect(func(): get_tree().quit())
 	menu.settings_changed.connect(_settings_changed)
-	menu.show_title()
+	if _qa and _arg("--qa-screen") not in ["splash", "startup"]:
+		_begin_title()
+	else:
+		_show_startup()
 	if _qa: call_deferred("_qa_run")
+
+func _show_startup() -> void:
+	state = "splash"
+	menu.hide()
+	startup_splash = Splash.new()
+	startup_splash.finished.connect(_begin_title)
+	add_child(startup_splash)
+
+func _begin_title() -> void:
+	startup_splash = null
+	state = "menu"
+	menu.show()
+	menu.show_title()
+	sound.play_theme(1)
 
 func _setup_input() -> void:
 	for action in ["r_left", "r_right", "r_gas", "r_brake", "r_drift", "r_boost", "r_item", "r_reset", "r_pause", "r_look"]:
@@ -78,6 +97,12 @@ func _setup_input() -> void:
 	# MenuUI installs shared D-pad, stick and south/east bindings for native UI controls.
 
 func _input(event: InputEvent) -> void:
+	if state == "splash":
+		if (event is InputEventKey and event.pressed and not event.echo) or (event is InputEventMouseButton and event.pressed) or (event is InputEventJoypadButton and event.pressed):
+			startup_splash.skip()
+		# Consume releases too: the skip button must never activate the title menu.
+		get_viewport().set_input_as_handled()
+		return
 	if event is InputEventJoypadButton or event is InputEventJoypadMotion:
 		controller = event.device
 		if hud: hud.using_controller = true
@@ -237,8 +262,13 @@ func _update_camera(dt: float, snap: bool = false) -> void:
 	if sim == null or camera == null: return
 	var r: Dictionary = sim.racers[0]
 	var point: Vector3 = karts[0].global_position if not karts.is_empty() else r.position
-	var direction: Vector3 = world.tangent(float(r.distance) + 5)
-	var behind: Vector3 = world.tangent(float(r.distance) - 5)
+	# Match the camera's tangent to the same interpolated distance used by the
+	# kart transforms. This removes a one-physics-tick yaw step at render rates
+	# that are not an exact multiple of the 60 Hz simulation.
+	var interpolation := clampf(Engine.get_physics_interpolation_fraction(), 0, 1)
+	var render_distance := lerpf(float(r.get("previous_distance", r.distance)), float(r.distance), interpolation)
+	var direction: Vector3 = world.tangent(render_distance + 5)
+	var behind: Vector3 = world.tangent(render_distance - 5)
 	var looking_back := Input.is_action_pressed("r_look") and state == "racing"
 	var distance := 7.7
 	var height := 3.6
@@ -254,7 +284,7 @@ func _update_camera(dt: float, snap: bool = false) -> void:
 		var influence := 1.0 - smoothstep(3.0, 9.0, planar_distance)
 		height = maxf(height, 3.6 + 2.1 * influence)
 	var desired := point - behind * distance + Vector3.UP * height
-	var aim := point + direction * 15 + Vector3.UP * 3.3
+	var desired_aim := point + direction * 15 + Vector3.UP * 3.3
 	if snap: camera.position = desired
 	else:
 		camera.position += point - _last_camera
@@ -265,8 +295,12 @@ func _update_camera(dt: float, snap: bool = false) -> void:
 	for i in range(1, karts.size()):
 		var relative := camera.position - karts[i].global_position
 		if Vector2(relative.x, relative.z).length() < 2.9:
-			camera.position.y = maxf(camera.position.y, karts[i].global_position.y + 4.25)
-	camera.look_at(aim, Vector3.UP)
+			camera.position.y = maxf(camera.position.y, karts[i].global_position.y + 4.65)
+	if snap or _last_camera_aim == Vector3.ZERO:
+		_last_camera_aim = desired_aim
+	else:
+		_last_camera_aim = _last_camera_aim.lerp(desired_aim, 1.0 - exp(-dt * 10.0))
+	camera.look_at(_last_camera_aim, Vector3.UP)
 	var desired_fov := 69.0 if float(r.turbo) > 0 and not bool(preferences.values.reduced_motion) else 64.0
 	camera.fov = lerpf(camera.fov, desired_fov, minf(1, dt * 4))
 
@@ -314,8 +348,7 @@ func _show_results() -> void:
 		var color := Color("ffdf66") if id == 0 else Color("eee9dc")
 		_add_label(results, "%02d" % [i + 1], 22, color)
 		var name_text: String = Data.BLOCK_NAMES[int(r.character)] if racer_mode == "minecraft" else Data.NAMES[int(r.character)]
-		if id == 0: name_text = "You · " + ("Tuxedo" if character == 0 and racer_mode == "cats" else name_text)
-		elif int(r.character) == 0 and racer_mode == "cats": name_text = "Pepper"
+		if id == 0: name_text = "You · " + name_text
 		_add_label(results, name_text, 22, color)
 		_add_label(results, Data.time_string(float(r.finish_time)) if float(r.finish_time) >= 0 else "On track", 22, color)
 	_add_button(box, "Race again", func(): _start_race(character, course), true)
@@ -350,6 +383,8 @@ func _clear_race() -> void:
 	race_root = null
 	world = null
 	camera = null
+	_last_camera = Vector3.ZERO
+	_last_camera_aim = Vector3.ZERO
 	karts.clear()
 	sim = null
 
@@ -436,14 +471,20 @@ func _arg(name: String, fallback: String = "") -> String:
 
 func _qa_run() -> void:
 	var screen := _arg("--qa-screen", "title")
+	if screen == "startup":
+		while state == "splash": await get_tree().process_frame
 	menu.selected_mode = _arg("--qa-mode", "cats")
 	menu.selected_course = int(_arg("--qa-course", "1"))
-	if screen == "characters": menu.show_characters()
+	menu.selected_character = clampi(int(_arg("--qa-character", "0")), 0, 7)
+	if screen == "splash":
+		startup_splash.set_process(false)
+		startup_splash._process(.8)
+	elif screen == "characters": menu.show_characters()
 	elif screen == "tracks": menu.show_tracks()
 	elif screen == "settings": menu.show_settings()
 	elif screen == "garage": menu._show_garage()
 	elif screen in ["race", "pause", "results", "drive"]:
-		await _start_race(0, menu.selected_course)
+		await _start_race(menu.selected_character, menu.selected_course)
 		countdown = -2
 		state = "racing"
 		var distance := float(_arg("--qa-distance", "65"))
@@ -474,8 +515,10 @@ func _qa_run() -> void:
 	for i in range(18): await get_tree().process_frame
 	var filename := _arg("--qa-output")
 	if not filename.is_empty() and DisplayServer.get_name() != "headless":
-		await RenderingServer.frame_post_draw
+		# An inactive macOS test window may suspend automatic draws. Request
+		# the capture frame explicitly rather than awaiting a signal forever.
+		RenderingServer.force_draw(false)
 		var result := get_viewport().get_texture().get_image().save_png(filename)
 		print("QA_SCREENSHOT ", filename, " result=", result)
-	print("QA_STATE ", state, " screen=", screen, " mode=", menu.selected_mode)
+	print("QA_STATE ", state, " screen=", screen, " mode=", menu.selected_mode, " character=", menu.selected_character)
 	if "--qa-quit" in OS.get_cmdline_user_args(): get_tree().quit()

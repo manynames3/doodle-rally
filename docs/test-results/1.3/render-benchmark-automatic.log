@@ -1,0 +1,51 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Metal 4.0 - Forward+ - Using Device #0: Apple - Apple M1 (Apple7)
+
+QA_STATE menu screen=title mode=cats character=0
+RACE_RENDER_SAMPLE renderer=forward_plus image=(1280, 800) samples=180 median_ms=36.339 p95_ms=43.316 draw_calls=1177.0
+RACE_RENDER_PHASES mean_wait_sim_draw_ms=(34.54477, 0.66575, 0.000322) world_only=false
+RACE_RENDER_MODE automatic=true confirmed_rendered_frames=264
+
+================================================================
+handle_crash: Program crashed with signal 11
+Engine version: Godot Engine v4.7.2.stable.official (ed1daf0bf001b61586d9930840f2f1394092c079)
+Dumping the backtrace. Please include this when reporting the bug on: https://github.com/godotengine/godot/issues
+Load address: 104f00000
+
+[1] 190059744 (libsystem_platform.dylib+3744) - _sigtramp + 56
+[2] 18ff66360 (libc++.1.dylib+7360) - std::__1::recursive_mutex::lock()
+[3] 18ff66360 (libc++.1.dylib+7360) - std::__1::recursive_mutex::lock()
+[4] 105ad89b4 (main+bd89b4) - main + 4767424
+[5] 105ad8de4 (main+bd8de4) - main + 4768496
+[6] 105b75bd0 (main+c75bd0) - main + 5411036
+[7] 1099b1cb8 (main+4ab1cb8) - ZSTD_decompressStream_simpleArgs + 3546196
+[8] 109ca3828 (main+4da3828) - ZSTD_decompressStream_simpleArgs + 6633412
+[9] 109c94510 (main+4d94510) - ZSTD_decompressStream_simpleArgs + 6571180
+[10] 109ca04c0 (main+4da04c0) - ZSTD_decompressStream_simpleArgs + 6620252
+[11] 10564dcf8 (main+74dcf8) - main + 4612
+[12] 105672c00 (main+772c00) - main + 155916
+[13] 1055ea104 (main+6ea104) - mvk::SPIRVToMSLConverter::convert(mvk::SPIRVToMSLConversionConfiguration&, mvk::SPIRVToMSLConversionResult&, bool, bool, bool)
+[14] 1055efbe4 (main+6efbe4) - mvk::SPIRVToMSLConverter::convert(mvk::SPIRVToMSLConversionConfiguration&, mvk::SPIRVToMSLConversionResult&, bool, bool, bool)
+[15] 1901019ec (CoreFoundation+729ec) - __CFNOTIFICATIONCENTER_IS_CALLING_OUT_TO_AN_OBSERVER__ + 148
+[16] 19018e0bc (CoreFoundation+ff0bc) - ___CFXRegistrationPost_block_invoke + 92
+[17] 19018e000 (CoreFoundation+ff000) - _CFXRegistrationPost + 440
+[18] 1900d0408 (CoreFoundation+41408) - _CFXNotificationPost + 740
+[19] 1919074a4 (Foundation+94a4) - -[NSNotificationCenter postNotificationName:object:userInfo:] + 88
+[20] 194743898 (AppKit+23a898) - -[NSApplication terminate:] + 1580
+[21] 1055e9f50 (main+6e9f50) - mvk::SPIRVToMSLConverter::convert(mvk::SPIRVToMSLConversionConfiguration&, mvk::SPIRVToMSLConversionResult&, bool, bool, bool)
+[22] 19010c344 (CoreFoundation+7d344) - __CFRUNLOOP_IS_CALLING_OUT_TO_AN_OBSERVER_CALLBACK_FUNCTION__ + 36
+[23] 19010c240 (CoreFoundation+7d240) - __CFRunLoopDoObservers + 648
+[24] 19010b8ec (CoreFoundation+7c8ec) - __CFRunLoopRun + 924
+[25] 1901de264 (CoreFoundation+14f264) - _CFRunLoopRunSpecificWithOptions + 532
+[26] 19cef7560 (HIToolbox+bd560) - RunCurrentEventLoopInMode + 320
+[27] 19cefa8bc (HIToolbox+c08bc) - ReceiveNextEventCommon + 488
+[28] 19d08414c (HIToolbox+24a14c) - _BlockUntilNextEventMatchingListInMode + 48
+[29] 194bee3d0 (AppKit+6e53d0) - _DPSBlockUntilNextEventMatchingListInMode + 228
+[30] 194542084 (AppKit+39084) - _DPSNextEvent + 576
+[31] 1950d796c (AppKit+bce96c) - -[NSApplication(NSEventRouting) _nextEventMatchingEventMask:untilDate:inMode:dequeue:] + 688
+[32] 1950d7678 (AppKit+bce678) - -[NSApplication(NSEventRouting) nextEventMatchingMask:untilDate:inMode:dequeue:] + 72
+[33] 19453513c (AppKit+2c13c) - -[NSApplication run] + 368
+[34] 10564cea4 (main+74cea4) - main (in Godot) + 944
+[35] 18fc844e4 (dyld+204e4) - start + 6992
+-- END OF C++ BACKTRACE --
+================================================================

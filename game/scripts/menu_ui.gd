@@ -9,25 +9,30 @@ const WoodSign = preload("res://scripts/ui_wood_sign.gd")
 const Paw = preload("res://scripts/ui_paw.gd")
 const MenuIcon = preload("res://scripts/ui_menu_icon.gd")
 const KartPreview = preload("res://scripts/ui_kart_preview.gd")
+const RacerStage = preload("res://scripts/ui_racer_stage.gd")
 const CHALK = preload("res://assets/fonts/Kalam-Bold.ttf")
 const ART := "res://assets/art/"
 const CREAM := Color("fff6dc")
 const GOLD := Color("ffda4b")
 const INK := Color("17212b")
-const DISPLAY_ORDER := [1, 2, 0, 3, 4, 5, 6, 7]
-const DESCRIPTIONS := ["Curious, brave,\nalways ready.", "Steady and reliable\non any track.", "Light and quick.\nBorn to zoom.", "Strong and sturdy.\nGo full throttle.", "Smooth and nimble.\nLoves the corners.", "Unexpected moves.\nAlways a surprise.", "Precise and clever.\nFinds the best line.", "Fast, unpredictable,\na little chaotic."]
-const STATS := [[0.70,0.73,0.72],[0.65,0.78,0.82],[0.92,0.94,0.59],[0.80,0.58,0.53],[0.67,0.73,0.99],[0.74,0.90,0.72],[0.69,0.82,0.93],[1.0,0.52,0.48]]
-const BLOCK_NAMES := ["Steve", "Alex", "Creeper", "Enderman", "Zombie", "Skeleton", "Pig", "Villager"]
+# Keep the two player mascots together in the visual center of the lineup.
+# These are display positions only; stable character indices remain in rally_data.
+const DISPLAY_ORDER := [1, 2, 3, 0, 6, 4, 5, 7]
+const DESCRIPTIONS := ["Your tuxedo.\nReady to rally.", "Steady and reliable\non any track.", "Light and quick.\nBorn to zoom.", "Strong and sturdy.\nGo full throttle.", "Smooth and nimble.\nLoves the corners.", "Unexpected moves.\nAlways a surprise.", "Calico. Golden halo.\nFinds the best line.", "Precise and clever.\nFinds the best line."]
+const STATS := [[0.70,0.73,0.72],[0.65,0.78,0.82],[0.92,0.94,0.59],[0.80,0.58,0.53],[0.67,0.73,0.99],[0.74,0.90,0.72],[0.69,0.82,0.93],[0.72,0.82,0.91]]
 var selected_mode := "cats"
 var selected_character := 0
 var selected_course := 1
 var screen := ""
-var preferences := {"master_volume": 0.8, "music_volume": 0.65, "reduced_motion": false, "auto_accelerate": false, "difficulty": 0}
+var preferences := {"master_volume": 0.8, "music_volume": 0.65, "reduced_motion": false, "auto_accelerate": false, "difficulty": 2}
 var _background: TextureRect
 var _wash: TextureRect
 var _stage: Control
 var _cards: Array[Button] = []
 var _previews: Array[Control] = []
+var _placards: Array[Panel] = []
+var _spotlights: Array[Panel] = []
+var _lineup: Control
 var _selection_label: Label
 var _selection_detail: Label
 var _elapsed := 0.0
@@ -100,13 +105,16 @@ func _reset(next_screen: String, title_art: bool = false) -> void:
 	visible = true
 	_cards.clear()
 	_previews.clear()
+	_placards.clear()
+	_spotlights.clear()
+	_lineup=null
 	_markers.clear()
 	_selection_label = null
 	_selection_detail = null
 	for child in _stage.get_children():
 		_stage.remove_child(child)
 		child.queue_free()
-	_background.texture = load(ART + ("title_race_v2.png" if title_art else "clubhouse.png"))
+	_background.texture = load(ART + ("title_race_v3.png" if title_art else "clubhouse.png"))
 	var gradient := Gradient.new()
 	gradient.offsets = PackedFloat32Array([0.0, 0.42, 1.0])
 	gradient.colors = PackedColorArray([Color(0.015,0.055,0.075,0.22), Color(0.02,0.06,0.09,0.04), Color(0.02,0.04,0.08,0.01)]) if title_art else PackedColorArray([Color(0.025,0.02,0.025,0.2), Color(0.025,0.02,0.025,0.09), Color(0.025,0.02,0.025,0.27)])
@@ -218,7 +226,7 @@ func _footer(back_callback: Callable, continue_callback: Callable = Callable(), 
 		_button(_stage, continue_text + "   →", Rect2(1085,797,317,73), continue_callback, true)
 
 func _name_for(character: int) -> String:
-	return BLOCK_NAMES[character] if selected_mode == "minecraft" else Data.NAMES[character]
+	return Data.BLOCK_NAMES[character] if selected_mode == "minecraft" else Data.NAMES[character]
 
 func _wood_button(text: String, rect: Rect2, callback: Callable, icon_name: String, primary: bool = false) -> Button:
 	var button := _button(_stage,"",rect,callback,primary)
@@ -308,40 +316,77 @@ func show_title() -> void:
 
 func show_characters() -> void:
 	_reset("characters")
-	_header("Pick your racer" if selected_mode == "minecraft" else "Pick your cat", "Minecraft Racing • Blocky friends. Big adventures." if selected_mode == "minecraft" else "Different cats. Different styles. Same fun.")
-	_label(_stage, "MEET THE RACERS", Rect2(520,211,400,37), 24, GOLD, true)
+	_header("Character Select", "Minecraft Racing • Blocky friends. Big adventures." if selected_mode == "minecraft" else "Different cats. Different styles. Same fun!")
+	_character_workbench()
 	for slot in range(8):
 		var character: int = DISPLAY_ORDER[slot]
 		var card := Button.new()
 		card.name = "Character_" + _name_for(character)
-		card.position = Vector2(32 + slot*173, 278)
-		card.size = Vector2(165, 450)
+		card.position = Vector2(28 + slot*174,242)
+		card.size = Vector2(166,484)
 		card.focus_mode = Control.FOCUS_NONE
-		card.add_theme_stylebox_override("normal", _style(Color(0.055,0.063,0.066,0.86), Color("725a43"), 2, 14))
-		card.add_theme_stylebox_override("hover", _style(Color(0.13,0.13,0.12,0.91), GOLD, 3, 14))
-		card.add_theme_stylebox_override("pressed", _style(Color(0.19,0.15,0.08,0.96), GOLD, 4, 14))
+		card.add_theme_stylebox_override("normal",StyleBoxEmpty.new())
+		card.add_theme_stylebox_override("hover",StyleBoxEmpty.new())
+		card.add_theme_stylebox_override("pressed",StyleBoxEmpty.new())
 		card.pressed.connect(_choose_character.bind(character))
 		_stage.add_child(card)
 		_cards.append(card)
-		var marker := _panel(card,Rect2(56,-29,55,33),GOLD,CREAM,2,5)
-		_label(marker,"P1",Rect2(0,0,55,31),21,INK,true)
+		# The reference roster uses a dark presentation panel behind each racer;
+		# it keeps the bright fur and paint readable against the clubhouse plate.
+		_panel(card,Rect2(0,0,166,284),Color(0.025,0.036,0.047,0.86),Color("5d5146"),1,10)
+		var spotlight := _panel(card,Rect2(-3,-4,172,283),Color(1,.73,.12,.08),GOLD,3,12)
+		_spotlights.append(spotlight)
+		var marker := _panel(card,Rect2(56,-12,55,34),Color("b54420"),GOLD,2,6)
+		_label(marker,"P1",Rect2(0,0,55,32),23,CREAM,true)
+		marker.z_index=2
 		_markers.append(marker)
-		_panel(card, Rect2(5,5,155,237), Color(Data.COLORS[character],0.12), Color.TRANSPARENT, 0, 11)
-		var preview := _kart_preview(card, Rect2(-25,-6,215,264), character)
-		_previews.append(preview)
-		_label(card, _name_for(character), Rect2(5,241,155,43), 29, CREAM, true)
-		_label(card, Data.STYLES[character], Rect2(3,283,159,30), 20, Data.COLORS[character], true)
-		_label(card, ("Block-built racer.\nReady to roll." if selected_mode == "minecraft" else DESCRIPTIONS[character]), Rect2(5,318,155,55), 16, Color("ddd6c6"), true)
+		var placard := _panel(card,Rect2(0,284,166,201),Color(.055,.038,.031,.93),Color("765643"),1,8)
+		placard.z_index=2
+		_placards.append(placard)
+		_label(placard,_name_for(character),Rect2(5,3,156,36),26 if _name_for(character).length()>8 else 29,CREAM,true)
+		_label(placard,Data.STYLES[character],Rect2(3,39,160,28),20,Data.COLORS[character],true)
+		_label(placard,"Block-built racer.\nReady to roll." if selected_mode=="minecraft" else DESCRIPTIONS[character],Rect2(5,71,156,45),16,Color("e5ddd0"),true)
 		for stat in range(3):
-			_label(card,["Speed", "Accel.", "Steer"][stat], Rect2(12,379+stat*21,58,20), 14)
-			_panel(card,Rect2(72,385+stat*21,79,8),Color("444144"),Color.TRANSPARENT,0,4)
-			_panel(card,Rect2(72,385+stat*21,79*STATS[character][stat],8),Data.COLORS[character],Color.TRANSPARENT,0,4)
-	_selection_label = _label(_stage, "", Rect2(294,743,854,42), 26, GOLD, true)
+			_label(placard,["Speed","Accel.","Handling"][stat],Rect2(10,123+stat*23,66,21),14,CREAM)
+			_panel(placard,Rect2(79,132+stat*23,76,8),Color("403b3c"),Color.TRANSPARENT,0,4)
+			_panel(placard,Rect2(79,132+stat*23,76*STATS[character][stat],8),Data.COLORS[character],Color.TRANSPARENT,0,4)
+	_lineup=_racer_stage(Rect2(22,224,1396,314),DISPLAY_ORDER,false)
+	_selection_label = _label(_stage,"",Rect2(294,739,854,39),24,GOLD,true)
 	_choose_character(selected_character)
-	_footer(show_title, show_tracks, "CHOOSE TRACK")
+	_footer(show_title,show_tracks,"CHOOSE TRACK")
+
+func _character_workbench() -> void:
+	# Bring the existing photographed worktop forward to meet the tire line.
+	# Racers and their contact shadows remain live native geometry above it.
+	var surface:=TextureRect.new()
+	var atlas:=AtlasTexture.new()
+	atlas.atlas=load(ART+"clubhouse.png")
+	var source_size:=atlas.atlas.get_size()
+	atlas.region=Rect2(0,source_size.y*.688,source_size.x,source_size.y*.312)
+	surface.texture=atlas
+	surface.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
+	surface.stretch_mode=TextureRect.STRETCH_SCALE
+	surface.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	surface.position=Vector2(0,453)
+	surface.size=Vector2(1440,447)
+	_stage.add_child(surface)
+
+func _racer_stage(rect: Rect2, roster: Array, rear: bool) -> Control:
+	var stage := Control.new()
+	stage.set_script(RacerStage)
+	stage.z_index=1
+	stage.position=rect.position
+	stage.size=rect.size
+	stage.characters.assign(roster)
+	stage.mode=selected_mode
+	stage.selected_character=selected_character
+	stage.reduced_motion=preferences.reduced_motion
+	stage.rear_view=rear
+	_stage.add_child(stage)
+	return stage
 
 func _kart_preview(parent: Control, rect: Rect2, character: int) -> Control:
-	var preview := SubViewportContainer.new()
+	var preview := Control.new()
 	preview.set_script(KartPreview)
 	preview.position = rect.position
 	preview.size = rect.size
@@ -352,16 +397,31 @@ func _kart_preview(parent: Control, rect: Rect2, character: int) -> Control:
 	return preview
 
 func _choose_character(character: int) -> void:
-	selected_character = character
+	selected_character=character
 	for slot in range(_cards.size()):
-		var selected: bool = DISPLAY_ORDER[slot] == character
-		_cards[slot].add_theme_stylebox_override("normal", _style(Color(0.12,0.1,0.055,0.97) if selected else Color(0.055,0.063,0.066,0.88), GOLD if selected else Color("725a43"), 4 if selected else 2, 14))
-		if slot < _markers.size():
-			_markers[slot].visible = selected
-		if slot < _previews.size():
-			_previews[slot].active = selected
+		var selected: bool=DISPLAY_ORDER[slot]==character
+		if slot<_placards.size():
+			var style:=_style(Color(.085,.056,.027,.96) if selected else Color(.045,.032,.028,.94),GOLD if selected else Color("79543c"),3 if selected else 1,8)
+			style.shadow_color=Color(1,.62,.04,.55) if selected else Color(0,0,0,.35)
+			style.shadow_size=12 if selected else 6
+			style.shadow_offset=Vector2.ZERO if selected else Vector2(0,4)
+			_placards[slot].add_theme_stylebox_override("panel",style)
+		if slot<_spotlights.size():
+			_spotlights[slot].visible=selected
+			var halo:=_style(Color(1,.73,.12,.05),GOLD,3,12)
+			halo.shadow_color=Color(1,.71,.05,.62)
+			halo.shadow_size=18
+			halo.shadow_offset=Vector2.ZERO
+			_spotlights[slot].add_theme_stylebox_override("panel",halo)
+		if slot<_markers.size():
+			_markers[slot].visible=selected
+			if selected and is_instance_valid(_lineup):
+				var visual_bounds:Rect2=_lineup.racer_screen_rect(slot)
+				var top_in_card:Vector2=_cards[slot].get_global_transform_with_canvas().affine_inverse()*visual_bounds.position
+				_markers[slot].position.y=top_in_card.y-43
+	if is_instance_valid(_lineup): _lineup.selected_character=character
 	if is_instance_valid(_selection_label):
-		_selection_label.text = "P1   " + _name_for(character) + "  •  " + Data.STYLES[character] + "   /   Ready for adventure!"
+		_selection_label.text="P1   "+_name_for(character)+"  •  "+Data.STYLES[character]+"   /   Ready for adventure!"
 
 func show_tracks() -> void:
 	_reset("tracks")
@@ -371,8 +431,8 @@ func show_tracks() -> void:
 	for course in range(3):
 		var card := Button.new()
 		card.name = "Track_" + str(course)
-		card.position = Vector2(65 + course*443,223)
-		card.size = Vector2(424, 498)
+		card.position = Vector2(65 + course*443,198)
+		card.size = Vector2(424, 414)
 		card.focus_mode = Control.FOCUS_NONE
 		card.clip_contents = false
 		card.add_theme_stylebox_override("normal", _style(Color("161e29"), Color("718080"), 3, 13))
@@ -383,7 +443,7 @@ func show_tracks() -> void:
 		_cards.append(card)
 		var art := TextureRect.new()
 		art.position = Vector2(8,8)
-		art.size = Vector2(408,369)
+		art.size = Vector2(408,295)
 		art.texture = load(ART + filenames[course])
 		art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
@@ -391,10 +451,15 @@ func show_tracks() -> void:
 		card.add_child(art)
 		_panel(card,Rect2(22,22,98,32),Color(0.025,0.055,0.07,0.8),Color(1,1,1,0.4),1,16)
 		_label(card, "3 LAPS", Rect2(25,21,91,33), 19, CREAM, true)
-		_label(card,Data.COURSES[course].to_upper(),Rect2(10,384,404,50),34,CREAM,true)
-		_label(card,Data.TAGLINES[course],Rect2(10,436,404,33),23,colors[course],true)
-		_label(card,["CREATIVE CIRCUIT", "ALPINE ADVENTURE", "NEON NIGHT RIDE"][course],Rect2(10,469,404,23),14,Color("b7bfbe"),true)
-	_selection_label = _label(_stage,"",Rect2(324,744,792,36),25,GOLD,true)
+		_label(card,Data.COURSES[course].to_upper(),Rect2(10,304,404,44),31,CREAM,true)
+		_label(card,Data.TAGLINES[course],Rect2(10,347,404,31),22,colors[course],true)
+		_label(card,["CREATIVE CIRCUIT", "ALPINE ADVENTURE", "NEON NIGHT RIDE"][course],Rect2(10,384,404,22),14,Color("b7bfbe"),true)
+	var display_roster: Array[int]=[3,1,0,4,2,5]
+	var previous_slot:=display_roster.find(selected_character)
+	if previous_slot>=0: display_roster[previous_slot]=display_roster[2]
+	display_roster[2]=selected_character
+	_lineup=_racer_stage(Rect2(130,573,1180,224),display_roster,true)
+	_selection_label = _label(_stage,"",Rect2(324,774,792,32),21,GOLD,true)
 	_choose_course(selected_course)
 	_footer(show_characters, _launch)
 
@@ -426,7 +491,12 @@ func _show_garage() -> void:
 	preview.active = true
 	_label(_stage,_name_for(selected_character),Rect2(812,268,425,67),51,GOLD)
 	_label(_stage,Data.STYLES[selected_character],Rect2(816,339,417,46),30,Data.COLORS[selected_character])
-	_label(_stage,"Minecraft Racing" if selected_mode == "minecraft" else "Cat Racers",Rect2(815,393,411,35),23,CREAM)
+	var identity := "Minecraft Racing" if selected_mode == "minecraft" else "Cat Racers"
+	if selected_mode == "cats":
+		if selected_character == 0: identity = "Tuxedo · White bib & paws"
+		elif selected_character == 6: identity = "Calico · Golden halo"
+		elif selected_character == 7: identity = "Tabby · Precision racer"
+	_label(_stage,identity,Rect2(815,393,411,35),23,CREAM)
 	for stat in range(3):
 		_label(_stage,["Speed", "Acceleration", "Handling"][stat],Rect2(815,455+stat*62,190,34),23)
 		_panel(_stage,Rect2(1015,467+stat*62,234,12),Color("444b48"),Color.TRANSPARENT,0,6)

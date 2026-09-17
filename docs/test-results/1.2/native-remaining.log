@@ -1,0 +1,13 @@
+minecraft_race: 0
+drive_cats: 0
+QA_DRIVE distance=509.812677356043 speed=38.0 fps=77.0
+QA_FRAME_TIMES samples=642 median_ms=15.1515151515152 p95_ms=18.3333333333333
+drive_angel: 0
+QA_DRIVE distance=501.957085065846 speed=37.8 fps=75.0
+QA_FRAME_TIMES samples=627 median_ms=15.2777777777778 p95_ms=18.491
+drive_minecraft: 0
+QA_DRIVE distance=509.812677356043 speed=38.0 fps=77.0
+QA_FRAME_TIMES samples=707 median_ms=13.6 p95_ms=16.6666666666667
+results_tuxedo: 0
+results_angel: 0
+Native release: 6 views/driving checks passed.

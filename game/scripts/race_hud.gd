@@ -92,9 +92,8 @@ func _draw() -> void:
 		_panel(Rect2(31, y - 24, 202, 31), panel_color, 7)
 		_race_text(Vector2(40, y + 1), str(j + 1), 27, Color.WHITE if id != 0 else Color("202030"), 2 if id != 0 else 0)
 		_cat_icon(Vector2(84, y - 9), 11, ch)
-		var name_text: String = "You" if id == 0 else ("Pepper" if ch == 0 else str(Data.NAMES[ch]))
-		if str(sim.mode) == "minecraft" and id != 0: name_text = str(Data.BLOCK_NAMES[ch])
-		_text(Vector2(105, y), name_text, 21, Color.WHITE if id != 0 else Color("202030"), 1 if id != 0 else 0)
+		var name_text: String = str(Data.BLOCK_NAMES[ch]) if str(sim.mode) == "minecraft" else str(Data.NAMES[ch])
+		_race_text(Vector2(105, y + 1), name_text, 24, Color.WHITE if id != 0 else Color("202030"), 1 if id != 0 else 0)
 	_panel(Rect2(1171, 25, 241, 77), Color(0.025, 0.035, 0.06, 0.83), 12)
 	_race_text(Vector2(1185, 77), "LAP", 30, Color.WHITE)
 	_race_text(Vector2(1255, 88), "%d/3" % mini(int(player.lap), 3), 62, Color.WHITE)
@@ -116,9 +115,13 @@ func _draw() -> void:
 			_cat_icon(_map(Vector2(p3.x, p3.z)), 10 if index == 0 else 7, int(r.character), index == 0)
 	# Item wheel, made large enough to read at couch distance.
 	var center := Vector2(111, 770)
-	draw_circle(center, 75, Color(0.018, 0.024, 0.04, 0.78))
-	draw_arc(center, 77, 0, TAU, 72, Color("433d38"), 9, true)
-	draw_arc(center, 69, -PI * .6, PI * 1.36, 72, Color("72ddfb"), 4, true)
+	draw_circle(center + Vector2(3, 4), 82, Color(0.01, 0.012, 0.018, 0.40))
+	draw_circle(center, 76, Color(0.018, 0.024, 0.04, 0.88))
+	draw_arc(center, 78, 0, TAU, 96, Color("332b27"), 8, true)
+	draw_arc(center, 76, -PI * .85, PI * .45, 72, Color("bcb6a9"), 3, true)
+	draw_arc(center, 68, 0, TAU, 96, Color("243740"), 7, true)
+	draw_arc(center, 68, -PI * .8, PI * 1.20, 96, Color("60c8e8"), 3, true)
+	draw_arc(center, 64, -PI * .85, -PI * .35, 32, Color("dcfaff"), 2, true)
 	_draw_item(center, str(player.item))
 	_keycap(Vector2(168, 821), "X" if using_controller else "E")
 	_text(Vector2(42, 873), "ITEM", 19, Color.WHITE)
@@ -126,16 +129,22 @@ func _draw() -> void:
 		_text(Vector2(50, 674), "SHIELD %.0fs" % ceilf(float(player.shield)), 21, Color("91efff"))
 	# Speedometer sweep.
 	center = Vector2(1306, 798)
-	draw_circle(center, 104, Color(0.04, 0.035, 0.04, 0.64))
-	draw_arc(center, 105, PI * .88, PI * 2.12, 84, Color("3f352d"), 15, true)
-	draw_arc(center, 99, PI * .88, PI * 2.12, 84, Color("ffefcc"), 6, true)
+	draw_circle(center, 103, Color(0.045, 0.035, 0.029, 0.76))
+	draw_arc(center, 108, PI * .88, PI * 2.12, 110, Color("352a25"), 13, true)
+	draw_arc(center, 106, PI * .88, PI * 2.12, 110, Color("c9baa7"), 7, true)
+	draw_arc(center, 101, PI * .88, PI * 2.12, 110, Color("fff9e7"), 3, true)
 	var speed := float(player.speed) * 3.6
 	for seg in range(15):
 		var start := PI * .89 + float(seg) / 15.0 * PI * 1.21
 		var color := Color("5cd6f6") if seg < 9 else Color("ffdc58") if seg < 12 else Color("ff7851")
-		if speed / 205.0 < float(seg) / 15: color = color.darkened(.68)
-		draw_arc(center, 88, start, start + .21, 6, color, 12, true)
-	_center_race_text(Vector2(1306, 819), str(int(speed)), 62, Color.WHITE)
+		if speed / 205.0 < float(seg) / 15: color = color.darkened(.22)
+		draw_arc(center, 90, start, start + .215, 8, Color("15191c"), 16, true)
+		draw_arc(center, 90, start, start + .20, 8, color, 12, true)
+	for tick in range(31):
+		var angle := PI * .89 + float(tick) / 30.0 * PI * 1.21
+		var ray := Vector2(cos(angle), sin(angle))
+		draw_line(center + ray * 77, center + ray * (71 if tick % 5 == 0 else 74), Color(1, .97, .88, .55), 1.5, true)
+	_center_race_text(Vector2(1306, 820), str(int(speed)), 65, Color.WHITE, 5)
 	_center_race_text(Vector2(1306, 846), "km/h", 21, Color.WHITE)
 	# Refillable reserve and drift-charge indication.
 	_panel(Rect2(927, 818, 241, 47), Color(0.02, .03, .05, .9), 12, Color("ddd0b5"), 3)
@@ -164,7 +173,7 @@ func _draw() -> void:
 		_panel(Rect2(380, 837, 501, 41), Color(0.02, .03, .05, .62), 11)
 		var prompt := "RT  Gas   •   Stick  Steer   •   LB  Drift" if using_controller else "W / ↑  Gas    A D / ← →  Steer    Space  Drift"
 		_center_text(Vector2(630, 865), prompt, 18, Color("fff4d9"), 1)
-	_text(Vector2(290, 36), "MINECRAFT RACING" if str(sim.mode) == "minecraft" else "DOODLE RALLY", 22, Color("ffedb2"), 2)
+	_race_text(Vector2(290, 35), "MINECRAFT RACING" if str(sim.mode) == "minecraft" else "CAT RACERS", 22, Color("ffedb2"), 2)
 	_text(Vector2(40, 455), str(Data.COURSES[course]).to_upper(), 16, Color("fff0c8"), 2)
 
 func _map(point: Vector2) -> Vector2:
@@ -213,7 +222,7 @@ func _cat_icon(center: Vector2, radius: float, character: int, selected: bool = 
 		draw_rect(Rect2(center + Vector2(radius * .25, -radius * .25), Vector2(radius * .38, radius * .35)), eye)
 		draw_rect(Rect2(center + Vector2(-radius * .25, radius * .35), Vector2(radius * .5, radius * .25)), eye)
 		return
-	var fur: Color = [Color("26232b"), Color("99989d"), Color("fff2ed"), Color("eb993b"), Color("dec6a4"), Color("f99a36"), Color("82858c"), Color("2c2b35")][character]
+	var fur: Color = [Color("26232b"), Color("99989d"), Color("fff2ed"), Color("eb993b"), Color("dec6a4"), Color("f99a36"), Color("82858c"), Color("8f8f98")][character]
 	if selected: draw_circle(center, radius + 4, Color("ffda42"))
 	draw_circle(center, radius + 1, Color("171e25"))
 	draw_colored_polygon(PackedVector2Array([center + Vector2(-radius, 0), center + Vector2(-radius, -radius * 1.35), center + Vector2(-radius * .1, -radius * .55)]), fur)

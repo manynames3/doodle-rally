@@ -3,8 +3,8 @@ extends RefCounted
 const Data = preload("res://scripts/rally_data.gd")
 const LAPS := 3
 const ITEMS := ["fish", "yarn", "turbo", "bubble"]
-# Includes the measured animated wheel/lean envelope (1.584 m half-width).
-const KART_HALF_WIDTH := 1.60
+# Includes the enlarged kitten's measured animated lean envelope (1.673 m half-width).
+const KART_HALF_WIDTH := 1.70
 const KART_HALF_LENGTH := 2.02
 const CONTACT_SKIN := 0.06
 const CONTACT_ITERATIONS := 20
@@ -171,13 +171,16 @@ func _player_step(r: Dictionary, controls: Dictionary, dt: float) -> void:
 
 func _ai_step(r: Dictionary, i: int, dt: float) -> void:
 	var ch := int(r.character)
-	var base: float = float(Data.TOP_SPEED[ch]) * float([0.83, 0.94, 1.035][difficulty])
+	# The default is now Fast cats. Rivals keep a visible pace through corners
+	# instead of falling far behind while the player is on the straight.
+	var base: float = float(Data.TOP_SPEED[ch]) * float([0.89, 1.00, 1.10][difficulty])
 	var behind := float(racers[0].distance) - float(r.distance)
 	base *= 1.0 + clampf(behind / track_length, -0.10, 0.07)
 	base *= 0.98 + sin(race_time * 0.27 + i * 1.4) * 0.035
 	if float(r.turbo) > 0: base *= 1.35
 	if float(r.stun) > 0: base *= 0.36
-	r.speed = move_toward(float(r.speed), base, float(Data.ACCEL[ch]) * 0.86 * dt)
+	var ai_accel: float = float(Data.ACCEL[ch]) * float([0.92, 1.02, 1.12][difficulty])
+	r.speed = move_toward(float(r.speed), base, ai_accel * dt)
 	var target_lane := sin(float(r.distance) * 0.013 + i * 2.3) * (road_half - 3.3)
 	# Racers choose a collectable line when a box approaches.
 	if str(r.item).is_empty():
@@ -207,7 +210,7 @@ func _ai_step(r: Dictionary, i: int, dt: float) -> void:
 	var old_lane := float(r.lane)
 	# Steering needs forward motion. Full lateral speed from a standing grid
 	# would rotate AI cars sideways and create an immediate launch pileup.
-	var lateral_speed := minf(3.5, float(r.speed) * .30)
+	var lateral_speed := minf(3.5 + difficulty * 0.6, float(r.speed) * (0.30 + difficulty * 0.025))
 	r.lane = move_toward(old_lane, target_lane, dt * lateral_speed)
 	r.angle = atan2((float(r.lane) - old_lane) / dt, maxf(1, float(r.speed)))
 	r.steer = float(r.angle) * 2.0
@@ -215,7 +218,7 @@ func _ai_step(r: Dictionary, i: int, dt: float) -> void:
 	r.ai_item_time = float(r.ai_item_time) - dt
 	if float(r.ai_item_time) <= 0:
 		_use_item(i)
-		r.ai_item_time = 5.0 + i * 0.45
+		r.ai_item_time = (4.15 + i * 0.34) if difficulty == 2 else 5.0 + i * 0.45
 
 func _check_pickups(r: Dictionary, index: int, old_d: float) -> void:
 	for p in pickups:

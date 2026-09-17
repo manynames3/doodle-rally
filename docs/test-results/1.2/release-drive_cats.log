@@ -1,0 +1,7 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+OpenGL API 4.1 Metal - 90.5 - Compatibility - Using Device: Apple - Apple M1
+
+QA_DRIVE distance=509.812677356043 speed=38.0 fps=77.0
+QA_FRAME_TIMES samples=642 median_ms=15.1515151515152 p95_ms=18.3333333333333
+QA_SCREENSHOT <project-root>/screenshots/1.2/drive_cats.png result=0
+QA_STATE racing screen=drive mode=cats character=0

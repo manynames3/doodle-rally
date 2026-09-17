@@ -4,34 +4,98 @@ extends RefCounted
 static func cliff(variant: int = 0) -> ArrayMesh:
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
-	var sides: int = 12
-	var heights: Array[float] = [-0.5, -0.40, -0.30, -0.27, -0.10, -0.07, 0.14, 0.18, 0.32, 0.35, 0.5]
-	var radii: Array[float] = [0.45, 0.50, 0.50, 0.42, 0.42, 0.50, 0.50, 0.38, 0.38, 0.44, 0.35]
+	var sides: int = 20
+	var heights: Array[float] = [-0.5, -0.36, -0.23, -0.06, 0.12, 0.28, 0.40, 0.5]
 	var rings: Array[PackedVector3Array] = []
 	for ring in range(heights.size()):
 		var points := PackedVector3Array()
 		for i in range(sides):
-			var angle: float = TAU * i / sides + sin(ring * 1.6 + variant) * 0.10
-			var radius: float = radii[ring] * (1.0 + sin(i * 2.3 + variant * 1.7) * 0.14 + cos(i * 1.3 + ring * 0.8) * 0.07)
+			var angle: float = TAU * i / sides + sin(ring * 0.42 + variant) * 0.03
+			# Broad vertical fracture faces. Offset strata are local, never concentric shelves.
+			var contour: float = 0.43 + sin(i * 1.77 + variant * 2.1) * 0.047 + sin(i * 0.71) * 0.036
+			var fracture: float = sin(i * 2.9 + floori(ring / 2.0) * 2.7 + variant) * 0.032
+			var radius: float = contour + fracture - maxf(0.0, heights[ring] - 0.20) * (0.30 + sin(i * 0.8) * 0.14)
 			var y: float = heights[ring]
-			if ring > 0 and ring < heights.size() - 1:
-				y += sin(i * 1.5 + ring + variant) * 0.012
+			if ring > 0:
+				y += sin(i * 1.42 + variant) * 0.038 + sin(i * 2.9 + ring) * 0.016
 			points.append(Vector3(cos(angle) * radius, y, sin(angle) * radius))
 		rings.append(points)
 	for ring in range(rings.size() - 1):
 		for i in range(sides):
 			var j: int = (i + 1) % sides
-			var shade: float = 0.86 + (sin(i * 2.7 + ring * 1.3 + variant) + 1) * 0.07
+			var shade: float = 0.83 + (sin(i * 2.7 + ring * 1.3 + variant) + 1) * 0.08
 			var tint := Color(shade * 1.01, shade, shade * 0.98)
 			for vertex in [rings[ring][i], rings[ring][j], rings[ring + 1][i], rings[ring + 1][i], rings[ring][j], rings[ring + 1][j]]:
-				st.set_color(tint)
+				var moss_amount: float = smoothstep(0.29, 0.49, vertex.y) * 0.75
+				st.set_color(tint.lerp(Color(0.48, 0.67, 0.33), moss_amount))
 				st.set_uv(Vector2(atan2(vertex.z, vertex.x) / TAU + 0.5, vertex.y + 0.5))
 				st.add_vertex(vertex)
 	for i in range(sides):
 		for vertex in [Vector3(0, 0.5, 0), rings.back()[i], rings.back()[(i + 1) % sides]]:
-			st.set_color(Color.WHITE)
+			st.set_color(Color(0.58, 0.70, 0.41))
 			st.set_uv(Vector2(vertex.x + 0.5, vertex.z + 0.5))
 			st.add_vertex(vertex)
+	st.generate_normals()
+	return st.commit()
+
+
+static func boulder(variant: int = 0) -> ArrayMesh:
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var sides: int = 16
+	var rings: Array[PackedVector3Array] = []
+	for ring in range(9):
+		var v: float = ring / 8.0
+		var y: float = cos(v * PI) * 0.5
+		var points := PackedVector3Array()
+		for i in range(sides):
+			var a: float = i / float(sides) * TAU
+			var r: float = sin(v * PI) * (0.43 + sin(i * 1.71 + variant * 1.13) * 0.040 + sin(ring * 1.79 + i) * 0.034)
+			points.append(Vector3(cos(a) * r, y * (0.96 + sin(i + variant) * 0.08), sin(a) * r))
+		rings.append(points)
+	for ring in range(8):
+		for i in range(sides):
+			var j: int = (i + 1) % sides
+			for v in [rings[ring][i], rings[ring + 1][i], rings[ring][j], rings[ring][j], rings[ring + 1][i], rings[ring + 1][j]]:
+				st.set_color(Color.WHITE)
+				st.set_uv(Vector2(atan2(v.z, v.x) / TAU + 0.5, v.y + 0.5))
+				st.add_vertex(v)
+	st.generate_normals()
+	return st.commit()
+
+
+static func pine_bough() -> ArrayMesh:
+	# A cupped, tapered branch gives the needles depth and catches grazing sunlight.
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	for row in range(4):
+		for col in range(2):
+			for corner in [Vector2(0, 0), Vector2(0, 1), Vector2(1, 0), Vector2(1, 0), Vector2(0, 1), Vector2(1, 1)]:
+				var u: float = (col + corner.x) / 2.0
+				var v: float = (row + corner.y) / 4.0
+				var x: float = u - 0.5
+				var z: float = v - 0.5
+				var y: float = 0.20 * pow(absf(x) * 2.0, 1.5) - 0.10 * cos(v * PI) + 0.08 * sin(v * PI)
+				st.set_uv(Vector2(u, v))
+				st.add_vertex(Vector3(x, y, z))
+	st.generate_normals()
+	return st.commit()
+
+
+static func needle_cluster() -> ArrayMesh:
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	for i in range(18):
+		var a: float = i * 2.399
+		var t: float = (i % 13) / 12.0
+		var start := Vector3(0, t * 0.60 - 0.3, 0)
+		var r: float = sin(t * PI) * 0.20 + 0.06
+		var end: Vector3 = start + Vector3(cos(a) * r, 0.18 + t * 0.12, sin(a) * r)
+		var side := Vector3(-sin(a), 0, cos(a)) * 0.032
+		var light: float = 0.68 + t * 0.32
+		for v in [start - side, end, start + side, start + side, end, start - side]:
+			st.set_color(Color(light, light, light))
+			st.add_vertex(v)
 	st.generate_normals()
 	return st.commit()
 
@@ -161,5 +225,45 @@ static func cat_ear() -> ArrayMesh:
 		var j: int = (i + 1) % 3
 		for vertex in [front[i], back[i], front[j], front[j], back[i], back[j]]:
 			st.add_vertex(vertex)
+	st.generate_normals()
+	return st.commit()
+
+
+static func tunnel_portal() -> ArrayMesh:
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	# Individual wedge-shaped limestone blocks, bevelled at the visible perimeter.
+	for i in range(23):
+		var a0: float = PI * i / 23.0 + 0.008
+		var a1: float = PI * (i + 1) / 23.0 - 0.008
+		var points: Array[Vector3] = []
+		for z in [10.0, 13.0, 15.0]:
+			var bevel: float = 0.25 if z == 15.0 else 0.0
+			for ar in [Vector2(a0, 12.6 + bevel), Vector2(a1, 12.6 + bevel), Vector2(a1, 17.6 - bevel), Vector2(a0, 17.6 - bevel)]:
+				points.append(Vector3(cos(ar.x) * ar.y, 4.1 + sin(ar.x) * ar.y, z))
+		var shade: float = 0.88 + sin(i * 2.71) * 0.09
+		for face in [[8, 9, 10, 11], [0, 4, 7, 3], [1, 2, 6, 5], [0, 1, 5, 4], [3, 7, 6, 2], [4, 8, 11, 7], [5, 6, 10, 9], [4, 5, 9, 8], [7, 11, 10, 6]]:
+			for corner in [face[0], face[1], face[2], face[0], face[2], face[3]]:
+				var p: Vector3 = points[corner]
+				st.set_color(Color(shade, shade, shade))
+				st.set_uv(Vector2(p.x * 0.09, p.y * 0.09))
+				st.add_vertex(p)
+	st.generate_normals()
+	return st.commit()
+
+
+static func cascade(width: float, height: float, seed_value: float) -> ArrayMesh:
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	for row in range(40):
+		for col in range(8):
+			for corner in [Vector2(0, 0), Vector2(1, 0), Vector2(0, 1), Vector2(1, 0), Vector2(1, 1), Vector2(0, 1)]:
+				var u: float = (col + corner.x) / 8.0
+				var v: float = (row + corner.y) / 40.0
+				var spread: float = 0.62 + v * 0.36 + sin(v * 10.0 + seed_value) * 0.055
+				var x: float = (u - 0.5) * width * spread + sin(v * 12.0 + seed_value) * width * 0.035
+				var z: float = sin(v * PI * 0.8) * height * 0.035 + pow(v, 5.0) * width * 0.55 + sin(u * 11.0 + v * 20.0 + seed_value) * 0.12
+				st.set_uv(Vector2(u, v))
+				st.add_vertex(Vector3(x, -height * v, z))
 	st.generate_normals()
 	return st.commit()

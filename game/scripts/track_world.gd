@@ -121,9 +121,11 @@ func _lighting() -> void:
 		sky_material.ground_bottom_color = Color("06071c")
 		sky_material.ground_horizon_color = Color("2a1b52")
 		env.ambient_light_color = Color("839dff")
-		env.ambient_light_energy = 0.42
+		# The neon course needs enough fill to keep the racers and props readable.
+		# Its previous low value made the whole scene collapse into a flat navy card.
+		env.ambient_light_energy = 0.62
 		env.fog_light_color = Color("1a123b")
-		env.fog_density = 0.0019
+		env.fog_density = 0.00018
 	else:
 		sky_material.sky_top_color = Color("1758a5")
 		sky_material.sky_horizon_color = Color("a9cfdf")
@@ -133,33 +135,94 @@ func _lighting() -> void:
 		env.ambient_light_color = Color("a1bdd5")
 		env.ambient_light_energy = 0.38
 		env.fog_light_color = Color("9db9ce")
-		env.fog_density = 0.00065
+		env.fog_density = 0.00012
 	sky.sky_material = sky_material
 	if _course != 2:
 		var day_shader := Shader.new()
 		day_shader.code = """shader_type sky;
-float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
-float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);}
-float fbm(vec2 p){return noise(p)*0.57+noise(p*2.03+7.0)*0.29+noise(p*4.07+15.0)*0.14;}
-void sky(){float y=max(EYEDIR.y,0.0);vec3 horizon=vec3(0.68,0.82,0.91),zenith=vec3(0.10,0.41,0.78);COLOR=mix(horizon,zenith,pow(y,0.42));if(y>0.025){vec2 uv=EYEDIR.xz/(y+0.22)*2.2;float n=fbm(uv);float cloud=smoothstep(0.58,0.76,n)*smoothstep(0.025,0.15,y);vec3 cloud_color=mix(vec3(0.74,0.80,0.84),vec3(1.0,0.98,0.93),smoothstep(0.55,0.85,fbm(uv+vec2(0.1,0.17))));COLOR=mix(COLOR,cloud_color,cloud);}if(EYEDIR.y<0.0){COLOR=mix(horizon,vec3(0.11,0.15,0.12),clamp(-EYEDIR.y*3.0,0.0,1.0));}}
+uniform sampler2D cloud_noise : filter_linear_mipmap, repeat_enable;
+float fbm(vec2 p){return texture(cloud_noise,p*0.095).r;}
+void sky(){
+float y=max(EYEDIR.y,0.0);
+vec3 horizon=vec3(0.59,0.76,0.89),zenith=vec3(0.045,0.31,0.68);
+COLOR=mix(horizon,zenith,pow(y,0.34));
+if(y>0.025){
+vec2 uv=EYEDIR.xz/(y+0.30)*2.2;
+float n=fbm(uv);
+float cloud=smoothstep(0.48,0.72,n)*smoothstep(0.025,0.14,y);
+float sunlight=clamp((n-fbm(uv+vec2(0.16,0.22)))*1.1+0.45,0.0,1.0);
+vec3 cloud_color=mix(vec3(0.52,0.65,0.77),vec3(0.89,0.91,0.88),sunlight*0.82);
+COLOR=mix(COLOR,cloud_color,cloud);
+}
+if(EYEDIR.y<0.0){COLOR=mix(horizon,vec3(0.10,0.14,0.11),clamp(-EYEDIR.y*3.0,0.0,1.0));}
+COLOR=pow(COLOR,vec3(2.0))*1.15;
+}
 """
 		var day_material := ShaderMaterial.new()
 		day_material.shader = day_shader
+		var cloud_noise := FastNoiseLite.new()
+		cloud_noise.seed = 5917
+		cloud_noise.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
+		cloud_noise.fractal_type = FastNoiseLite.FRACTAL_FBM
+		cloud_noise.frequency = 0.005
+		cloud_noise.fractal_octaves = 3
+		cloud_noise.fractal_lacunarity = 2.0
+		cloud_noise.fractal_gain = 0.42
+		cloud_noise.domain_warp_enabled = false
+		var cloud_texture := NoiseTexture2D.new()
+		cloud_texture.width = 1024
+		cloud_texture.height = 1024
+		cloud_texture.seamless = true
+		cloud_texture.noise = cloud_noise
+		day_material.set_shader_parameter("cloud_noise", cloud_texture)
 		sky.sky_material = day_material
+	# A full panorama keeps the forward vista rich as the chase camera rounds
+	# the loop. It replaces the old flat procedural sky on the two stylized
+	# circuits while the quarry keeps its natural sky and haze.
+	var panorama_path: String = "res://assets/world/desktop_dojo_backdrop_panorama2.jpg" if _course == 0 else "res://assets/world/glitch_core_backdrop_panorama2.jpg"
+	if _course != 1 and ResourceLoader.exists(panorama_path):
+		var panorama := PanoramaSkyMaterial.new()
+		panorama.panorama = load(panorama_path) as Texture2D
+		panorama.energy_multiplier = 0.82 if _course == 0 else 0.68
+		panorama.filter = true
+		sky.sky_material = panorama
 	env.background_mode = Environment.BG_SKY
 	env.sky = sky
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	env.ambient_light_sky_contribution = 0.0
-	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
-	env.tonemap_exposure = 0.9
+	env.ambient_light_sky_contribution = 0.24 if _course != 2 else 0.30
+	env.tonemap_mode = Environment.TONE_MAPPER_ACES
+	env.tonemap_exposure = 0.95
+	env.reflected_light_source = Environment.REFLECTION_SOURCE_SKY
+	if RenderingServer.get_current_rendering_method() == "forward_plus":
+		env.ssao_enabled = true
+		env.ssao_radius = 3.0
+		env.ssao_intensity = 1.9
+		env.ssao_power = 1.5
+		env.ssao_light_affect = 0.30
+		env.ssil_enabled = false
+		env.ssil_radius = 6.0
+		env.ssil_intensity = 0.35
+		if _course == 1:
+			env.volumetric_fog_enabled = false
+			env.volumetric_fog_density = 0.0012
+			env.volumetric_fog_albedo = Color("aebecd")
+			env.volumetric_fog_length = 240.0
+			env.volumetric_fog_anisotropy = 0.55
+			env.volumetric_fog_ambient_inject = 0.08
+			env.volumetric_fog_sky_affect = 0.0
+	env.glow_enabled = true
+	env.glow_intensity = 0.52 if _course == 2 else 0.25
+	env.glow_hdr_threshold = 1.5
 	env.fog_enabled = true
 	env.fog_sky_affect = 0.06
 	environment.environment = env
 	add_child(environment)
 	var sun := DirectionalLight3D.new()
 	sun.rotation_degrees = Vector3(-41.0, -34.0, 0.0)
-	sun.light_color = Color("e3dcff") if _course == 2 else Color("fff0c7")
-	sun.light_energy = 0.4 if _course == 2 else 0.60
+	sun.light_color = Color("e3dcff") if _course == 2 else Color("ffe4b3")
+	sun.light_energy = 0.72 if _course == 2 else 1.12
+	sun.light_angular_distance = 1.2
+	sun.shadow_blur = 1.2
 	sun.shadow_enabled = true
 	sun.directional_shadow_max_distance = 170.0
 	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS
@@ -168,8 +231,31 @@ void sky(){float y=max(EYEDIR.y,0.0);vec3 horizon=vec3(0.68,0.82,0.91),zenith=ve
 	var fill := DirectionalLight3D.new()
 	fill.rotation_degrees = Vector3(-35.0, 145.0, 0.0)
 	fill.light_color = Color("73baff")
-	fill.light_energy = 0.14
+	fill.light_energy = 0.20 if _course == 2 else 0.16
 	add_child(fill)
+	# Local pools of colored light give the two stylized courses the same layered
+	# depth as the supplied postcard renderings. Shadows stay on the sun only so
+	# these lights are inexpensive and never create translucent moving halos.
+	if _course == 0:
+		for i in range(4):
+			var desk_light := OmniLight3D.new()
+			desk_light.name = "DeskWarmLight%d" % i
+			desk_light.position = sample(length * (0.08 + i * 0.23)) + Vector3(0, 24, 0)
+			desk_light.light_color = Color("ffd29a") if i % 2 == 0 else Color("9bdde7")
+			desk_light.light_energy = 3.2
+			desk_light.omni_range = 120.0
+			desk_light.shadow_enabled = false
+			add_child(desk_light)
+	elif _course == 2:
+		for i in range(6):
+			var neon_light := OmniLight3D.new()
+			neon_light.name = "NeonPoolLight%d" % i
+			neon_light.position = sample(length * (0.06 + i * 0.16)) + Vector3(0, 18 + (i % 2) * 12, 0)
+			neon_light.light_color = Color("45eaff") if i % 2 == 0 else Color("ff55d8")
+			neon_light.light_energy = 4.5
+			neon_light.omni_range = 145.0
+			neon_light.shadow_enabled = false
+			add_child(neon_light)
 
 
 func _make_road() -> void:
@@ -180,12 +266,18 @@ func _make_road() -> void:
 		if _mode != "minecraft":
 			dirt = _texture_mat("dirt_physical", "res://assets/world/ground.png", Color("bdbdb6"))
 			dirt.uv1_scale = Vector3(3.0, 3.0, 1.0)
+			_add_surface_bump(dirt, 0.045, 2.2, 0.48)
 		edge = _mat("edge", Color("795c39"))
 	elif _course == 0:
-		dirt = _noise_mat("paper", Color("ddd5b8"), Color("f7ebce"), 0.08)
+		dirt = _noise_mat("paper", Color("cfc6ad"), Color("f8efd8"), 0.08)
+		dirt.roughness = 0.92
+		_add_surface_bump(dirt, 0.12, 1.1, 0.18)
 		edge = _mat("edge", Color("a9815a"))
 	else:
-		dirt = _mat("road", Color("222b49"), 0.45, 0.25)
+		dirt = _noise_mat("road", Color("111832"), Color("27345a"), 0.045)
+		dirt.roughness = 0.38
+		dirt.metallic = 0.34
+		_add_surface_bump(dirt, 0.15, 1.3, 0.22)
 		edge = _mat("edge", Color("07111f"), 0.5, 0.3)
 	_ribbon(-road_width * 0.5, road_width * 0.5, 0.0, dirt)
 	_ribbon(-road_width * 0.5 - 1.1, -road_width * 0.5, -0.09, edge)
@@ -228,24 +320,25 @@ func _ribbon(left: float, right: float, y_offset: float, mat: StandardMaterial3D
 			st.add_vertex(vertex[0])
 	st.generate_normals()
 	var road := MeshInstance3D.new()
+	road.name = "RacingSurface_%s" % str(left).replace(".", "_")
 	road.mesh = st.commit()
 	road.material_override = mat
 	add_child(road)
 
 
 func _quarry() -> void:
-	var water := _mat("water", Color("1d7c91"), 0.22, 0.35)
-	_stamp("box", Vector3(0, -20, 0), Vector3(1900, 2, 1900), water)
+	_lake()
 	var rock_colors: Array[Color] = [Color("a69b85"), Color("928f7d"), Color("b5a690"), Color("b4ac96"), Color("848675")]
 	var rock_mats: Array[StandardMaterial3D] = []
 	for i in range(rock_colors.size()):
 		var rock_material: StandardMaterial3D = _noise_mat("rock%d" % i, rock_colors[i].darkened(0.08), rock_colors[i].lightened(0.11), 0.07)
 		if _mode != "minecraft":
-			rock_material = _texture_mat("stone_physical%d" % i, "res://assets/world/rock.png", Color(0.78 + i * 0.035, 0.79 + i * 0.035, 0.75 + i * 0.035))
+			rock_material = _texture_mat("stone_physical%d" % i, "res://assets/art/alpine_limestone.png", Color(0.78 + i * 0.035, 0.79 + i * 0.035, 0.75 + i * 0.035))
 			rock_material.uv1_triplanar = true
 			rock_material.uv1_world_triplanar = true
-			rock_material.uv1_scale = Vector3.ONE * 0.07
+			rock_material.uv1_scale = Vector3.ONE * 0.035
 			rock_material.uv1_triplanar_sharpness = 4.0
+			_add_surface_bump(rock_material, 0.038, 4.0, 0.65)
 		rock_mats.append(rock_material)
 	var grass := _mat("grass", Color("486b33"))
 	var grass_light := _mat("grass_light", Color("66833b"))
@@ -279,7 +372,12 @@ func _quarry() -> void:
 			if bridge:
 				_beam(p0 + Vector3.UP * 3.5, p1 + Vector3.UP * 3.5, 0.12, rope)
 			elif i % 2 == 0:
-				_tree(sample(d + 4, float(side) * _rng.randf_range(23, 32)) - Vector3.UP, _rng.randf_range(0.50, 0.89))
+				var tree_base: Vector3 = sample(d + 4, float(side) * _rng.randf_range(23, 28)) - Vector3.UP * 0.2
+				_stamp("rock", tree_base - Vector3.UP * (tree_base.y + 18) * 0.5, Vector3(27, tree_base.y + 18, 31), rock_mats[i % 5], frame(d))
+				_stamp("rock", tree_base - Vector3.UP * 0.6, Vector3(22, 3.2, 24), grass, frame(d))
+				_tree(tree_base, _rng.randf_range(0.82, 1.19))
+				if i % 4 == 0:
+					_tree(tree_base + frame(d).x * float(side) * 7 + frame(d).z * 4, _rng.randf_range(0.60, 0.89))
 				if i % 4 == 0:
 					_flowers(sample(d + 5, float(side) * 12.8), 7)
 					var shrub: Vector3 = sample(d + 8, float(side) * 15.8)
@@ -319,7 +417,7 @@ func _quarry() -> void:
 		var p := Vector3(cos(angle) * 790, 190, sin(angle) * 790)
 		var h: float = _rng.randf_range(220, 390)
 		p.y = h * 0.5 - 30.0
-		var mountain_mat: StandardMaterial3D = _texture_mat("distant_crags", "res://assets/world/rock.png", Color("536e81"))
+		var mountain_mat: StandardMaterial3D = _texture_mat("distant_crags", "res://assets/art/alpine_limestone.png", Color("536e81"))
 		mountain_mat.uv1_triplanar = true
 		mountain_mat.uv1_world_triplanar = true
 		mountain_mat.uv1_scale = Vector3.ONE * 0.018
@@ -385,6 +483,7 @@ func _tree(p: Vector3, scale_factor: float = 1.0) -> void:
 
 
 func _real_pine(p: Vector3, s: float) -> void:
+	var close_detail: bool = _distance_to_road(p) < 55.0
 	var bark: StandardMaterial3D = _texture_mat("tree_bark", "res://assets/world/wood.png", Color("6e665a"))
 	var needles: StandardMaterial3D = _texture_mat("pine_needles", "res://assets/world/pine.png", Color("b9c7b1"))
 	needles.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR
@@ -394,19 +493,27 @@ func _real_pine(p: Vector3, s: float) -> void:
 	needles.emission_enabled = true
 	needles.emission_texture = needles.albedo_texture
 	needles.emission = Color("819874")
-	needles.emission_energy_multiplier = 0.16
+	needles.emission_energy_multiplier = 0.055
+	var needle_volume: StandardMaterial3D = _mat("pine_volume", Color("548142"))
+	needle_volume.vertex_color_use_as_albedo = true
+	needle_volume.cull_mode = BaseMaterial3D.CULL_DISABLED
 	_stamp("cylinder", p + Vector3.UP * 7.0 * s, Vector3(0.65, 14, 0.65) * s, bark)
-	for level in range(9):
-		var height: float = 3.5 + level * 1.45
-		var radius: float = 4.6 * pow(1.0 - level / 10.0, 0.85)
-		var branches: int = 5 if level < 6 else 4
+	var levels: int = 11 if close_detail else 7
+	for level in range(levels):
+		var height: float = 2.5 + level * (1.22 if close_detail else 1.96)
+		var radius: float = 4.8 * pow(1.0 - level / float(levels + 1), 0.95)
+		var branches: int = (5 if level < 6 else 4) if close_detail else 4
 		for i in range(branches):
 			var angle: float = TAU * i / branches + level * 0.83 + p.x * 0.2
 			var outward := Vector3(cos(angle), 0, sin(angle))
 			var center: Vector3 = p + (Vector3.UP * height + outward * radius * 0.48) * s
-			var basis: Basis = Basis.looking_at(outward + Vector3.UP * (0.10 if level % 2 == 0 else -0.04), Vector3.UP)
-			_stamp("branch_card", center, Vector3(radius * 1.3, 1, radius * 1.8) * s, needles, basis)
-			_stamp("branch_card", center + Vector3.UP * 0.18 * s, Vector3(radius * 0.93, 1, radius * 1.7) * s, needles, basis * Basis.from_euler(Vector3(0, 0, 0.55)))
+			var basis: Basis = Basis.looking_at(outward + Vector3.UP * (0.17 if level % 2 == 0 else -0.08), Vector3.UP)
+			_stamp("branch_card", center, Vector3(radius * 1.25, radius * 1.1, radius * 1.8) * s, needles, basis)
+			if close_detail:
+				_stamp("branch_card", center + Vector3.UP * 0.18 * s, Vector3(radius * 0.95, radius * 0.95, radius * 1.7) * s, needles, basis * Basis.from_euler(Vector3(0, 0, 0.88)))
+			for cluster in range(3 if close_detail and level < 8 else 0):
+				var at: Vector3 = p + (Vector3.UP * (height + 0.22) + outward * radius * (0.25 + cluster * 0.28)) * s
+				_stamp("needle_cluster", at, Vector3(1.4, 1.25, 1.4) * s * maxf(0.4, radius * 0.4), needle_volume, basis * Basis.from_euler(Vector3(-0.7, 0, 0)))
 			if level < 5:
 				_beam(p + Vector3.UP * height * s, p + (Vector3.UP * (height - 0.10) + outward * radius * 0.8) * s, 0.065 * s, bark)
 	# Compact shadow proxy avoids drawing every alpha-tested needle into shadows.
@@ -419,37 +526,75 @@ func _flowers(p: Vector3, count: int) -> void:
 	var pink := _mat("flower_pink", Color("f7a8a1"))
 	for i in range(count):
 		var at: Vector3 = p + Vector3(_rng.randf_range(-3, 3), 0.35, _rng.randf_range(-3, 3))
-		_stamp("sphere", at, Vector3(0.6, 0.35, 0.6), yellow if i % 2 == 0 else pink)
-		_stamp("box", at - Vector3.UP * 0.2, Vector3(0.07, 0.7, 0.07), _mat("stems", Color("486c35")))
+		for petal in range(5):
+			var a: float = petal / 5.0 * TAU
+			_stamp("sphere", at + Vector3(cos(a) * 0.2, 0.03, sin(a) * 0.2), Vector3(0.31, 0.10, 0.31), yellow if i % 2 == 0 else pink)
+		_stamp("sphere", at + Vector3.UP * 0.08, Vector3(0.19, 0.13, 0.19), _mat("pollen", Color("bb7838")))
+		_stamp("box", at - Vector3.UP * 0.2, Vector3(0.045, 0.7, 0.045), _mat("stems", Color("486c35")))
+		_stamp("sphere", at - Vector3.UP * 0.16 + Vector3.RIGHT * 0.16, Vector3(0.4, 0.07, 0.14), _mat("leaf", Color("567937")), Basis.from_euler(Vector3(0, 0, 0.4)))
+
+
+func _lake() -> void:
+	if _mode == "minecraft":
+		_stamp("box", Vector3(0, -20, 0), Vector3(1900, 2, 1900), _mat("water", Color("267ead"), 0.22, 0.15))
+		return
+	var shader := Shader.new()
+	shader.code = """shader_type spatial;
+uniform float flow_time=0.0;
+varying vec3 world_pos;
+void vertex(){world_pos=(MODEL_MATRIX*vec4(VERTEX,1.0)).xyz;}
+void fragment(){vec2 p=world_pos.xz;float a=sin(p.x*0.54+p.y*0.32+flow_time*0.9);float b=sin(p.x*-0.36+p.y*0.66+flow_time*1.3);float c=sin(p.x*1.23+p.y*0.47+flow_time*1.7);NORMAL_MAP=normalize(vec3(a*0.18+c*0.035,b*0.18,1.0))*0.5+0.5;ALBEDO=vec3(0.025,0.15,0.19)*(0.93+(a+b)*0.035);METALLIC=0.3;ROUGHNESS=0.17;SPECULAR=0.7;}
+"""
+	var mat := ShaderMaterial.new()
+	mat.shader = shader
+	_animated_materials.append(mat)
+	var lake := MeshInstance3D.new()
+	var plane := PlaneMesh.new()
+	plane.size = Vector2(1900, 1900)
+	lake.mesh = plane
+	lake.material_override = mat
+	lake.position.y = -19.0
+	lake.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(lake)
 
 
 func _waterfall(top: Vector3, height: float, width: float, basis: Basis) -> void:
 	var shader := Shader.new()
 	shader.code = """shader_type spatial;
-render_mode cull_disabled;
+render_mode cull_disabled, diffuse_burley;
 uniform float flow_time=0.0;
 uniform float strand=0.0;
-void vertex(){VERTEX.x+=sin(UV.y*13.0-flow_time*1.4+strand)*0.20;VERTEX.z+=sin(UV.y*17.0-flow_time*2.0+strand)*0.09;}
-void fragment(){float ribbons=sin(UV.x*17.0+sin(UV.y*10.0-flow_time*3.0+strand))*0.5+0.5;float rip=sin(UV.y*45.0-flow_time*8.0+strand)*0.045;ALBEDO=mix(vec3(0.50,0.66,0.73),vec3(0.90,0.94,0.95),ribbons)+rip;ALPHA=smoothstep(0.0,0.19,min(UV.x,1.0-UV.x))*(0.53+ribbons*0.24);ROUGHNESS=0.28;}
+float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);}
+float fbm(vec2 p){return noise(p)*0.56+noise(p*2.03+4.0)*0.29+noise(p*4.01)*0.15;}
+void vertex(){VERTEX.x+=sin(UV.y*18.0-flow_time*1.4+strand)*0.11;}
+void fragment(){
+vec2 uv=vec2(UV.x*6.0+strand,UV.y*15.0-flow_time*2.2);
+float turbulent=fbm(uv);
+float water=fbm(vec2(UV.x*18.0+strand,UV.y*5.0-flow_time*1.2));
+float froth=smoothstep(0.43,0.72,turbulent+UV.y*0.12);
+vec3 wet=vec3(0.20,0.39,0.46),foam=vec3(0.89,0.94,0.93);
+ALBEDO=pow(mix(wet,foam,froth),vec3(2.0));
+float edge=smoothstep(0.0,0.20,min(UV.x,1.0-UV.x)+turbulent*0.14-0.055);
+ALPHA=edge*(0.28+froth*0.57)*smoothstep(0.22,0.39,water);
+ROUGHNESS=mix(0.12,0.62,froth);
+NORMAL=normalize(NORMAL+vec3(dFdx(turbulent)*0.4,dFdy(turbulent)*0.4,0.0));
+}
 """
-	for band in range(5):
+	for band in range(3):
 		var mat := ShaderMaterial.new()
 		mat.shader = shader
 		mat.set_shader_parameter("strand", band * 1.73)
 		_animated_materials.append(mat)
 		var waterfall := MeshInstance3D.new()
-		var mesh := PlaneMesh.new()
-		mesh.size = Vector2(width * (0.24 + 0.035 * sin(band * 1.7)), height)
-		mesh.orientation = PlaneMesh.FACE_Z
-		mesh.subdivide_depth = 18
-		mesh.subdivide_width = 3
+		var mesh: ArrayMesh = load("res://scripts/world_meshes.gd").cascade(width * 0.52, height, band * 1.73)
 		waterfall.mesh = mesh
 		waterfall.material_override = mat
-		waterfall.transform = Transform3D(basis, top + basis.x * (band - 2) * width * 0.18 + basis.z * (2.0 + band * 0.06) - Vector3.UP * height * 0.5)
+		waterfall.transform = Transform3D(basis, top + basis.x * (band - 1) * width * 0.24 + basis.z * (2.0 + band * 0.16))
 		waterfall.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		add_child(waterfall)
 		_waterfalls.append(waterfall)
-	var foam := _mat("foam", Color("e0f8ed"), 0.6)
+	var foam := _mat("foam", Color("bfd3ce"), 0.6)
 	for i in range(8):
 		var at: Vector3 = top + basis.x * _rng.randf_range(-width * 0.55, width * 0.55) - Vector3.UP * height
 		_stamp("sphere", at + Vector3.UP * _rng.randf_range(0, 1.6), Vector3(_rng.randf_range(2.5, 5), 1.3, _rng.randf_range(2.5, 5)), foam)
@@ -458,51 +603,98 @@ void fragment(){float ribbons=sin(UV.x*17.0+sin(UV.y*10.0-flow_time*3.0+strand))
 func _cat_tunnel(distance: float, rocks: Array[StandardMaterial3D], wood: StandardMaterial3D) -> void:
 	var center: Vector3 = sample(distance)
 	var basis: Basis = frame(distance)
-	# The entrance is carved into a grassy rock spur, rather than a free-standing hoop.
+	var moss: StandardMaterial3D = _noise_mat("moss_cap", Color("36522b"), Color("698740"), 0.045)
+	# Tall asymmetrical cliff faces frame a carved entrance; the route stays clear.
+	for mass in [Vector4(-33, 7, -5, 1.0), Vector4(38, 18, -20, 1.25), Vector4(-57, 13, -28, 1.35)]:
+		var at: Vector3 = center + basis * Vector3(mass.x, mass.y, mass.z)
+		_stamp("rock", at, Vector3(44, 57, 42) * mass.w, rocks[1], basis * Basis.from_euler(Vector3(0, mass.x * 0.03, 0.03)))
+		var top: Vector3 = at + Vector3.UP * 26.0 * mass.w
+		_stamp("rock", top, Vector3(28, 3, 26) * mass.w, moss, basis)
+		for t in range(7):
+			_tree(top + basis * Vector3(sin(t * 2.4) * 11, 0.9, cos(t * 2.4) * 9), 0.7 + (t % 3) * 0.12)
+	# A natural broad cap joins the two faces above the tunnel, above the clearance envelope.
+	_stamp("rock", center + basis * Vector3(-3, 27, -13), Vector3(53, 28, 46), rocks[2], basis)
+	_stamp("rock", center + basis * Vector3(2, 40, -13), Vector3(30, 3.1, 31), moss, basis)
+	for t in range(5):
+		_tree(center + basis * Vector3(-10 + t * 5, 41, -15 + sin(t) * 5), 0.7 + t * 0.05)
 	for side in [-1.0, 1.0]:
-		_stamp("rock", center + basis * Vector3(float(side) * 28, 5, 8), Vector3(30, 22, 30), rocks[1], basis)
-		_stamp("rock", center + basis * Vector3(float(side) * 31, 20, 0), Vector3(32, 25, 34), rocks[2], basis * Basis.from_euler(Vector3(0, float(side) * 0.25, 0)))
-		_stamp("rock", center + basis * Vector3(float(side) * 28, 32, -7), Vector3(28, 19, 32), rocks[3], basis)
-		_stamp("rock", center + basis * Vector3(float(side) * 47, 10, -10), Vector3(36, 45, 42), rocks[2], basis)
-		for ledge in range(4):
-			var at: Vector3 = center + basis * Vector3(float(side) * (20 + ledge * 3), 11 + ledge * 7, 11)
-			_stamp("rock", at, Vector3(13, 4.5, 9), rocks[2], basis)
-			_stamp("grass", at + Vector3.UP * 2.2, Vector3(8, 1.5, 4), _mat("meadow_blades", Color("3e6330")), basis)
-	_stamp("rock", center + basis * Vector3(0, 31, -10), Vector3(35, 19, 27), rocks[2], basis)
-	for side in [-1.0, 1.0]:
-		_stamp("rock", center + basis * Vector3(float(side) * 15, 34, -11), Vector3(26, 23, 30), rocks[2], basis)
-		_stamp("rock", center + basis * Vector3(float(side) * 22, 43, -8), Vector3(17, 13, 19), rocks[2], basis)
-		_tree(center + basis * Vector3(float(side) * 22, 47, -8), 0.66)
-		_tree(center + basis * Vector3(float(side) * 39, 28, -6), 0.54)
-	_tree(center + basis * Vector3(0, 39.0, -10), 0.67)
-	_waterfall(center + basis * Vector3(49, 32, 13), center.y + 52.0, 10, basis)
-	for z in [-13.0, -7.0, -1.0, 5.0, 11.0]:
-		for i in range(17):
-			var angle: float = float(i) / 16.0 * PI
-			var pos := Vector3(cos(angle) * 13.3, 4.5 + sin(angle) * 13.3, float(z))
-			_stamp("box", center + basis * pos, Vector3(3.2, 5.4, 6.3), rocks[2] if i % 5 != 0 else rocks[3], basis * Basis.from_euler(Vector3(0, 0, angle - PI * 0.5)))
+		for j in range(4):
+			var at: Vector3 = center + basis * Vector3(float(side) * (22 + j * 5), j * 8 + 1, 10 - j * 4)
+			_stamp("rock", at, Vector3(14 + j * 2, 11, 16), rocks[(j + 1) % 5], basis * Basis.from_euler(Vector3(0, j * 0.41, float(side) * 0.12)))
+			_stamp("rock", at + Vector3.UP * 4.9, Vector3(8, 1.0, 9), moss, basis)
+			_flowers(at + Vector3.UP * 5.5, 5)
+	# The thickness of the arched vault extends through the rocky spur.
+	for z in [-13.0, -7.0, -1.0, 5.0]:
+		for i in range(23):
+			var angle: float = float(i) / 22.0 * PI
+			var pos := Vector3(cos(angle) * 14.2, 4.1 + sin(angle) * 14.2, float(z))
+			_stamp("box", center + basis * pos, Vector3(2.5, 4.1, 6.3), rocks[3], basis * Basis.from_euler(Vector3(0, 0, angle - PI * 0.5)))
 		for side in [-1.0, 1.0]:
-			_stamp("box", center + basis * Vector3(float(side) * 13.3, 2.0, float(z)), Vector3(5.0, 7, 6.3), rocks[2], basis)
-	# Giant cat ears and face decorate the entrance, with the arch as its mouth.
+			_stamp("box", center + basis * Vector3(float(side) * 14.2, 1.0, float(z)), Vector3(4.1, 7, 6.3), rocks[3], basis)
+	var portal := MultiMeshInstance3D.new()
+	var portal_mesh := MultiMesh.new()
+	portal_mesh.transform_format = MultiMesh.TRANSFORM_3D
+	portal_mesh.mesh = load("res://scripts/world_meshes.gd").tunnel_portal()
+	portal_mesh.instance_count = 1
+	portal_mesh.set_instance_transform(0, Transform3D.IDENTITY)
+	portal.multimesh = portal_mesh
+	portal.material_override = rocks[2]
+	portal.transform = Transform3D(basis, center)
+	add_child(portal)
 	for side in [-1.0, 1.0]:
-		_stamp("cat_ear", center + basis * Vector3(float(side) * 10.1, 24, 23), Vector3(9, 13, 5.0), rocks[2], basis * Basis.from_euler(Vector3(0, 0, float(side) * -0.15)))
-		_stamp("cat_ear", center + basis * Vector3(float(side) * 10.1, 24.8, 25.5), Vector3(4.5, 7.6, 0.35), _mat("ear_stone", Color("946d56")), basis)
-		_stamp("sphere", center + basis * Vector3(float(side) * 4.4, 20.6, 21.8), Vector3(8.8, 5.5, 6.0), rocks[2], basis)
-		_stamp("sphere", center + basis * Vector3(float(side) * 5.2, 19.5, 25.0), Vector3(2.3, 3.0, 0.7), _mat("tunnel_eyes", Color("4a6341")), basis)
-		_stamp("sphere", center + basis * Vector3(float(side) * 5.2, 19.5, 25.4), Vector3(0.55, 2.3, 0.24), _mat("pupil", Color("29322a")), basis)
-	_stamp("sphere", center + basis * Vector3(0, 19.0, 25.8), Vector3(2.4, 1.3, 1.2), _mat("nose_stone", Color("735749")), basis)
+		for row in range(3):
+			_stamp("box", center + basis * Vector3(float(side) * 15.05, row * 2.8 - 1.5, 13.0), Vector3(4.9, 2.7, 4.0), rocks[2], basis)
+	# A single stone cat mask sits against the rock with shallow carved eyes and muzzle.
+	var sculpt: StandardMaterial3D = _texture_mat("sculpted_limestone", "res://assets/art/alpine_limestone.png", Color("b3b09f"))
+	sculpt.uv1_triplanar = true
+	sculpt.uv1_world_triplanar = true
+	sculpt.uv1_scale = Vector3.ONE * 0.06
+	sculpt.cull_mode = BaseMaterial3D.CULL_DISABLED
+	_stamp("sphere", center + basis * Vector3(0, 23.4, 10.2), Vector3(29, 16, 11.0), sculpt, basis)
+	for side in [-1.0, 1.0]:
+		_stamp("cat_ear", center + basis * Vector3(float(side) * 10.0, 29.0, 11.3), Vector3(7.7, 10.0, 5.5), sculpt, basis * Basis.from_euler(Vector3(0, 0, float(side) * -0.17)))
+		_stamp("cat_ear_inlay", center + basis * Vector3(float(side) * 10.0, 29.2, 14.1), Vector3(3.9, 5.8, 0.2), _mat("ear_stone", Color("93826a"), 0.95, 0, 0.08), basis * Basis.from_euler(Vector3(0, 0, float(side) * -0.17)))
+		_stamp("sphere", center + basis * Vector3(float(side) * 5.9, 25.2, 14.9), Vector3(3.1, 1.6, 0.20), _mat("carved_eye", Color("6d7550")), basis)
+		_stamp("sphere", center + basis * Vector3(float(side) * 5.9, 25.2, 15.02), Vector3(0.45, 1.4, 0.08), _mat("pupil", Color("313a2a")), basis)
+		_stamp("sphere", center + basis * Vector3(float(side) * 3.2, 22.4, 14.1), Vector3(7.5, 4.0, 3.3), sculpt, basis)
+		for whisker in range(3):
+			_beam(center + basis * Vector3(float(side) * 7, 21.5 - whisker * 0.65, 15.0), center + basis * Vector3(float(side) * 12, 22.5 - whisker * 1.1, 13.8), 0.11, _mat("carving_crease", Color("55584a")))
+	_stamp("sphere", center + basis * Vector3(0, 22.0, 15.6), Vector3(2.2, 1.25, 0.8), _mat("nose_stone", Color("705240")), basis)
+	_waterfall(center + basis * Vector3(51, 48, -5), center.y + 68.0, 13.5, basis)
+	# Suspended timber walkway spans the upper cliffs, echoing the scenic racing reference.
+	_scenic_bridge(center + basis * Vector3(-48, 47, -31), center + basis * Vector3(54, 54, -33), wood)
 	for z in [-10, -2, 6, 13]:
 		for side in [-1.0, 1.0]:
-			var light_pos: Vector3 = center + basis * Vector3(float(side) * 9.8, 5.3, float(z))
-			_stamp("box", light_pos, Vector3(0.5, 2.7, 0.5), wood, basis)
-			_stamp("sphere", light_pos + Vector3.UP * 1.8, Vector3(0.85, 1.25, 0.85), _mat("lantern_glow", Color("ffba49"), 0.4, 0, 2.3))
+			var light_pos: Vector3 = center + basis * Vector3(float(side) * 10.1, 5.3, float(z))
+			_stamp("box", light_pos, Vector3(0.35, 2.3, 0.35), wood, basis)
+			_stamp("sphere", light_pos + Vector3.UP * 1.4, Vector3(0.6, 0.95, 0.6), _mat("lantern_glow", Color("ffb140"), 0.4, 0, 3.0))
 			if z == 6 or z == -10:
 				var lamp := OmniLight3D.new()
-				lamp.position = light_pos + Vector3.UP * 1.5
-				lamp.light_color = Color("ffc16a")
-				lamp.light_energy = 2.0
-				lamp.omni_range = 13
+				lamp.position = light_pos + Vector3.UP * 1.4
+				lamp.light_color = Color("ffb34f")
+				lamp.light_energy = 3.0
+				lamp.omni_range = 16
 				add_child(lamp)
+
+
+func _scenic_bridge(start: Vector3, finish: Vector3, wood: StandardMaterial3D) -> void:
+	var direction: Vector3 = (finish - start).normalized()
+	var side: Vector3 = direction.cross(Vector3.UP).normalized()
+	var basis: Basis = Basis.looking_at(direction, Vector3.UP)
+	var spans: int = 32
+	for i in range(spans + 1):
+		var t: float = i / float(spans)
+		var at: Vector3 = start.lerp(finish, t) - Vector3.UP * sin(t * PI) * 4.8
+		_stamp("plank", at, Vector3(8.0, 0.6, start.distance_to(finish) / spans * 0.95), wood, basis)
+		if i % 3 == 0:
+			for sign_side in [-1.0, 1.0]:
+				_stamp("box", at + side * float(sign_side) * 3.8 + Vector3.UP * 2.3, Vector3(0.55, 5.2, 0.55), wood, basis)
+		if i > 0:
+			var prev_t: float = (i - 1) / float(spans)
+			var prev: Vector3 = start.lerp(finish, prev_t) - Vector3.UP * sin(prev_t * PI) * 4.8
+			for sign_side in [-1.0, 1.0]:
+				for h in [1.7, 4.1]:
+					_beam(prev + side * float(sign_side) * 3.8 + Vector3.UP * float(h), at + side * float(sign_side) * 3.8 + Vector3.UP * float(h), 0.28, wood)
 
 
 func _block_tunnel(distance: float, rocks: Array[StandardMaterial3D]) -> void:
@@ -556,17 +748,19 @@ func _watchtower(d: float, lane: float, wood: StandardMaterial3D, trim: Standard
 
 
 func _bunting(d: float, height: float, count: int) -> void:
+	# Keep the racing sightline clear even when the chase camera lifts in traffic.
+	height += 2.0
 	var colors: Array[Color] = [Color("e56f5b"), Color("ecc65c"), Color("66b7ad"), Color("bc85b4")]
 	var wood := _mat("bark", Color("6d4f36"))
 	for side in [-1.0, 1.0]:
 		_stamp("cylinder", sample(d, float(side) * 13) + Vector3.UP * (height * 0.5), Vector3(0.45, height + 1, 0.45), wood)
 	for i in range(count):
 		var lane: float = lerpf(-12.5, 12.5, float(i) / maxf(1, count - 1))
-		var p: Vector3 = sample(d, lane) + Vector3.UP * (height - 1.9 * sin(float(i) / maxf(1, count - 1) * PI))
-		_stamp("pine", p - Vector3.UP * 1.1, Vector3(2.1, 2.6, 0.16), _mat("flag%d" % (i % 4), colors[i % 4]), frame(d) * Basis.from_euler(Vector3(PI, 0, 0)))
+		var p: Vector3 = sample(d, lane) + Vector3.UP * (height - 1.0 * sin(float(i) / maxf(1, count - 1) * PI))
+		_stamp("pine", p - Vector3.UP * .66, Vector3(1.35, 1.55, 0.10), _mat("flag%d" % (i % 4), colors[i % 4]), frame(d) * Basis.from_euler(Vector3(PI, 0, 0)))
 		if i > 0:
 			var old_lane: float = lerpf(-12.5, 12.5, float(i - 1) / maxf(1, count - 1))
-			var old: Vector3 = sample(d, old_lane) + Vector3.UP * (height - 1.9 * sin(float(i - 1) / maxf(1, count - 1) * PI))
+			var old: Vector3 = sample(d, old_lane) + Vector3.UP * (height - 1.0 * sin(float(i - 1) / maxf(1, count - 1) * PI))
 			_beam(old, p, 0.1, _mat("rope", Color("dfc790")))
 
 
@@ -584,14 +778,23 @@ func _balloon(p: Vector3, color: Color) -> void:
 
 
 func _desktop() -> void:
-	var wood := _noise_mat("desk_wood", Color("885530"), Color("b27b48"), 0.018)
+	# Use the same tactile timber tile as the quarry bridges. The old low-contrast
+	# noise floor read as a flat brown plane at racing speed.
+	var wood: StandardMaterial3D = _texture_mat("desk_wood_physical", "res://assets/world/wood.png", Color("c39a6c"))
+	wood.uv1_triplanar = true
+	wood.uv1_world_triplanar = true
+	wood.uv1_scale = Vector3.ONE * 0.018
+	wood.uv1_triplanar_sharpness = 3.0
+	wood.roughness = 0.91
+	_add_surface_bump(wood, 0.065, 1.45, 0.22)
 	_stamp("box", Vector3(0, -7, -15), Vector3(980, 20, 1080), wood)
-	var paper := _mat("sheet", Color("ece6d2"))
-	var ink := _mat("graph_ink", Color("abc8c5"))
-	for x in range(-450, 451, 15):
-		_stamp("box", Vector3(float(x), 3.03, 0), Vector3(0.17, 0.05, 950), ink)
-	for z in range(-450, 451, 15):
-		_stamp("box", Vector3(0, 3.04, float(z)), Vector3(900, 0.05, 0.17), ink)
+	var paper := _noise_mat("sheet", Color("d5cbb2"), Color("f4ead2"), 0.065)
+	paper.roughness = 0.94
+	_add_surface_bump(paper, 0.18, 0.7, 0.12)
+	# The old graph-paper grid was made from hundreds of razor-thin boxes.
+	# Those strips alias at the shallow chase-camera angle and produced a
+	# shimmering checkerboard outside the road as the kart moved.  Keep the
+	# sheet itself textured and reserve drawn markings for the actual road.
 	_stamp("box", Vector3(0, 2.5, 0), Vector3(900, 1, 950), paper)
 	var rail_dark := _mat("desk_barrier_dark", Color("945c38"))
 	var rail_light := _mat("desk_barrier_light", Color("d8a65b"))
@@ -612,7 +815,18 @@ func _desktop() -> void:
 				outside.y = 4.5
 				_pencil(outside, _rng.randf_range(22, 39), _rng.randf_range(0, TAU), i)
 	# Cozy studio: a window wall, painted shelves, stationery and an open laptop.
-	_stamp("box", Vector3(0, 93, -435), Vector3(970, 185, 8), _mat("wall", Color("a5c5c4")))
+	var wall_wood: StandardMaterial3D = _texture_mat("desk_backdrop_wood", "res://assets/world/wood.png", Color("76523f"))
+	wall_wood.uv1_triplanar = true
+	wall_wood.uv1_world_triplanar = true
+	wall_wood.uv1_scale = Vector3.ONE * 0.024
+	wall_wood.roughness = 0.95
+	_stamp("box", Vector3(0, 93, -435), Vector3(970, 185, 8), wall_wood)
+	# Thick beams and shelves frame the windows, adding real foreground depth to
+	# the little paper circuit instead of a wall of flat pastel boxes.
+	for x in [-470.0, -315.0, -155.0, 5.0, 165.0, 325.0, 470.0]:
+		_stamp("box", Vector3(x, 94, -420), Vector3(8, 182, 12), wood)
+	for y in [26.0, 72.0, 118.0, 161.0]:
+		_stamp("box", Vector3(0, y, -411), Vector3(950, 6, 19), wood)
 	var window := _mat("window", Color("9bd5f3"), 0.3, 0, 0.4)
 	for x in [-290, -100, 100, 290]:
 		_stamp("box", Vector3(float(x), 105, -429), Vector3(163, 148, 2), _mat("window_wood", Color("eddbb5")))
@@ -636,14 +850,28 @@ func _desktop() -> void:
 		var p := Vector3(-310, 7 + i * 12.0, 230)
 		_book_stack(p, 1, 1.8, sin(i) * 0.16)
 	for i in range(20):
-		var p := Vector3(_rng.randf_range(-390, 390), 3.6, _rng.randf_range(-340, 340))
+		# Lift the stationery clear of the sheet so its underside never
+		# intersects the paper surface and creates a second source of shimmer.
+		var p := Vector3(_rng.randf_range(-390, 390), 3.95, _rng.randf_range(-340, 340))
 		if _distance_to_road(p) > 28:
 			_stamp("box", p, Vector3(18, 1.3, 12), _mat("eraser%d" % (i % 3), [Color("e6a4b0"), Color("a5c8da"), Color("edc368")][i % 3]), Basis.from_euler(Vector3(0, _rng.randf_range(-1, 1), 0)))
-	_sign(85, -18, "DRAW. RACE.\nREPEAT.", Color("f1d88e"), 12, 8)
+	# Keep the first sign as a readable landmark without letting it cover the
+	# whole left side of the camera view.
+	_sign(85, -28, "DRAW. RACE.\nREPEAT.", Color("f1d88e"), 8.5, 5.7)
 	_sign(length * 0.3, 18, "DESKTOP\nDOJO →", Color("bce2dd"), 12, 8)
 	_sign(length * 0.69, -18, "GOOD IDEAS\nGO FAST", Color("eebac4"), 12, 8)
 	_bunting(115, 10, 9)
 	_bunting(length * 0.55, 11, 9)
+	# Oversized stationery landmarks echo the reference card: a ruler bridge,
+	# sticky-note ramps and scattered paper clips around the racing line.
+	var ruler := _mat("ruler_blue", Color("74b6d0"), 0.65, 0.05)
+	for fraction in [0.18, 0.48, 0.77]:
+		var marker_d: float = length * float(fraction)
+		var marker_basis: Basis = frame(marker_d)
+		for side in [-1.0, 1.0]:
+			var note_p: Vector3 = sample(marker_d, float(side) * 26.0) + Vector3.UP * 0.85
+			_stamp("box", note_p, Vector3(15, 0.18, 10), _mat("sticky_%d" % int(fraction * 100), [Color("e8a1ad"), Color("e5c05b"), Color("82bdd2")][int(fraction * 100) % 3]), marker_basis * Basis.from_euler(Vector3(0.0, 0.0, 0.035 * side)))
+		_stamp("box", sample(marker_d) + Vector3.UP * 1.15, Vector3(20.0, 0.20, 1.2), ruler, marker_basis)
 
 
 func _book_stack(p: Vector3, count: int, s: float, angle: float) -> void:
@@ -683,10 +911,13 @@ func _mug(p: Vector3, s: float, color: Color, text: String) -> void:
 
 
 func _glitch() -> void:
-	var dark := _mat("city_dark", Color("151731"), 0.5, 0.4)
-	var cyan := _mat("cyan", Color("28cde3"), 0.3, 0.2, 1.9)
-	var pink := _mat("pink", Color("e755bc"), 0.3, 0.2, 1.8)
-	var purple := _mat("purple", Color("6f53cc"), 0.4, 0.1, 0.85)
+	var dark := _noise_mat("city_dark", Color("0c1026"), Color("252957"), 0.055)
+	dark.roughness = 0.43
+	dark.metallic = 0.48
+	_add_surface_bump(dark, 0.12, 1.0, 0.18)
+	var cyan := _mat("cyan", Color("28cde3"), 0.26, 0.3, 2.45)
+	var pink := _mat("pink", Color("e755bc"), 0.26, 0.3, 2.25)
+	var purple := _mat("purple", Color("6f53cc"), 0.33, 0.2, 1.18)
 	_stamp("box", Vector3(0, -42, 0), Vector3(2200, 2, 2200), _mat("abyss", Color("06091c"), 0.4, 0.4))
 	for i in range(int(length / 8)):
 		var d: float = i * 8.0
@@ -718,6 +949,18 @@ func _glitch() -> void:
 				_stamp("box", p + Vector3(w * 0.5 + 0.08, y, 0), Vector3(0.12, 1.5, depth * 0.7), purple)
 		if i % 5 == 0:
 			_stamp("box", p + Vector3(w * 0.5 + 0.1, h * 0.55, 0), Vector3(0.2, h * 0.8, 2), pink)
+	# A repeating pair of illuminated server pylons gives the route a readable
+	# vanishing point and breaks up the random-box skyline.
+	for i in range(9):
+		var d: float = length * (0.06 + i * 0.105)
+		var pylon_basis: Basis = frame(d)
+		for side in [-1.0, 1.0]:
+			var pylon_p: Vector3 = sample(d, float(side) * 24.0)
+			_stamp("box", pylon_p + Vector3.UP * 19.0, Vector3(4.8, 38.0, 4.8), dark, pylon_basis)
+			for level in range(4):
+				var level_p: Vector3 = pylon_p + Vector3.UP * (7.0 + level * 8.0)
+				_stamp("box", level_p + pylon_basis.z * 2.48, Vector3(3.7, 1.25, 0.14), cyan if (i + level) % 2 == 0 else pink, pylon_basis)
+			_stamp("box", pylon_p + Vector3.UP * 39.2, Vector3(6.4, 1.0, 6.4), cyan if side < 0 else pink, pylon_basis)
 	for i in range(20):
 		var a: float = i / 20.0 * TAU
 		var p := Vector3(cos(a) * 700, -10, sin(a) * 700)
@@ -730,15 +973,15 @@ func _glitch() -> void:
 		_stamp("box", sample(d) + Vector3.UP * 18, Vector3(26, 2, 2), dark, frame(d))
 		_stamp("box", sample(d) + Vector3.UP * 17.6, Vector3(24, 0.35, 2.2), cyan, frame(d))
 		_label("» » »   HYPERPAWS   » » »", sample(d) + Vector3.UP * 20.5, frame(d), 0.026, Color("7feaff"))
-	_sign(95, -18, "GLITCH\nCORE →", Color("253050"), 12, 8, Color("7df0f6"))
+	_sign(95, -28, "GLITCH\nCORE →", Color("253050"), 9.5, 6.4, Color("7df0f6"))
 	_sign(length * 0.49, 18, "WARP. DRIFT.\nSURVIVE.", Color("2b224e"), 14, 9, Color("f69de6"))
 	# Giant floating pixel cat sign and particle-like light cubes.
 	_pixel_cat(Vector3(-10, 132, -240), 4.1, cyan)
 	_pixel_cat(Vector3(290, 118, 150), 2.8, pink)
-	for i in range(100):
+	for i in range(72):
 		var p := Vector3(_rng.randf_range(-330, 330), _rng.randf_range(12, 135), _rng.randf_range(-330, 330))
 		if _distance_to_road(p) > 20:
-			_stamp("box", p, Vector3.ONE * _rng.randf_range(0.35, 1.3), cyan if i % 2 == 0 else pink)
+			_stamp("box", p, Vector3.ONE * _rng.randf_range(0.28, 0.95), cyan if i % 2 == 0 else pink)
 
 
 func _pixel_cat(p: Vector3, s: float, mat: StandardMaterial3D) -> void:
@@ -779,6 +1022,39 @@ func _sign(distance: float, lane: float, text: String, color: Color, width: floa
 	_stamp("box", p + Vector3.UP * 7.5, Vector3(width + 0.6, height + 0.6, 0.8), wood, basis)
 	_stamp("box", p + Vector3.UP * 7.5 + basis.z * 0.5, Vector3(width, height, 0.45), _mat("sign_%s" % color.to_html(), color), basis)
 	_label(text, p + Vector3.UP * 7.5 + basis.z * 0.79, basis, width / maxf(8.0, float(text.length())) * 0.023, ink, width * 0.88)
+
+
+func _scenic_backdrop(path: String, tint: Color, radius: float, center_y: float) -> void:
+	# Four distant, inward-facing quads form a lightweight scenic horizon. They
+	# are deliberately far beyond the playable props, so the generated vista
+	# supplies atmosphere while the real road, karts and landmarks remain 3D.
+	if not ResourceLoader.exists(path): return
+	var texture := load(path) as Texture2D
+	if texture == null: return
+	var aspect: float = float(texture.get_width()) / maxf(1.0, float(texture.get_height()))
+	var width: float = 1850.0
+	var height: float = width / maxf(1.0, aspect)
+	var material := StandardMaterial3D.new()
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.albedo_texture = texture
+	material.albedo_color = tint
+	material.emission_enabled = true
+	material.emission = tint
+	material.emission_energy_multiplier = 0.12 if _course == 0 else 0.20
+	material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	material.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
+	for side in range(4):
+		var angle: float = side * PI * 0.5
+		var quad := QuadMesh.new()
+		quad.size = Vector2(width, height)
+		var backdrop := MeshInstance3D.new()
+		backdrop.name = "ScenicBackdrop%d" % side
+		backdrop.mesh = quad
+		backdrop.material_override = material
+		backdrop.position = Vector3(cos(angle) * radius, center_y, sin(angle) * radius)
+		backdrop.rotation_degrees = Vector3(0, rad_to_deg(angle), 0)
+		backdrop.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		add_child(backdrop)
 
 
 func _label(text: String, p: Vector3, basis: Basis, pixel_size: float, color: Color, max_width: float = 0.0) -> void:
@@ -837,6 +1113,23 @@ func _texture_mat(key: String, path: String, tint: Color = Color.WHITE) -> Stand
 	return material
 
 
+func _add_surface_bump(material: StandardMaterial3D, frequency: float, strength: float, normal_scale: float) -> void:
+	var noise := FastNoiseLite.new()
+	noise.seed = 1831
+	noise.frequency = frequency
+	noise.fractal_octaves = 3
+	var texture := NoiseTexture2D.new()
+	texture.width = 512
+	texture.height = 512
+	texture.seamless = true
+	texture.noise = noise
+	texture.as_normal_map = true
+	texture.bump_strength = strength
+	material.normal_enabled = true
+	material.normal_texture = texture
+	material.normal_scale = normal_scale
+
+
 func _noise_mat(key: String, low: Color, high: Color, frequency: float) -> StandardMaterial3D:
 	if _materials.has(key):
 		return _materials[key] as StandardMaterial3D
@@ -866,6 +1159,14 @@ func _mesh(shape: String) -> Mesh:
 		mesh = load("res://scripts/world_meshes.gd").cliff(int(shape.right(1)))
 		_meshes[shape] = mesh
 		return mesh
+	if shape.begins_with("boulder"):
+		mesh = load("res://scripts/world_meshes.gd").boulder(int(shape.right(1)))
+		_meshes[shape] = mesh
+		return mesh
+	if shape == "needle_cluster":
+		mesh = load("res://scripts/world_meshes.gd").needle_cluster()
+		_meshes[shape] = mesh
+		return mesh
 	if shape in ["foliage", "foliage_shadow"]:
 		mesh = load("res://scripts/world_meshes.gd").pine_branches()
 		_meshes[shape] = mesh
@@ -878,7 +1179,7 @@ func _mesh(shape: String) -> Mesh:
 		mesh = load("res://scripts/world_meshes.gd").ridge(shape == "ridge_snow")
 		_meshes[shape] = mesh
 		return mesh
-	if shape == "cat_ear":
+	if shape in ["cat_ear", "cat_ear_inlay"]:
 		mesh = load("res://scripts/world_meshes.gd").cat_ear()
 		_meshes[shape] = mesh
 		return mesh
@@ -887,10 +1188,9 @@ func _mesh(shape: String) -> Mesh:
 		_meshes[shape] = mesh
 		return mesh
 	if shape == "branch_card":
-		var plane := PlaneMesh.new()
-		plane.size = Vector2.ONE
-		_meshes[shape] = plane
-		return plane
+		mesh = load("res://scripts/world_meshes.gd").pine_bough()
+		_meshes[shape] = mesh
+		return mesh
 	match shape:
 		"box":
 			var box := BoxMesh.new()
@@ -918,10 +1218,11 @@ func _mesh(shape: String) -> Mesh:
 func _stamp(shape: String, p: Vector3, size: Vector3, material: StandardMaterial3D, basis: Basis = Basis.IDENTITY) -> void:
 	var actual_shape: String = shape
 	if shape == "rock":
-		actual_shape = "box" if _mode == "minecraft" else "cliff%d" % posmod(int(p.x * 0.7 + p.z * 0.3), 3)
+		var organic_shape: String = "cliff" if size.y > maxf(size.x, size.z) * 0.72 else "boulder"
+		actual_shape = "box" if _mode == "minecraft" else organic_shape + str(posmod(int(p.x * 0.7 + p.z * 0.3), 3))
 		material.vertex_color_use_as_albedo = true
 	var key: String = "%s:%s" % [actual_shape, material.get_instance_id()]
-	if shape == "branch_card":
+	if shape in ["branch_card", "needle_cluster"]:
 		key += ":%d:%d" % [floori(p.x / 120.0), floori(p.z / 120.0)]
 	if not _batches.has(key):
 		_batches[key] = {"mesh": _mesh(actual_shape), "material": material, "transforms": [], "shape": shape}
@@ -952,7 +1253,7 @@ func _flush_batches() -> void:
 		var instance := MultiMeshInstance3D.new()
 		instance.multimesh = mm
 		instance.material_override = data["material"] as Material
-		if data["shape"] in ["branch_card", "grass", "ridge", "ridge_snow"]:
+		if data["shape"] in ["branch_card", "needle_cluster", "cat_ear_inlay", "grass", "ridge", "ridge_snow"]:
 			instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		elif data["shape"] == "foliage_shadow":
 			instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_SHADOWS_ONLY
