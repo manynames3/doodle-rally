@@ -1,6 +1,6 @@
 # Build status — September 17, 2026
 
-**Doodle Rally — Cat Racers 1.3.0** updates Zizi and Mak-Doong, the character lineup, alpine rendering, and the launch sequence. The local Universal Mac app is **builds/Doodle Rally 1.3.app**, packaged as **Doodle_Rally_1.3_Mac.zip**. This update has not been published to GitHub. Earlier builds and their evidence are preserved separately.
+**Doodle Rally — Cat Racers 1.3.0** updates Zizi and Mak-Doong, the character lineup, alpine rendering, and the launch sequence. The Universal Mac app is **builds/Doodle Rally 1.3.app**, packaged as **Doodle_Rally_1.3_Mac.zip**. Earlier builds and their evidence are preserved separately.
 
 ## What changed
 
