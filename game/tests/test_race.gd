@@ -535,6 +535,7 @@ func _test_preferences() -> void:
 	prefs.values.reduced_motion = true
 	prefs.values.auto_accelerate = true
 	prefs.values.difficulty = 2
+	prefs.values.graphics_quality = 1
 	_expect(prefs.save_data(), "preferences save successfully to the temporary workspace file")
 	_expect(FileAccess.file_exists(_temp_path) and not FileAccess.file_exists(_temp_path + ".tmp"), "atomic save leaves only the completed configuration file")
 	var restored: RefCounted = Prefs.new()
@@ -547,6 +548,7 @@ func _test_preferences() -> void:
 	config.set_value("settings", "master_volume", 50.0)
 	config.set_value("settings", "music_volume", -2.0)
 	config.set_value("settings", "difficulty", 99)
+	config.set_value("settings", "graphics_quality", 99)
 	config.set_value("settings", "reduced_motion", "wrong_type")
 	config.set_value("records", "cats_0_0", -45.0)
 	config.set_value("records", "minecraft_0_0", "bad_record")
@@ -557,7 +559,7 @@ func _test_preferences() -> void:
 	var sanitized: RefCounted = Prefs.new()
 	sanitized.file_path = _temp_path
 	sanitized.load_data()
-	_expect(sanitized.values.master_volume == 1 and sanitized.values.music_volume == 0 and sanitized.values.difficulty == 2, "loading clamps numeric settings to safe ranges")
+	_expect(sanitized.values.master_volume == 1 and sanitized.values.music_volume == 0 and sanitized.values.difficulty == 2 and sanitized.values.graphics_quality == 2, "loading clamps numeric settings to safe ranges")
 	_expect(sanitized.values.reduced_motion == false, "loading ignores a wrong-typed boolean setting")
 	_expect(sanitized.selected_character == 7 and sanitized.selected_course == 0 and sanitized.selected_mode == "cats", "loading sanitizes racer and course selections")
 	_expect(sanitized.records.is_empty(), "loading ignores corrupt or nonpositive record values")

@@ -80,6 +80,8 @@ func run() -> void:
 		if main.state == "countdown": break
 		await frame()
 	check(main.state == "countdown" and main.racer_mode == "minecraft", "Minecraft launch reaches countdown")
+	check(main.get_viewport().scaling_3d_mode == Viewport.SCALING_3D_MODE_FSR and main.get_viewport().scaling_3d_scale < 1.0, "Smooth graphics reduce only the 3D race resolution")
+	check(main._race_render_scale(1920.0, 0) < main._race_render_scale(1280.0, 0), "Smooth graphics scale down for a larger race window")
 	check(main.karts.size() == 8 and main.sim.racers.size() == 8, "Eight actual 3D karts and racers")
 	main.countdown = .04
 	await key(KEY_W, true)
@@ -106,6 +108,7 @@ func run() -> void:
 	main._back_to_tracks()
 	await frame(3)
 	check(main.state == "menu" and main.menu.screen == "tracks" and main.race_root == null, "Choose track cleans up race")
+	check(main.get_viewport().scaling_3d_scale == 1.0, "Menu returns to full-resolution 3D previews")
 	main._back_to_title()
 	main.menu._start_cats()
 	check(main.menu.selected_mode == "cats", "Cat route switches back from Minecraft")

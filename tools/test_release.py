@@ -5,15 +5,16 @@ import argparse
 import subprocess
 import struct
 ROOT = Path(__file__).resolve().parents[1]
-APP = ROOT / "builds/Doodle Rally 1.3.app/Contents/MacOS/Doodle Rally — Cat Racers"
-SHOTS = ROOT / "screenshots/1.3"
-LOGS = ROOT / "docs/test-results/1.3"
+APP = ROOT / "builds/Doodle Rally 1.3.1.app/Contents/MacOS/Doodle Rally — Cat Racers"
+SHOTS = ROOT / "screenshots/1.3.1"
+LOGS = ROOT / "docs/test-results/1.3.1"
 SHOTS.mkdir(parents=True, exist_ok=True)
 LOGS.mkdir(parents=True, exist_ok=True)
 CASES = [
     ("studio_splash", "splash", "cats", 1, 0),
     ("startup_transition", "startup", "cats", 1, 0),
     ("intro", "title", "cats", 1, 0),
+    ("settings", "settings", "cats", 1, 0),
     ("character_select", "characters", "cats", 1, 0),
     ("mak_doong_character_select", "characters", "cats", 1, 6),
     ("minecraft_characters", "characters", "minecraft", 1, 0),
@@ -57,7 +58,7 @@ for name, screen, mode, course, character in selected_cases:
     print(name + ": " + str(result.returncode), flush=True)
     for line in output.splitlines():
         if "QA_DRIVE" in line or "QA_FRAME_TIMES" in line: print(line, flush=True)
-    expected_state = "splash" if screen == "splash" else "menu" if screen in ("startup", "title", "characters", "tracks", "garage") else "results" if screen == "results" else "racing"
+    expected_state = "splash" if screen == "splash" else "menu" if screen in ("startup", "title", "settings", "characters", "tracks", "garage") else "results" if screen == "results" else "racing"
     expected_marker = f"QA_STATE {expected_state} screen={screen} mode={mode} character={character}"
     if result.returncode or "ERROR:" in output or expected_marker not in output or not screenshot.is_file():
         print(output, flush=True)

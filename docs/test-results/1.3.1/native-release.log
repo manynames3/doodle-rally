@@ -1,0 +1,27 @@
+studio_splash: 0
+startup_transition: 0
+intro: 0
+settings: 0
+character_select: 0
+mak_doong_character_select: 0
+minecraft_characters: 0
+track_select: 0
+zizi_garage: 0
+mak_doong_garage: 0
+quarry_race: 0
+mak_doong_race: 0
+desktop_race: 0
+glitch_race: 0
+minecraft_race: 0
+drive_cats: 0
+QA_DRIVE distance=539.505500511867 speed=38.0 fps=60.0
+QA_FRAME_TIMES samples=605 median_ms=16.6666666666667 p95_ms=16.6666666666667
+drive_mak_doong: 0
+QA_DRIVE distance=491.050909884651 speed=21.696 fps=60.0
+QA_FRAME_TIMES samples=606 median_ms=16.6666666666667 p95_ms=16.6666666666667
+drive_minecraft: 0
+QA_DRIVE distance=539.505500511867 speed=38.0 fps=60.0
+QA_FRAME_TIMES samples=608 median_ms=16.6666666666667 p95_ms=16.6666666666667
+results_zizi: 0
+results_mak_doong: 0
+Native release: 20 views/driving checks passed.

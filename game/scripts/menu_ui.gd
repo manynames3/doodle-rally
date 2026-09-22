@@ -24,7 +24,7 @@ var selected_mode := "cats"
 var selected_character := 0
 var selected_course := 1
 var screen := ""
-var preferences := {"master_volume": 0.8, "music_volume": 0.65, "reduced_motion": false, "auto_accelerate": false, "difficulty": 2}
+var preferences := {"master_volume": 0.8, "music_volume": 0.65, "reduced_motion": false, "auto_accelerate": false, "difficulty": 2, "graphics_quality": 0}
 var _background: TextureRect
 var _wash: TextureRect
 var _stage: Control
@@ -513,7 +513,7 @@ func _show_garage() -> void:
 func show_settings() -> void:
 	_reset("settings")
 	_header("Make it yours", "A little tune-up before the adventure.")
-	_panel(_stage,Rect2(223,228,994,518),Color(0.055,0.07,0.075,0.96),Color("bd9557"),3,18)
+	_panel(_stage,Rect2(223,228,994,540),Color(0.055,0.07,0.075,0.96),Color("bd9557"),3,18)
 	_label(_stage,"SOUND & PLAY",Rect2(266,252,386,45),29,GOLD)
 	_label(_stage,"Master volume",Rect2(270,316,344,40),25)
 	_slider("master_volume",Rect2(710,323,390,30))
@@ -532,8 +532,21 @@ func show_settings() -> void:
 	difficulty.add_theme_stylebox_override("focus",_style(Color.TRANSPARENT,GOLD,3,8))
 	difficulty.item_selected.connect(func(value: int): _preference("difficulty",value))
 	_stage.add_child(difficulty)
-	_toggle("auto_accelerate", "Auto-accelerate", "Keep moving while you focus on steering.", 526)
-	_toggle("reduced_motion", "Reduced motion", "Calmer camera and menu animation.", 623)
+	_label(_stage,"Graphics",Rect2(270,510,344,40),25)
+	var graphics := OptionButton.new()
+	graphics.position = Vector2(710,510)
+	graphics.size = Vector2(390,45)
+	for quality_name in ["Smooth motion", "Balanced", "Full detail"]:
+		graphics.add_item(quality_name)
+	graphics.selected = int(preferences.graphics_quality)
+	graphics.add_theme_font_override("font",CHALK)
+	graphics.add_theme_font_size_override("font_size",24)
+	graphics.add_theme_stylebox_override("normal",_style(Color("314441"),Color("597068"),1,8))
+	graphics.add_theme_stylebox_override("focus",_style(Color.TRANSPARENT,GOLD,3,8))
+	graphics.item_selected.connect(func(value: int): _preference("graphics_quality",value))
+	_stage.add_child(graphics)
+	_toggle("auto_accelerate", "Auto-accelerate", "Keep moving while you focus on steering.", 574)
+	_toggle("reduced_motion", "Reduced motion", "Calmer camera and menu animation.", 656)
 	_button(_stage,"DONE   →",Rect2(1085,797,317,73),show_title,true)
 	_button(_stage,"B / Esc   Back",Rect2(37,810,218,56),show_title)
 	_label(_stage,"Your settings are saved automatically.",Rect2(329,819,710,43),22,CREAM,true)

@@ -1222,7 +1222,9 @@ func _stamp(shape: String, p: Vector3, size: Vector3, material: StandardMaterial
 		actual_shape = "box" if _mode == "minecraft" else organic_shape + str(posmod(int(p.x * 0.7 + p.z * 0.3), 3))
 		material.vertex_color_use_as_albedo = true
 	var key: String = "%s:%s" % [actual_shape, material.get_instance_id()]
-	if shape in ["branch_card", "needle_cluster"]:
+	# Cull repeated near-field props by spatial tile; distant cliff meshes stay
+	# grouped to avoid hundreds of one-rock draw calls and long launch times.
+	if shape in ["branch_card", "needle_cluster", "foliage_shadow", "cylinder", "sphere", "box"]:
 		key += ":%d:%d" % [floori(p.x / 120.0), floori(p.z / 120.0)]
 	if not _batches.has(key):
 		_batches[key] = {"mesh": _mesh(actual_shape), "material": material, "transforms": [], "shape": shape}

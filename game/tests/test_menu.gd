@@ -127,8 +127,12 @@ func _go() -> void:
 		if child is Button and child.toggle_mode and not child is OptionButton:
 			child.button_pressed = not child.button_pressed
 			toggles += 1
-	_check(sliders == 2 and toggles == 2 and settings.size() == 4,"native sliders and toggles emit preference changes")
+		if child is OptionButton and child.get_item_text(0) == "Smooth motion":
+			child.select(2)
+			child.item_selected.emit(2)
+	_check(sliders == 2 and toggles == 2 and settings.size() == 5,"native sliders, toggles and graphics choice emit preference changes")
 	_check(is_equal_approx(ui.preferences.master_volume,0.7) and ui.preferences.auto_accelerate,"preference payload contains changed values")
+	_check(ui.preferences.graphics_quality == 2,"graphics choice reaches saved preferences")
 	_action("ui_cancel")
 	_check(ui.screen == "title", "settings cancel returns to title")
 	ui.call("_show_garage")

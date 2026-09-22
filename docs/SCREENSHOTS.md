@@ -1,4 +1,8 @@
-# Doodle Rally 1.3 visual gallery
+# Doodle Rally visual gallery
+
+Version 1.3.1 adds the [Graphics setting](../screenshots/1.3.1/settings.png) and captures the smoother race renderer on [Desktop Dojo](../screenshots/1.3.1/desktop_race.png), [Block Quarry](../screenshots/1.3.1/quarry_race.png), and [Glitch Core](../screenshots/1.3.1/glitch_race.png). The full set of 20 native Mac screen and driving captures is in [`screenshots/1.3.1/`](../screenshots/1.3.1/). The checks and frame-time samples are recorded in [`docs/test-results/1.3.1/`](test-results/1.3.1/).
+
+## 1.3.0 presentation gallery
 
 These are native 1280×800 captures from the packaged Universal Mac build. They document the playable screens and the reference driven presentation pass. The source images are kept in [`screenshots/1.3/`](../screenshots/1.3/).
 

@@ -1,0 +1,7 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Metal 4.0 - Forward+ - Using Device #0: Apple - Apple M1 (Apple7)
+
+QA_STATE menu screen=title mode=cats character=0
+RACE_RENDER_SAMPLE renderer=forward_plus image=(1280, 800) 3d_scale=1.0 samples=180 median_ms=22.706 p95_ms=23.671 draw_calls=1516.0
+RACE_RENDER_PHASES mean_wait_sim_draw_ms=(21.04241, 0.794933, 0.000122) world_only=false
+RACE_RENDER_MODE automatic=true confirmed_rendered_frames=264

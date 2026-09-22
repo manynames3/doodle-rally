@@ -1,4 +1,14 @@
-# Build status — September 17, 2026
+# Build status — September 22, 2026
+
+**Doodle Rally — Cat Racers 1.3.1** improves race smoothness on macOS. The current Universal app is **builds/Doodle Rally 1.3.1.app**, packaged as **Doodle_Rally_1.3.1_Mac.zip** in the parent output directory.
+
+The race now defaults to **Smooth motion** in Options. It uses FSR 1 spatial upscaling for the 3D scene, two directional-shadow cascades, and less expensive ambient lighting; the HUD remains at full resolution. The 3D scale adjusts when the game window changes size. Scenery batches are divided into nearby spatial tiles so unseen props can be culled. **Balanced** and **Full detail** retain higher rendering quality when the Mac can sustain it. Kart simulation remains at a fixed 60 Hz with interpolated render transforms.
+
+On an Apple M1, the native eight-racer Block Quarry sample measured **22.706 → 14.289 ms median** at 1280×800, and **32.566 → 18.283 ms median** at 1920×1080, comparing Full detail with Smooth motion. This is approximately **44 → 70 fps** and **31 → 55 fps** by median frame time. The p95 values were **23.671 → 17.781 ms** and **34.614 → 20.021 ms**. Each short run measured 180 rendered frames after 60 warm-up frames. Results vary with track, race position, hardware, window size, and system load; this is not a guaranteed frame rate. Logs are in `docs/test-results/1.3.1/render-*.log`.
+
+All **331 functional checks** and three temporal collision replays passed. The signed 1.3.1 app passed **20 native launch, screen, and driving cases**, including all tracks and both rosters. The 12-second packaged cat drive recorded **12.5 ms median / 16.7 ms p95** frame intervals, and Mak-Doong recorded **12.5 ms / 18.1 ms**; these are short samples. Export, regression, native case, and benchmark logs are in `docs/test-results/1.3.1/`. Native screenshots are in `screenshots/1.3.1/`. The app remains locally signed rather than Apple-notarized.
+
+## Previous 1.3.0 verification
 
 **Doodle Rally — Cat Racers 1.3.0** updates Zizi and Mak-Doong, the character lineup, alpine rendering, and the launch sequence. The Universal Mac app is **builds/Doodle Rally 1.3.app**, packaged as **Doodle_Rally_1.3_Mac.zip**. Earlier builds and their evidence are preserved separately.
 

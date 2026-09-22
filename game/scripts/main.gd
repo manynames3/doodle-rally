@@ -34,10 +34,11 @@ var _qa_drive_elapsed := 0.0
 var _qa_frame_times: Array[float] = []
 var _last_camera := Vector3.ZERO
 var _last_camera_aim := Vector3.ZERO
+var _graphics_window_size := Vector2i.ZERO
 var startup_splash: CanvasLayer
 
 func _ready() -> void:
-	get_window().title = "Doodle Rally — Cat Racers · 1.3"
+	get_window().title = "Doodle Rally — Cat Racers · 1.3.1"
 	_qa = "--qa" in OS.get_cmdline_user_args()
 	preferences.enabled = not _qa
 	preferences.load_data()
@@ -158,6 +159,7 @@ func _start_race(chosen_character: int, chosen_course: int) -> void:
 	world = load("res://scripts/track_world.gd").new()
 	race_root.add_child(world)
 	world.build(course, racer_mode)
+	_apply_race_graphics()
 	world.set_animations_enabled(not bool(preferences.values.reduced_motion))
 	sim = Sim.new()
 	sim.setup(world, character, int(preferences.values.difficulty), racer_mode)
@@ -191,6 +193,29 @@ func _start_race(chosen_character: int, chosen_course: int) -> void:
 	_clear_overlay()
 	state = "countdown"
 
+func _apply_race_graphics() -> void:
+	var quality: int = clampi(int(preferences.values.graphics_quality), 0, 2)
+	var viewport := get_viewport()
+	_graphics_window_size = get_window().size
+	if quality == 2:
+		viewport.scaling_3d_mode = Viewport.SCALING_3D_MODE_BILINEAR
+		viewport.scaling_3d_scale = 1.0
+	else:
+		viewport.scaling_3d_mode = Viewport.SCALING_3D_MODE_FSR
+		viewport.scaling_3d_scale = _race_render_scale(float(_graphics_window_size.x), quality)
+	for environment_node in world.find_children("*", "WorldEnvironment", true, false):
+		var scene_environment := environment_node as WorldEnvironment
+		scene_environment.environment.ssao_enabled = quality > 0
+	for light_node in world.find_children("*", "DirectionalLight3D", true, false):
+		var light := light_node as DirectionalLight3D
+		if light.shadow_enabled:
+			light.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS if quality == 2 else DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS
+
+func _race_render_scale(window_width: float, quality: int) -> float:
+	var base_scale := (0.75 if course == 1 else 0.85) if quality == 0 else 0.90
+	var minimum_scale := 0.50 if quality == 0 else 0.65
+	return clampf(base_scale * sqrt(1280.0 / maxf(1280.0, window_width)), minimum_scale, base_scale)
+
 func _physics_process(dt: float) -> void:
 	if state == "countdown":
 		countdown -= dt
@@ -217,6 +242,8 @@ func _physics_process(dt: float) -> void:
 
 func _process(dt: float) -> void:
 	if state in ["racing", "countdown"]:
+		if get_window().size != _graphics_window_size:
+			_apply_race_graphics()
 		if _qa_driver:
 			_qa_drive_elapsed += dt
 			if _qa_drive_elapsed > 2.0: _qa_frame_times.append(dt * 1000.0)
@@ -372,6 +399,9 @@ func _back_to_title() -> void:
 	sound.play_theme(1)
 
 func _clear_race() -> void:
+	_graphics_window_size = Vector2i.ZERO
+	get_viewport().scaling_3d_scale = 1.0
+	get_viewport().scaling_3d_mode = Viewport.SCALING_3D_MODE_BILINEAR
 	sound.update_engine(0, false)
 	if is_instance_valid(hud):
 		hud.get_parent().remove_child(hud)

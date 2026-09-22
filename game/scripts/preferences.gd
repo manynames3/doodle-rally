@@ -1,6 +1,6 @@
 extends RefCounted
 
-var values: Dictionary = {"master_volume": 0.7, "music_volume": 0.55, "reduced_motion": false, "auto_accelerate": false, "difficulty": 2}
+var values: Dictionary = {"master_volume": 0.7, "music_volume": 0.55, "reduced_motion": false, "auto_accelerate": false, "difficulty": 2, "graphics_quality": 0}
 var records: Dictionary = {}
 var selected_character := 0
 var selected_course := 1
@@ -18,6 +18,8 @@ func load_data() -> void:
 		if key in ["master_volume", "music_volume"]:
 			if (value is float or value is int) and is_finite(float(value)): values[key] = clampf(float(value), 0, 1)
 		elif key == "difficulty":
+			if value is int: values[key] = clampi(value, 0, 2)
+		elif key == "graphics_quality":
 			if value is int: values[key] = clampi(value, 0, 2)
 		elif value is bool: values[key] = value
 	selected_character = clampi(int(config.get_value("racer", "character", 0)), 0, 7)
