@@ -17,6 +17,7 @@ var _head_look: Dictionary = {}
 var _turntable_viewport: SubViewport
 var _turntable_sprite: TextureRect
 var _turntable_kart: Node3D
+var _turntable_art: Sprite3D
 var _turntable_character := -1
 var _spin_elapsed := 0.0
 var _elapsed := 0.0
@@ -156,9 +157,9 @@ func _ready() -> void:
 	_sync_visibility()
 
 func _setup_turntable() -> void:
-	# Only the active racer switches from the supplied 2D cutout to the
-	# original 3D model. An isolated transparent viewport lets it turn in place
-	# without changing the scale or alignment of the other seven card images.
+	# Spin the supplied high-resolution cutout on a transparent 3D plane. This
+	# keeps the selected art identical to the other cards while still giving the
+	# selected racer a continuous 360-degree turntable.
 	_turntable_viewport = SubViewport.new()
 	_turntable_viewport.name = "SelectedRacerTurntable"
 	_turntable_viewport.size = Vector2i(498, 570)
@@ -169,21 +170,24 @@ func _setup_turntable() -> void:
 	add_child(_turntable_viewport)
 	var scene := Node3D.new()
 	_turntable_viewport.add_child(scene)
-	_lighting(scene)
-	var source := load("res://scripts/kart_visual.gd") as Script
 	_turntable_kart = Node3D.new()
-	_turntable_kart.name = "SelectedRacer3D"
-	_turntable_kart.set_script(source)
+	_turntable_kart.name = "SelectedRacerArtTurntable"
 	scene.add_child(_turntable_kart)
+	_turntable_art = Sprite3D.new()
+	_turntable_art.name = "SelectedRacerCoreArtwork"
+	_turntable_art.texture = load(Core.selection(selected_character))
+	_turntable_art.pixel_size = 0.0035
+	_turntable_art.shaded = false
+	_turntable_art.position.y = 2.0
+	_turntable_kart.add_child(_turntable_art)
 	_turntable_character = selected_character
-	_turntable_kart.call("build", selected_character, "cats")
 	var turn_camera := Camera3D.new()
 	scene.add_child(turn_camera)
 	turn_camera.projection = Camera3D.PROJECTION_ORTHOGONAL
 	turn_camera.near = 0.1
 	turn_camera.far = 80.0
 	turn_camera.size = 4.9
-	turn_camera.position = Vector3(0.0, 3.0, -9.0)
+	turn_camera.position = Vector3(0.0, 2.0, -9.0)
 	turn_camera.look_at(Vector3(0.0, 2.0, 0.0))
 	turn_camera.current = true
 	_turntable_sprite = TextureRect.new()
@@ -209,7 +213,7 @@ func _sync_turntable_selection() -> void:
 	_turntable_sprite.position = Vector2(6.0 + selected_slot * 174.0, 92.0)
 	if _turntable_character != selected_character:
 		_turntable_character = selected_character
-		_turntable_kart.call("build", selected_character, "cats")
+		_turntable_art.texture = load(Core.selection(selected_character))
 	_turntable_kart.rotation.y = _turntable_yaw(_spin_elapsed)
 
 func _turntable_yaw(seconds: float) -> float:
@@ -380,7 +384,6 @@ func _process(delta: float) -> void:
 			else:
 				_spin_elapsed = fposmod(_spin_elapsed + delta, TURNTABLE_PERIOD)
 				_turntable_kart.rotation.y = _turntable_yaw(_spin_elapsed)
-				_turntable_kart.call("animate", delta, 0.0, 0.0, 0.0, false)
 	if rear_view and not _rear_motion.is_empty():
 		var course_x := size.x * (0.125 + 0.375 * float(selected_course))
 		var slot_width := size.x / maxf(1.0,float(characters.size()))

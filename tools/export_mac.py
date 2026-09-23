@@ -24,9 +24,9 @@ try:
     subprocess.run([args.godot, "--headless", "--path", str(ROOT / "game"), "--export-release", "macOS"], check=True)
 finally:
     preset.write_text(original)
-app = ROOT / "builds/Doodle Rally 1.3.4.app"
+app = ROOT / "builds/Doodle Rally 1.3.5.app"
 shutil.copytree(ROOT / "docs/licenses", app / "Contents/Resources/Licenses", dirs_exist_ok=True)
 subprocess.run(["codesign", "--force", "--deep", "--sign", "-", "--preserve-metadata=entitlements,requirements,flags,runtime", str(app)], check=True)
 subprocess.run(["codesign", "--verify", "--deep", "--strict", str(app)], check=True)
-subprocess.run(["ditto", "-c", "-k", "--sequesterRsrc", "--keepParent", str(app), str(ROOT.parent / "Doodle_Rally_1.3.4_Mac.zip")], check=True)
+subprocess.run(["ditto", "-c", "-k", "--sequesterRsrc", "--keepParent", str(app), str(ROOT.parent / "Doodle_Rally_1.3.5_Mac.zip")], check=True)
 print("Built", app)

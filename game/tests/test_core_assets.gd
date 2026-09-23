@@ -47,16 +47,18 @@ func _run() -> void:
 	menu.show_characters()
 	await process_frame
 	var stage: Control = menu._lineup
-	check(stage._reference_sprites.size() == 8 and stage._turntable_sprite != null, "Selection presents eight cutouts and one selected turntable")
+	check(stage._reference_sprites.size() == 8 and stage._turntable_sprite != null and stage._turntable_art != null, "Selection presents eight cutouts and one selected-art turntable")
 	for slot in range(8):
 		var character: int = menu.DISPLAY_ORDER[slot]
 		var sprite: TextureRect = stage._reference_sprites[slot]
 		check(sprite.texture.resource_path == Core.selection(character), "Selection uses the matching core cutout")
 		check(sprite.size == Vector2(166, 190) and sprite.stretch_mode == TextureRect.STRETCH_KEEP_ASPECT_CENTERED, "Full cutout fits a normalized card")
 		if character == menu.selected_character:
-			check(not sprite.visible and stage._turntable_sprite.visible, "Selected racer replaces its lower cutout with one 3D preview")
+			check(not sprite.visible and stage._turntable_sprite.visible, "Selected racer replaces its lower cutout with one spinning preview")
 		else:
 			check(sprite.visible, "Unselected racer keeps one lower cutout")
+	check(stage._turntable_art.texture.resource_path == Core.selection(menu.selected_character), "Selected preview uses the same current core artwork as its roster cutout")
+	check(not stage._turntable_art.shaded, "Selected core artwork stays unlit and keeps its supplied colors and clean alpha edges")
 	check(is_equal_approx(stage._turntable_yaw(0.0), stage._turntable_yaw(6.0)), "Turntable returns to the same angle after six seconds")
 	var before_wrap: float = stage._turntable_yaw(5.99)
 	var after_wrap: float = stage._turntable_yaw(6.01)
@@ -74,6 +76,7 @@ func _run() -> void:
 	await process_frame
 	var mak_slot: int = menu.DISPLAY_ORDER.find(6)
 	check(stage._turntable_character == 6 and not stage._reference_sprites[mak_slot].visible, "Changing selection moves the single turntable to Mak-Doong")
+	check(stage._turntable_art.texture.resource_path == Core.selection(6), "Turntable artwork changes with the selected character")
 	menu.selected_character = 0
 	menu.call("_show_garage")
 	await process_frame
