@@ -38,7 +38,7 @@ var _graphics_window_size := Vector2i.ZERO
 var startup_splash: CanvasLayer
 
 func _ready() -> void:
-	get_window().title = "Doodle Rally — Cat Racers · 1.3.3"
+	get_window().title = "Doodle Rally — Cat Racers · 1.3.4"
 	_qa = "--qa" in OS.get_cmdline_user_args()
 	preferences.enabled = not _qa
 	preferences.load_data()
@@ -545,6 +545,11 @@ func _qa_run() -> void:
 				_qa_frame_times.sort()
 				print("QA_FRAME_TIMES samples=", _qa_frame_times.size(), " median_ms=", _qa_frame_times[_qa_frame_times.size() / 2], " p95_ms=", _qa_frame_times[int(_qa_frame_times.size() * .95)])
 	for i in range(18): await get_tree().process_frame
+	if screen == "characters" and not _arg("--qa-spin-phase").is_empty():
+		menu._lineup._spin_elapsed = fposmod(float(_arg("--qa-spin-phase")), 6.0)
+		menu._lineup._sync_turntable_selection()
+		print("QA_SPIN phase=", menu._lineup._spin_elapsed, " yaw=", menu._lineup._turntable_kart.rotation.y)
+		await get_tree().process_frame
 	if screen == "garage" and not _arg("--qa-garage-phase").is_empty():
 		var core_sprite: Node = menu._stage.find_child("CoreSpriteAnimator", true, false)
 		if core_sprite != null:

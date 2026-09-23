@@ -47,14 +47,33 @@ func _run() -> void:
 	menu.show_characters()
 	await process_frame
 	var stage: Control = menu._lineup
-	check(stage._reference_sprites.size() == 8 and stage._portrait_sprites.size() == 8, "Selection presents all eight cutouts and portraits")
+	check(stage._reference_sprites.size() == 8 and stage._turntable_sprite != null, "Selection presents eight cutouts and one selected turntable")
 	for slot in range(8):
 		var character: int = menu.DISPLAY_ORDER[slot]
 		var sprite: TextureRect = stage._reference_sprites[slot]
-		var portrait: TextureRect = stage._portrait_sprites[slot]
 		check(sprite.texture.resource_path == Core.selection(character), "Selection uses the matching core cutout")
-		check(portrait.texture.resource_path == Core.portrait(character), "Selection uses the matching portrait")
 		check(sprite.size == Vector2(166, 190) and sprite.stretch_mode == TextureRect.STRETCH_KEEP_ASPECT_CENTERED, "Full cutout fits a normalized card")
+		if character == menu.selected_character:
+			check(not sprite.visible and stage._turntable_sprite.visible, "Selected racer replaces its lower cutout with one 3D preview")
+		else:
+			check(sprite.visible, "Unselected racer keeps one lower cutout")
+	check(is_equal_approx(stage._turntable_yaw(0.0), stage._turntable_yaw(6.0)), "Turntable returns to the same angle after six seconds")
+	var before_wrap: float = stage._turntable_yaw(5.99)
+	var after_wrap: float = stage._turntable_yaw(6.01)
+	var boundary_step := Vector2(cos(before_wrap), sin(before_wrap)).distance_to(Vector2(cos(after_wrap), sin(after_wrap)))
+	check(absf(boundary_step - TAU * 0.02 / 6.0) < 0.003, "Turntable crosses the loop boundary with uniform angular speed")
+	stage._spin_elapsed = 5.99
+	stage.call("_process", 0.02)
+	check(stage._spin_elapsed < 0.03, "Turntable advances continuously across each six-second loop")
+	var spin_before_reduced: float = stage._spin_elapsed
+	stage.reduced_motion = true
+	stage.call("_process", 0.25)
+	check(is_equal_approx(stage._spin_elapsed, spin_before_reduced) and is_equal_approx(stage._turntable_kart.rotation.y, stage.TURNTABLE_BASE_YAW), "Reduced Motion holds the selected racer turntable still")
+	stage.reduced_motion = false
+	menu.call("_choose_character", 6)
+	await process_frame
+	var mak_slot: int = menu.DISPLAY_ORDER.find(6)
+	check(stage._turntable_character == 6 and not stage._reference_sprites[mak_slot].visible, "Changing selection moves the single turntable to Mak-Doong")
 	menu.selected_character = 0
 	menu.call("_show_garage")
 	await process_frame

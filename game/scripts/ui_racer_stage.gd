@@ -12,9 +12,13 @@ var _viewport: SubViewport
 var _camera: Camera3D
 var _canvas: TextureRect
 var _reference_sprites: Array[TextureRect] = []
-var _portrait_sprites: Array[TextureRect] = []
 var _rear_motion: Dictionary = {}
 var _head_look: Dictionary = {}
+var _turntable_viewport: SubViewport
+var _turntable_sprite: TextureRect
+var _turntable_kart: Node3D
+var _turntable_character := -1
+var _spin_elapsed := 0.0
 var _elapsed := 0.0
 var _resize_clock := 0.0
 
@@ -23,6 +27,8 @@ var _resize_clock := 0.0
 # the two hero cats remain readable in the centre pair.
 const PRESENTATION_YAW := [-0.15, -0.18, 0.16, -0.12, 0.12, -0.16, 0.19, 0.22]
 const PRESENTATION_ROLL := [0.022, -0.024, 0.012, -0.016, 0.020, -0.012, 0.020, -0.020]
+const TURNTABLE_PERIOD := 6.0
+const TURNTABLE_BASE_YAW := 0.22
 const REAR_MOTION = preload("res://scripts/track_lineup_motion.gdshader")
 const Core = preload("res://scripts/cat_core_assets.gd")
 # The clean rear crops share a canvas, but the visible tails sit on different
@@ -130,18 +136,6 @@ func _ready() -> void:
 			sprite.z_index = 0
 			add_child(sprite)
 			_reference_sprites.append(sprite)
-			if not rear_view:
-				var portrait := TextureRect.new()
-				portrait.name = "CorePortrait_%d" % character
-				portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-				portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-				portrait.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
-				portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
-				portrait.texture = load(Core.portrait(character))
-				portrait.position = Vector2(39.0 + slot * 174.0, 2.0)
-				portrait.size = Vector2(100.0, 100.0)
-				add_child(portrait)
-				_portrait_sprites.append(portrait)
 	_camera = Camera3D.new()
 	scene.add_child(_camera)
 	_camera.projection = Camera3D.PROJECTION_ORTHOGONAL
@@ -156,12 +150,77 @@ func _ready() -> void:
 	resized.connect(_resize_target)
 	visibility_changed.connect(_sync_visibility)
 	_resize_target()
+	if mode == "cats" and not rear_view and not single_preview:
+		_setup_turntable()
+		_sync_turntable_selection()
 	_sync_visibility()
+
+func _setup_turntable() -> void:
+	# Only the active racer switches from the supplied 2D cutout to the
+	# original 3D model. An isolated transparent viewport lets it turn in place
+	# without changing the scale or alignment of the other seven card images.
+	_turntable_viewport = SubViewport.new()
+	_turntable_viewport.name = "SelectedRacerTurntable"
+	_turntable_viewport.size = Vector2i(498, 570)
+	_turntable_viewport.transparent_bg = true
+	_turntable_viewport.own_world_3d = true
+	_turntable_viewport.msaa_3d = Viewport.MSAA_4X
+	_turntable_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+	add_child(_turntable_viewport)
+	var scene := Node3D.new()
+	_turntable_viewport.add_child(scene)
+	_lighting(scene)
+	var source := load("res://scripts/kart_visual.gd") as Script
+	_turntable_kart = Node3D.new()
+	_turntable_kart.name = "SelectedRacer3D"
+	_turntable_kart.set_script(source)
+	scene.add_child(_turntable_kart)
+	_turntable_character = selected_character
+	_turntable_kart.call("build", selected_character, "cats")
+	var turn_camera := Camera3D.new()
+	scene.add_child(turn_camera)
+	turn_camera.projection = Camera3D.PROJECTION_ORTHOGONAL
+	turn_camera.near = 0.1
+	turn_camera.far = 80.0
+	turn_camera.size = 4.9
+	turn_camera.position = Vector3(0.0, 3.0, -9.0)
+	turn_camera.look_at(Vector3(0.0, 2.0, 0.0))
+	turn_camera.current = true
+	_turntable_sprite = TextureRect.new()
+	_turntable_sprite.name = "SelectedRacerTurntableTexture"
+	_turntable_sprite.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_turntable_sprite.stretch_mode = TextureRect.STRETCH_SCALE
+	_turntable_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	_turntable_sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_turntable_sprite.texture = _turntable_viewport.get_texture()
+	_turntable_sprite.size = Vector2(166.0, 190.0)
+	_turntable_sprite.z_index = 2
+	add_child(_turntable_sprite)
+
+func _sync_turntable_selection() -> void:
+	if not is_instance_valid(_turntable_kart) or not is_instance_valid(_turntable_sprite): return
+	var selected_slot := characters.find(selected_character)
+	var showing := selected_slot >= 0 and is_visible_in_tree()
+	_turntable_kart.visible = showing
+	_turntable_sprite.visible = showing
+	for slot in range(_reference_sprites.size()):
+		_reference_sprites[slot].visible = not showing or slot != selected_slot
+	if not showing: return
+	_turntable_sprite.position = Vector2(6.0 + selected_slot * 174.0, 92.0)
+	if _turntable_character != selected_character:
+		_turntable_character = selected_character
+		_turntable_kart.call("build", selected_character, "cats")
+	_turntable_kart.rotation.y = _turntable_yaw(_spin_elapsed)
+
+func _turntable_yaw(seconds: float) -> float:
+	return TURNTABLE_BASE_YAW + TAU * fposmod(seconds, TURNTABLE_PERIOD) / TURNTABLE_PERIOD
 
 func _sync_visibility() -> void:
 	if not is_instance_valid(_viewport): return
 	var showing := is_visible_in_tree()
 	_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS if showing else SubViewport.UPDATE_DISABLED
+	if is_instance_valid(_turntable_viewport):
+		_turntable_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS if showing and is_instance_valid(_turntable_kart) and _turntable_kart.visible else SubViewport.UPDATE_DISABLED
 	set_process(showing)
 
 func _resize_target() -> void:
@@ -313,6 +372,15 @@ func _process(delta: float) -> void:
 		kart.rotation.y=base_rotation+presentation_angle+motion
 		kart.rotation.z = 0.0 if rear_view else PRESENTATION_ROLL[characters[slot]] + sin(_elapsed*.55 + slot)*.006
 		if not reduced_motion and kart.visible: kart.call("animate",delta,0.0,0.0,0.0,false)
+	if is_instance_valid(_turntable_kart):
+		_sync_turntable_selection()
+		if _turntable_kart.visible:
+			if reduced_motion:
+				_turntable_kart.rotation.y = TURNTABLE_BASE_YAW
+			else:
+				_spin_elapsed = fposmod(_spin_elapsed + delta, TURNTABLE_PERIOD)
+				_turntable_kart.rotation.y = _turntable_yaw(_spin_elapsed)
+				_turntable_kart.call("animate", delta, 0.0, 0.0, 0.0, false)
 	if rear_view and not _rear_motion.is_empty():
 		var course_x := size.x * (0.125 + 0.375 * float(selected_course))
 		var slot_width := size.x / maxf(1.0,float(characters.size()))

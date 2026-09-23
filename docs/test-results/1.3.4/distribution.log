@@ -1,0 +1,4 @@
+Universal macOS export completed with Godot 4.7.2.
+codesign --verify --deep --strict builds/'Doodle Rally 1.3.4.app': passed
+unzip -tq ../Doodle_Rally_1.3.4_Mac.zip: No errors detected in compressed data.
+SHA-256: 0ee4f5f97708abdeecfe64f7e84d8f18ae28b89281d84e15d98b29e3263d8761
