@@ -107,6 +107,13 @@ func _go() -> void:
 	_axis(0.0)
 	ui.show_tracks()
 	ui.call("_choose_course",1)
+	_check(ui._difficulty_buttons.size() == 3 and ui._difficulty_buttons[0].text == "Easy" and ui._difficulty_buttons[2].text == "Hard", "track screen exposes Easy, Medium and Hard")
+	ui._difficulty_buttons[2].pressed.emit()
+	_check(ui.preferences.difficulty == 4 and "Hard" in ui._selection_label.text, "Hard selection applies before launch")
+	_action("ui_up")
+	_check(ui.preferences.difficulty == 3, "track screen up direction selects Medium")
+	ui._difficulty_buttons[0].pressed.emit()
+	_check(ui.preferences.difficulty == 2, "Easy restores the established race pace")
 	var chosen: int = ui.selected_character
 	ui.call("_launch")
 	ui.call("_launch")
@@ -120,6 +127,7 @@ func _go() -> void:
 	var stage: Control = ui.get_node("MenuStage")
 	var sliders := 0
 	var toggles := 0
+	var settings_before := settings.size()
 	for child in stage.get_children():
 		if child is HSlider:
 			child.value = 0.7
@@ -130,9 +138,13 @@ func _go() -> void:
 		if child is OptionButton and child.get_item_text(0) == "Smooth motion":
 			child.select(2)
 			child.item_selected.emit(2)
-	_check(sliders == 2 and toggles == 2 and settings.size() == 5,"native sliders, toggles and graphics choice emit preference changes")
+		if child is OptionButton and child.get_item_text(0) == "Easy":
+			child.select(1)
+			child.item_selected.emit(1)
+	_check(sliders == 2 and toggles == 2 and settings.size() == settings_before + 6,"native sliders, toggles, graphics and difficulty emit preference changes")
 	_check(is_equal_approx(ui.preferences.master_volume,0.7) and ui.preferences.auto_accelerate,"preference payload contains changed values")
 	_check(ui.preferences.graphics_quality == 2,"graphics choice reaches saved preferences")
+	_check(ui.preferences.difficulty == 3,"Options difficulty matches the track selector")
 	_action("ui_cancel")
 	_check(ui.screen == "title", "settings cancel returns to title")
 	ui.call("_show_garage")

@@ -18,7 +18,9 @@ func load_data() -> void:
 		if key in ["master_volume", "music_volume"]:
 			if (value is float or value is int) and is_finite(float(value)): values[key] = clampf(float(value), 0, 1)
 		elif key == "difficulty":
-			if value is int: values[key] = clampi(value, 0, 2)
+			# Older saves used 0/1/2 for Cozy/Club/Fast. Fast is the new Easy;
+			# keep its saved records and make retired slower choices Easy too.
+			if value is int: values[key] = clampi(value, 2, 4)
 		elif key == "graphics_quality":
 			if value is int: values[key] = clampi(value, 0, 2)
 		elif value is bool: values[key] = value
@@ -26,7 +28,7 @@ func load_data() -> void:
 	selected_course = clampi(int(config.get_value("racer", "course", 1)), 0, 2)
 	selected_mode = "minecraft" if str(config.get_value("racer", "mode", "cats")) == "minecraft" else "cats"
 	for course in range(3):
-		for difficulty in range(3):
+		for difficulty in range(2, 5):
 			for mode in ["cats", "minecraft"]:
 				var key := "%s_%d_%d" % [mode, course, difficulty]
 				var value: Variant = config.get_value("records", key, -1.0)
@@ -51,7 +53,7 @@ func best(course: int, difficulty: int, mode: String = "cats") -> float:
 	return float(records.get("%s_%d_%d" % [mode, course, difficulty], -1.0))
 
 func record(course: int, difficulty: int, seconds: float, mode: String = "cats") -> bool:
-	if course < 0 or course > 2 or difficulty < 0 or difficulty > 2 or mode not in ["cats", "minecraft"] or not is_finite(seconds) or seconds <= 0:
+	if course < 0 or course > 2 or difficulty < 2 or difficulty > 4 or mode not in ["cats", "minecraft"] or not is_finite(seconds) or seconds <= 0:
 		return false
 	var key := "%s_%d_%d" % [mode, course, difficulty]
 	var previous := float(records.get(key, INF))

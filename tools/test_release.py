@@ -5,9 +5,9 @@ import argparse
 import subprocess
 import struct
 ROOT = Path(__file__).resolve().parents[1]
-APP = ROOT / "builds/Doodle Rally 1.3.1.app/Contents/MacOS/Doodle Rally — Cat Racers"
-SHOTS = ROOT / "screenshots/1.3.1"
-LOGS = ROOT / "docs/test-results/1.3.1"
+APP = ROOT / "builds/Doodle Rally 1.3.2.app/Contents/MacOS/Doodle Rally — Cat Racers"
+SHOTS = ROOT / "screenshots/1.3.2"
+LOGS = ROOT / "docs/test-results/1.3.2"
 SHOTS.mkdir(parents=True, exist_ok=True)
 LOGS.mkdir(parents=True, exist_ok=True)
 CASES = [
@@ -19,9 +19,11 @@ CASES = [
     ("mak_doong_character_select", "characters", "cats", 1, 6),
     ("minecraft_characters", "characters", "minecraft", 1, 0),
     ("track_select", "tracks", "cats", 1, 0),
+    ("track_hard", "tracks", "cats", 2, 0),
     ("zizi_garage", "garage", "cats", 1, 0),
     ("mak_doong_garage", "garage", "cats", 1, 6),
     ("quarry_race", "race", "cats", 1, 0),
+    ("quarry_hard", "race", "cats", 1, 0),
     ("mak_doong_race", "race", "cats", 1, 6),
     ("desktop_race", "race", "cats", 0, 0),
     ("glitch_race", "race", "cats", 2, 0),
@@ -40,8 +42,10 @@ for name, screen, mode, course, character in selected_cases:
     screenshot = SHOTS / (name + ".png")
     # A previous capture must not make a failed run appear successful.
     screenshot.unlink(missing_ok=True)
+    difficulty = 4 if name in ("track_hard", "quarry_hard") else 2
     command = [str(APP), "--resolution", "1280x800", "--windowed", "--", "--qa", "--qa-screen=" + screen, "--qa-mode=" + mode,
         "--qa-course=" + str(course), "--qa-character=" + str(character),
+        "--qa-difficulty=" + str(difficulty),
         "--qa-distance=65", "--qa-output=" + str(screenshot), "--qa-quit"]
     try:
         result = subprocess.run(command, capture_output=True, text=True, timeout=75)
@@ -59,7 +63,7 @@ for name, screen, mode, course, character in selected_cases:
     for line in output.splitlines():
         if "QA_DRIVE" in line or "QA_FRAME_TIMES" in line: print(line, flush=True)
     expected_state = "splash" if screen == "splash" else "menu" if screen in ("startup", "title", "settings", "characters", "tracks", "garage") else "results" if screen == "results" else "racing"
-    expected_marker = f"QA_STATE {expected_state} screen={screen} mode={mode} character={character}"
+    expected_marker = f"QA_STATE {expected_state} screen={screen} mode={mode} character={character} difficulty={difficulty}"
     if result.returncode or "ERROR:" in output or expected_marker not in output or not screenshot.is_file():
         print(output, flush=True)
         if expected_marker not in output:

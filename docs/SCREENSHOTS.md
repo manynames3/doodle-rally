@@ -1,5 +1,9 @@
 # Doodle Rally visual gallery
 
+Version 1.3.2 adds [Easy track selection](../screenshots/1.3.2/track_select.png), [Hard track selection](../screenshots/1.3.2/track_hard.png), and a [Hard Block Quarry race](../screenshots/1.3.2/quarry_hard.png). The game animates the illustrated cats' head direction and visible tails between still captures. The native QA set is in [`screenshots/1.3.2/`](../screenshots/1.3.2/), with replay and export evidence in [`docs/test-results/1.3.2/`](test-results/1.3.2/).
+
+## 1.3.1 graphics gallery
+
 Version 1.3.1 adds the [Graphics setting](../screenshots/1.3.1/settings.png) and captures the smoother race renderer on [Desktop Dojo](../screenshots/1.3.1/desktop_race.png), [Block Quarry](../screenshots/1.3.1/quarry_race.png), and [Glitch Core](../screenshots/1.3.1/glitch_race.png). The full set of 20 native Mac screen and driving captures is in [`screenshots/1.3.1/`](../screenshots/1.3.1/). The checks and frame-time samples are recorded in [`docs/test-results/1.3.1/`](test-results/1.3.1/).
 
 ## 1.3.0 presentation gallery

@@ -74,12 +74,14 @@ func run() -> void:
 	await key(KEY_LEFT, true)
 	await key(KEY_LEFT, false)
 	check(main.menu.selected_course == 0, "Track arrows choose Desktop Dojo")
+	main.menu._difficulty_buttons[2].pressed.emit()
+	check(main.preferences.values.difficulty == 4, "Track-screen Hard choice reaches saved preferences")
 	await key(KEY_ENTER, true)
 	await key(KEY_ENTER, false)
 	for i in range(30):
 		if main.state == "countdown": break
 		await frame()
-	check(main.state == "countdown" and main.racer_mode == "minecraft", "Minecraft launch reaches countdown")
+	check(main.state == "countdown" and main.racer_mode == "minecraft" and main.sim.difficulty == 4, "Minecraft launch carries selected Hard pace into simulation")
 	check(main.get_viewport().scaling_3d_mode == Viewport.SCALING_3D_MODE_FSR and main.get_viewport().scaling_3d_scale < 1.0, "Smooth graphics reduce only the 3D race resolution")
 	check(main._race_render_scale(1920.0, 0) < main._race_render_scale(1280.0, 0), "Smooth graphics scale down for a larger race window")
 	check(main.karts.size() == 8 and main.sim.racers.size() == 8, "Eight actual 3D karts and racers")

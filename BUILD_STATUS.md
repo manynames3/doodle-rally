@@ -1,6 +1,14 @@
 # Build status — September 22, 2026
 
-**Doodle Rally — Cat Racers 1.3.1** improves race smoothness on macOS. The current Universal app is **builds/Doodle Rally 1.3.1.app**, packaged as **Doodle_Rally_1.3.1_Mac.zip** in the parent output directory.
+**Doodle Rally — Cat Racers 1.3.2** adds the animated course-selection lineup and visible Easy, Medium, and Hard difficulty choices. The current Universal app is **builds/Doodle Rally 1.3.2.app**, packaged as **Doodle_Rally_1.3.2_Mac.zip** in the parent output directory. Easy retains the former default rival pace and player handling. Medium and Hard progressively strengthen rival pacing, acceleration, catch-up, and item use. The selected difficulty persists and keeps personal-best records separate.
+
+On Track Select, the rear-facing cats gently sway their visible tails and tilt their heads toward the highlighted course. The motion is confined to each illustration, and Reduced Motion disables the idle tail sway. The deterministic three-course replay shows increasing rival pressure from Easy through Hard on every course. Evidence is in `docs/test-results/1.3.2/`; native captures are in `screenshots/1.3.2/`. The 1.3.2 app is locally signed rather than Apple-notarized.
+
+All **346 functional checks**, six course/mode builds, and three temporal collision replays passed. The scripted difficulty replay passed on all three courses. The final signed app passed **22 native launch, menu, race, driving, and results cases**, including Hard Track Select and Hard Block Quarry; its 22 screenshots were freshly captured from the final package. The app's signature and ZIP integrity both verified. These checks establish reproducible behavior and a balance trend; race outcomes still depend on the player's driving, items, and collisions.
+
+## Previous 1.3.1 verification
+
+**Doodle Rally — Cat Racers 1.3.1** improves race smoothness on macOS. Its Universal app is **builds/Doodle Rally 1.3.1.app**, packaged as **Doodle_Rally_1.3.1_Mac.zip** in the parent output directory.
 
 The race now defaults to **Smooth motion** in Options. It uses FSR 1 spatial upscaling for the 3D scene, two directional-shadow cascades, and less expensive ambient lighting; the HUD remains at full resolution. The 3D scale adjusts when the game window changes size. Scenery batches are divided into nearby spatial tiles so unseen props can be culled. **Balanced** and **Full detail** retain higher rendering quality when the Mac can sustain it. Kart simulation remains at a fixed 60 Hz with interpolated render transforms.
 

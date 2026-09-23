@@ -1,0 +1,302 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1mreimport[22m | Started (Re)Importing Assets (1 steps)[39m[0m
+[   0% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[   0% ] [90m[1mreimport[22m | Executing pre-reimport operations...[39m[0m
+[   0% ] [90m[1mreimport[22m | track-motion-corrected.png[39m[0m
+[  50% ] [90m[1mreimport[22m | Finalizing Asset Import...[39m[0m
+[92m[ DONE ][39m [1mreimport[22m
+[0m
+[   0% ] [90m[1mreimport[22m | Started (Re)Importing Assets (1 steps)[39m[0m
+[   0% ] [90m[1mreimport[22m | Executing post-reimport operations...[39m[0m
+[92m[ DONE ][39m [1mreimport[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1mexport[22m | Started Exporting for macOS (3 steps)[39m[0m
+[   0% ] [90m[1mexport[22m | Creating app bundle[39m[0m
+[  25% ] [90m[1mexport[22m | Making PKG[39m[0m
+[   0% ] [90m[1msavepack[22m | Started Packing (102 steps)[39m[0m
+[   1% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/alpine_limestone.png-692ac3cc8f4c6b5c10593cf2f2f2990a.ctex[39m[0m
+[   1% ] [90m[1msavepack[22m | Storing File: res://assets/art/alpine_limestone.png.import[39m[0m
+[   1% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/clubhouse.png-fe66c8230376ae816b618fb831814ff2.ctex[39m[0m
+[   1% ] [90m[1msavepack[22m | Storing File: res://assets/art/clubhouse.png.import[39m[0m
+[   2% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/course_dojo.png-26bd8f0f35d079c29089ccb9cc029907.ctex[39m[0m
+[   2% ] [90m[1msavepack[22m | Storing File: res://assets/art/course_dojo.png.import[39m[0m
+[   3% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/course_glitch.png-008b40aee8ef971bf7cc4b281d6e1364.ctex[39m[0m
+[   3% ] [90m[1msavepack[22m | Storing File: res://assets/art/course_glitch.png.import[39m[0m
+[   4% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/course_quarry.png-5f25c4e17a303a378d33ae0cc16b0aed.ctex[39m[0m
+[   4% ] [90m[1msavepack[22m | Storing File: res://assets/art/course_quarry.png.import[39m[0m
+[   4% ] [90m[1msavepack[22m | Storing File: res://test-output/collision_straight/telemetry.json[39m[0m
+[   5% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/track-motion-corrected.png-80bb219bfaff017a98aef8134b96bcb7.ctex[39m[0m
+[   5% ] [90m[1msavepack[22m | Storing File: res://test-output/track-motion-corrected.png.import[39m[0m
+[   6% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/title_race_v3.png-2e03ef29e51da8c3a8bf1fae44c31157.ctex[39m[0m
+[   6% ] [90m[1msavepack[22m | Storing File: res://assets/art/title_race_v3.png.import[39m[0m
+[   7% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/ui_slider_knob.svg-82713f937c981b8c6bdcdbb352724ebc.ctex[39m[0m
+[   7% ] [90m[1msavepack[22m | Storing File: res://assets/art/ui_slider_knob.svg.import[39m[0m
+[   8% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/wood_sign.png-7b2cd570aa0c3e356c71ffb9819d44e4.ctex[39m[0m
+[   8% ] [90m[1msavepack[22m | Storing File: res://assets/art/wood_sign.png.import[39m[0m
+[   8% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/biscuit_back_hires.png-90b4ba7462be414bf06895c5293bebb8.ctex[39m[0m
+[   8% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/hires/biscuit_back_hires.png.import[39m[0m
+[   9% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/biscuit_frontleft_hires.png-3da05b197676c220a6e545e6dccd6502.ctex[39m[0m
+[   9% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/hires/biscuit_frontleft_hires.png.import[39m[0m
+[  10% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/biscuit_garage_ai.png-1f3c8d1b89ddb3991a70da34f105de74.ctex[39m[0m
+[  10% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/hires/biscuit_garage_ai.png.import[39m[0m
+[  11% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/biscuit_garage_hires.png-9a7f73f34975d314e230d216613e95d8.ctex[39m[0m
+[  11% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/hires/biscuit_garage_hires.png.import[39m[0m
+[  11% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/luna_back_hires.png-a73f0fb9b6daece7ee45df66a3d4a6f5.ctex[39m[0m
+[  11% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/hires/luna_back_hires.png.import[39m[0m
+[  12% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/luna_frontleft_hires.png-b685f9d43d89608704734fe57d13f12b.ctex[39m[0m
+[  12% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/hires/luna_frontleft_hires.png.import[39m[0m
+[  13% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/luna_garage_ai.png-d4219054fe1deac05614a9056e103bcf.ctex[39m[0m
+[  13% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/hires/luna_garage_ai.png.import[39m[0m
+[  14% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/luna_garage_hires.png-a41142d99a9d49d143f17b1b31c5d7bf.ctex[39m[0m
+[  14% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/hires/luna_garage_hires.png.import[39m[0m
+[  15% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/mak_doong_back_clean.png-0b660f9dcb6423fdd9cfb9976230ca1a.ctex[39m[0m
+[  15% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/hires/mak_doong_back_clean.png.import[39m[0m
+[  15% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/mak_doong_back_hires.png-720e83b9bea925ec9e2cd5213adaddd9.ctex[39m[0m
+[  15% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/hires/mak_doong_back_hires.png.import[39m[0m
+[  16% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/mak_doong_frontleft_hires.png-bdb00cd6854c1d7b8dcccc2ac71f9eb9.ctex[39m[0m
+[  16% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/hires/mak_doong_frontleft_hires.png.import[39m[0m
+[  17% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/mak_doong_garage_ai.png-3dd4d0454836d7db4d3402b911631c16.ctex[39m[0m
+[  17% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/hires/mak_doong_garage_ai.png.import[39m[0m
+[  18% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/mak_doong_garage_hires.png-afeb061c545f36fd32995a2d9e97bc79.ctex[39m[0m
+[  18% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/hires/mak_doong_garage_hires.png.import[39m[0m
+[  18% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/milo_back_hires.png-7981a9298286671f5790d0d1a6042270.ctex[39m[0m
+[  18% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/hires/milo_back_hires.png.import[39m[0m
+[  19% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/milo_frontleft_hires.png-72905d4955fb2ed0bcc4b20d97e55e9b.ctex[39m[0m
+[  19% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/hires/milo_frontleft_hires.png.import[39m[0m
+[  20% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/milo_garage_ai.png-c6ac982360dcdee97ea6e2a05492280a.ctex[39m[0m
+[  20% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/hires/milo_garage_ai.png.import[39m[0m
+[  21% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/milo_garage_hires.png-ca092c4219c182453db81a823eb74217.ctex[39m[0m
+[  21% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/hires/milo_garage_hires.png.import[39m[0m
+[  22% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/mochi_back_hires.png-fc683091b0cccf64fb725a1008871c67.ctex[39m[0m
+[  22% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/hires/mochi_back_hires.png.import[39m[0m
+[  22% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/mochi_frontleft_hires.png-be700679afdf91d4d072ca15e124dbed.ctex[39m[0m
+[  22% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/hires/mochi_frontleft_hires.png.import[39m[0m
+[  23% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/mochi_garage_ai.png-977b1b3f3d785229d3d2b2de2e1c560c.ctex[39m[0m
+[  23% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/hires/mochi_garage_ai.png.import[39m[0m
+[  24% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/mochi_garage_hires.png-7a867f2ba9cacc74e53414b20acac50d.ctex[39m[0m
+[  24% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/hires/mochi_garage_hires.png.import[39m[0m
+[  25% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/nori_back_hires.png-3e556c4e14cf2bc050fae556bb7c6b99.ctex[39m[0m
+[  25% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/hires/nori_back_hires.png.import[39m[0m
+[  26% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/nori_frontleft_hires.png-06c1e71eba264858f588e2c5029bc3a5.ctex[39m[0m
+[  26% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/hires/nori_frontleft_hires.png.import[39m[0m
+[  26% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/nori_garage_ai.png-f0f0747eb12a0927060269b403571019.ctex[39m[0m
+[  26% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/hires/nori_garage_ai.png.import[39m[0m
+[  27% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/nori_garage_hires.png-bf90af08eb578d14b5d681ef52842943.ctex[39m[0m
+[  27% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/hires/nori_garage_hires.png.import[39m[0m
+[  28% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/pumpkin_back_hires.png-c2b75095573ca16a0c80e20b3addff70.ctex[39m[0m
+[  28% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/hires/pumpkin_back_hires.png.import[39m[0m
+[  29% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/pumpkin_frontleft_hires.png-878148a26bafe37258dbd7b111ab3686.ctex[39m[0m
+[  29% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/hires/pumpkin_frontleft_hires.png.import[39m[0m
+[  29% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/pumpkin_garage_ai.png-0c033e4cf3bde67dd09340a63aa025ab.ctex[39m[0m
+[  29% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/hires/pumpkin_garage_ai.png.import[39m[0m
+[  30% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/pumpkin_garage_hires.png-4956bc0ae9e9fcd6dc0d22180c36482c.ctex[39m[0m
+[  30% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/hires/pumpkin_garage_hires.png.import[39m[0m
+[  31% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/zizi_back_hires.png-d7665cf6e15b83050b79d2dea6b2e076.ctex[39m[0m
+[  31% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/hires/zizi_back_hires.png.import[39m[0m
+[  32% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/zizi_frontleft_hires.png-9e00b0627d6894af551a7172b80847a8.ctex[39m[0m
+[  32% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/hires/zizi_frontleft_hires.png.import[39m[0m
+[  33% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/zizi_garage_ai.png-b311f4fa8d4a4bc3ada49e29dc7dec81.ctex[39m[0m
+[  33% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/hires/zizi_garage_ai.png.import[39m[0m
+[  33% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/zizi_garage_hires.png-cb7225eea40d8c2523871bf25b4b6497.ctex[39m[0m
+[  33% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/hires/zizi_garage_hires.png.import[39m[0m
+[  33% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/biscuit_portrait_default.png-2b9562d4a7fb9c973c6ec8bd9f9d6658.ctex[39m[0m
+[  33% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/biscuit_portrait_default.png.import[39m[0m
+[  34% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/biscuit_stage_back.png-b144eeb564ce39d502eed2cfc04a605f.ctex[39m[0m
+[  34% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/biscuit_stage_back.png.import[39m[0m
+[  35% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/biscuit_stage_frontleft.png-51950f11a89a3fb93acc83a757456f2d.ctex[39m[0m
+[  35% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/biscuit_stage_frontleft.png.import[39m[0m
+[  35% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/luna_portrait_default.png-95eca1c5b888ed727a9f95ea06402e12.ctex[39m[0m
+[  35% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/luna_portrait_default.png.import[39m[0m
+[  36% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/luna_stage_back.png-5ebf99a87b193ee73b3667a8a440ec86.ctex[39m[0m
+[  36% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/luna_stage_back.png.import[39m[0m
+[  37% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/luna_stage_frontleft.png-58a686845c022b32be8283ede6b06b77.ctex[39m[0m
+[  37% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/luna_stage_frontleft.png.import[39m[0m
+[  38% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/mak_doong_portrait_default.png-3711c5ec8cf835465e9487d49cc054d9.ctex[39m[0m
+[  38% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/mak_doong_portrait_default.png.import[39m[0m
+[  39% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/mak_doong_stage_back.png-d469a4f83861e162045dce0fa2fc1421.ctex[39m[0m
+[  39% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/mak_doong_stage_back.png.import[39m[0m
+[  39% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/mak_doong_stage_frontleft.png-81d03e1a169ad232d8ba3796714dcc10.ctex[39m[0m
+[  39% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/mak_doong_stage_frontleft.png.import[39m[0m
+[  40% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/milo_portrait_default.png-f4806b641383b6e8c7ff46a7698ff363.ctex[39m[0m
+[  40% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/milo_portrait_default.png.import[39m[0m
+[  41% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/milo_stage_back.png-b2bc5d870460b05a4389570a220153f4.ctex[39m[0m
+[  41% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/milo_stage_back.png.import[39m[0m
+[  42% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/milo_stage_frontleft.png-61f1fd014f584c236fb38b08f578364e.ctex[39m[0m
+[  42% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/milo_stage_frontleft.png.import[39m[0m
+[  42% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/mochi_portrait_default.png-7d2806902edbef3764d1def0718666b5.ctex[39m[0m
+[  42% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/mochi_portrait_default.png.import[39m[0m
+[  43% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/mochi_stage_back.png-4f87a5fa17cecc66536660224eee694c.ctex[39m[0m
+[  43% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/mochi_stage_back.png.import[39m[0m
+[  44% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/mochi_stage_frontleft.png-db079b6280e7508ea354e1b4b0cd97be.ctex[39m[0m
+[  44% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/mochi_stage_frontleft.png.import[39m[0m
+[  45% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/nori_portrait_default.png-7657f383924ed2e371761c3cb1ab573a.ctex[39m[0m
+[  45% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/nori_portrait_default.png.import[39m[0m
+[  46% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/nori_stage_back.png-fb4b0336c932dd27fe232e4ca782a5e6.ctex[39m[0m
+[  46% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/nori_stage_back.png.import[39m[0m
+[  46% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/nori_stage_frontleft.png-9dcc8ba0333840a00946e63a18dc7cf1.ctex[39m[0m
+[  46% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/nori_stage_frontleft.png.import[39m[0m
+[  47% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/pumpkin_portrait_default.png-ae54316bb29e5f93fbd41688c980bda7.ctex[39m[0m
+[  47% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/pumpkin_portrait_default.png.import[39m[0m
+[  48% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/pumpkin_stage_back.png-00cea2ccfb066e2b965e547ff3cbd16b.ctex[39m[0m
+[  48% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/pumpkin_stage_back.png.import[39m[0m
+[  49% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/pumpkin_stage_frontleft.png-977f41e189a61d3831585d8831fb7408.ctex[39m[0m
+[  49% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/pumpkin_stage_frontleft.png.import[39m[0m
+[  50% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/zizi_portrait_default.png-8097e2ec92d22cbefb77481c6b294678.ctex[39m[0m
+[  50% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/zizi_portrait_default.png.import[39m[0m
+[  50% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/zizi_stage_back.png-70c45590fe1e642d733be4765f710e0f.ctex[39m[0m
+[  50% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/zizi_stage_back.png.import[39m[0m
+[  51% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/zizi_stage_frontleft.png-e77020f75ec28efc1f51ac57213f9e6b.ctex[39m[0m
+[  51% ] [90m[1msavepack[22m | Storing File: res://assets/characters/reference/zizi_stage_frontleft.png.import[39m[0m
+[  52% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/fur_microdetail.png-4046390f16c4fae12d60909f2ecd54d5.ctex[39m[0m
+[  52% ] [90m[1msavepack[22m | Storing File: res://assets/characters/fur_microdetail.png.import[39m[0m
+[  53% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/BarlowCondensed-ExtraBoldItalic.ttf-77963f1052599542056aff19bae8f946.fontdata[39m[0m
+[  53% ] [90m[1msavepack[22m | Storing File: res://assets/fonts/BarlowCondensed-ExtraBoldItalic.ttf.import[39m[0m
+[  53% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/Kalam-Bold.ttf-def7ed74f83aa29201719ced5f1f7b14.fontdata[39m[0m
+[  53% ] [90m[1msavepack[22m | Storing File: res://assets/fonts/Kalam-Bold.ttf.import[39m[0m
+[  54% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/castle.wav-4d018c8bdcace32d8c3a1b090b844cec.sample[39m[0m
+[  54% ] [90m[1msavepack[22m | Storing File: res://assets/music/castle.wav.import[39m[0m
+[  55% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/desk.wav-0cdd33ea6c13b8a7ea72143705cf1174.sample[39m[0m
+[  55% ] [90m[1msavepack[22m | Storing File: res://assets/music/desk.wav.import[39m[0m
+[  56% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/sky.wav-36c2d125ef0a28b61992f524123a5756.sample[39m[0m
+[  56% ] [90m[1msavepack[22m | Storing File: res://assets/music/sky.wav.import[39m[0m
+[  57% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/block_0.png-b27477e61632b257b7d19d50117b4df1.ctex[39m[0m
+[  57% ] [90m[1msavepack[22m | Storing File: res://assets/portraits/block_0.png.import[39m[0m
+[  57% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/block_1.png-92b5edb825efc5bb3da4d472ed15faf8.ctex[39m[0m
+[  57% ] [90m[1msavepack[22m | Storing File: res://assets/portraits/block_1.png.import[39m[0m
+[  58% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/block_2.png-3fc98744285fe2781dca7de3b44f0fa0.ctex[39m[0m
+[  58% ] [90m[1msavepack[22m | Storing File: res://assets/portraits/block_2.png.import[39m[0m
+[  59% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/block_3.png-93dc9f171d180a96939208c1e235796e.ctex[39m[0m
+[  59% ] [90m[1msavepack[22m | Storing File: res://assets/portraits/block_3.png.import[39m[0m
+[  60% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/block_4.png-a46f69a83c05285f96ca879aca7b3534.ctex[39m[0m
+[  60% ] [90m[1msavepack[22m | Storing File: res://assets/portraits/block_4.png.import[39m[0m
+[  60% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/block_5.png-cb61d0f69dcdb9ca9aa023b264986eaa.ctex[39m[0m
+[  60% ] [90m[1msavepack[22m | Storing File: res://assets/portraits/block_5.png.import[39m[0m
+[  61% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/block_6.png-a1a5e1a3e3e84e29e0a8932e688e2dc4.ctex[39m[0m
+[  61% ] [90m[1msavepack[22m | Storing File: res://assets/portraits/block_6.png.import[39m[0m
+[  62% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/block_7.png-f04b27d3e6e9ed001f8c509b1539a356.ctex[39m[0m
+[  62% ] [90m[1msavepack[22m | Storing File: res://assets/portraits/block_7.png.import[39m[0m
+[  63% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/cat_0.png-417e2f112163d7bf1152a478e46c8ab1.ctex[39m[0m
+[  63% ] [90m[1msavepack[22m | Storing File: res://assets/portraits/cat_0.png.import[39m[0m
+[  64% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/cat_1.png-08efc148e3aa61f7dabe63c22b47f06e.ctex[39m[0m
+[  64% ] [90m[1msavepack[22m | Storing File: res://assets/portraits/cat_1.png.import[39m[0m
+[  64% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/cat_2.png-2c256328ffb8224f86d96b745a8c2234.ctex[39m[0m
+[  64% ] [90m[1msavepack[22m | Storing File: res://assets/portraits/cat_2.png.import[39m[0m
+[  65% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/cat_3.png-31d2210ef463fcfa1be2acc6b85ec108.ctex[39m[0m
+[  65% ] [90m[1msavepack[22m | Storing File: res://assets/portraits/cat_3.png.import[39m[0m
+[  66% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/cat_4.png-bc7e1d56938888b6d4dba9223152c986.ctex[39m[0m
+[  66% ] [90m[1msavepack[22m | Storing File: res://assets/portraits/cat_4.png.import[39m[0m
+[  66% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/cat_5.png-4373960bfa7524be5dc8987efd2c39d9.ctex[39m[0m
+[  66% ] [90m[1msavepack[22m | Storing File: res://assets/portraits/cat_5.png.import[39m[0m
+[  66% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/cat_6.png-58a9d7449ce371fd6792e60bcfaa40bf.ctex[39m[0m
+[  66% ] [90m[1msavepack[22m | Storing File: res://assets/portraits/cat_6.png.import[39m[0m
+[  67% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/cat_7.png-cefaef33bdfa2d58e5e393cb21ffabbd.ctex[39m[0m
+[  67% ] [90m[1msavepack[22m | Storing File: res://assets/portraits/cat_7.png.import[39m[0m
+[  68% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/desktop_dojo_backdrop.png-76c3292a1419b1d80925e9cbe50f5b6c.ctex[39m[0m
+[  68% ] [90m[1msavepack[22m | Storing File: res://assets/world/desktop_dojo_backdrop.png.import[39m[0m
+[  69% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/desktop_dojo_backdrop_panorama2.jpg-10ffcaae29ecd23fa771424f06fa92d6.ctex[39m[0m
+[  69% ] [90m[1msavepack[22m | Storing File: res://assets/world/desktop_dojo_backdrop_panorama2.jpg.import[39m[0m
+[  70% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/desktop_dojo_backdrop_panorama.jpg-9ad59f36267a8c5a5bb23bde2bc380a6.ctex[39m[0m
+[  70% ] [90m[1msavepack[22m | Storing File: res://assets/world/desktop_dojo_backdrop_panorama.jpg.import[39m[0m
+[  70% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/glitch_core_backdrop.png-9931cd1fda5e45f01ebc96e43f1fe71f.ctex[39m[0m
+[  70% ] [90m[1msavepack[22m | Storing File: res://assets/world/glitch_core_backdrop.png.import[39m[0m
+[  71% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/glitch_core_backdrop_panorama2.jpg-4b65e0d9b9f2b30aeef901e903d9c40f.ctex[39m[0m
+[  71% ] [90m[1msavepack[22m | Storing File: res://assets/world/glitch_core_backdrop_panorama2.jpg.import[39m[0m
+[  72% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/glitch_core_backdrop_panorama.jpg-4b6f51a4b09a2613824653c6ef74406c.ctex[39m[0m
+[  72% ] [90m[1msavepack[22m | Storing File: res://assets/world/glitch_core_backdrop_panorama.jpg.import[39m[0m
+[  73% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/ground.png-ed83d48c31b88f8fd50cd32ad89572f0.ctex[39m[0m
+[  73% ] [90m[1msavepack[22m | Storing File: res://assets/world/ground.png.import[39m[0m
+[  74% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/pine.png-b218fdc018606be84105ccb8971d62c5.ctex[39m[0m
+[  74% ] [90m[1msavepack[22m | Storing File: res://assets/world/pine.png.import[39m[0m
+[  74% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/rock.png-32cb861fdcf6e5a629940086ab2bc183.ctex[39m[0m
+[  74% ] [90m[1msavepack[22m | Storing File: res://assets/world/rock.png.import[39m[0m
+[  75% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/wood.png-fa9d3bcd779392b9c157f78e00980149.ctex[39m[0m
+[  75% ] [90m[1msavepack[22m | Storing File: res://assets/world/wood.png.import[39m[0m
+[  76% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/benjam_games.png-af5ef66429cbc4873f615afc8ed471c6.ctex[39m[0m
+[  76% ] [90m[1msavepack[22m | Storing File: res://assets/benjam_games.png.import[39m[0m
+[  77% ] [90m[1msavepack[22m | Storing File: res://.godot/imported/icon.svg-56083ea2a1f1a4f1e49773bdc6d7826c.ctex[39m[0m
+[  77% ] [90m[1msavepack[22m | Storing File: res://assets/icon.svg.import[39m[0m
+[  77% ] [90m[1msavepack[22m | Storing File: res://.godot/exported/133200997/export-3ad5c15c4f3250da0cc7c1af1770d85f-main.scn[39m[0m
+[  78% ] [90m[1msavepack[22m | Storing File: res://scripts/kart_cat_sculpt.gdc[39m[0m
+[  79% ] [90m[1msavepack[22m | Storing File: res://scripts/kart_fur.gdshader[39m[0m
+[  80% ] [90m[1msavepack[22m | Storing File: res://scripts/kart_groom.gdshader[39m[0m
+[  81% ] [90m[1msavepack[22m | Storing File: res://scripts/kart_iris.gdshader[39m[0m
+[  81% ] [90m[1msavepack[22m | Storing File: res://scripts/kart_render_portraits.gdc[39m[0m
+[  82% ] [90m[1msavepack[22m | Storing File: res://scripts/kart_visual.gdc[39m[0m
+[  83% ] [90m[1msavepack[22m | Storing File: res://scripts/kart_voxel_driver.gdc[39m[0m
+[  84% ] [90m[1msavepack[22m | Storing File: res://scripts/main.gdc[39m[0m
+[  84% ] [90m[1msavepack[22m | Storing File: res://scripts/menu_ui.gdc[39m[0m
+[  85% ] [90m[1msavepack[22m | Storing File: res://scripts/preferences.gdc[39m[0m
+[  86% ] [90m[1msavepack[22m | Storing File: res://scripts/race_hud.gdc[39m[0m
+[  87% ] [90m[1msavepack[22m | Storing File: res://scripts/race_objects.gdc[39m[0m
+[  88% ] [90m[1msavepack[22m | Storing File: res://scripts/race_sim.gdc[39m[0m
+[  88% ] [90m[1msavepack[22m | Storing File: res://scripts/rally_data.gdc[39m[0m
+[  89% ] [90m[1msavepack[22m | Storing File: res://scripts/rally_sound.gdc[39m[0m
+[  90% ] [90m[1msavepack[22m | Storing File: res://scripts/startup_splash.gdc[39m[0m
+[  91% ] [90m[1msavepack[22m | Storing File: res://scripts/track_lineup_motion.gdshader[39m[0m
+[  91% ] [90m[1msavepack[22m | Storing File: res://scripts/track_world.gdc[39m[0m
+[  92% ] [90m[1msavepack[22m | Storing File: res://scripts/ui_kart_preview.gdc[39m[0m
+[  93% ] [90m[1msavepack[22m | Storing File: res://scripts/ui_menu_icon.gdc[39m[0m
+[  94% ] [90m[1msavepack[22m | Storing File: res://scripts/ui_paw.gdc[39m[0m
+[  95% ] [90m[1msavepack[22m | Storing File: res://scripts/ui_racer_stage.gdc[39m[0m
+[  95% ] [90m[1msavepack[22m | Storing File: res://scripts/ui_wood_sign.gdc[39m[0m
+[  96% ] [90m[1msavepack[22m | Storing File: res://scripts/world_meshes.gdc[39m[0m
+[  97% ] [90m[1msavepack[22m | Storing File: res://test-output/collision_minecraft/telemetry.json[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://test-output/collision_quarry/telemetry.json[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scenes/main.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scripts/kart_cat_sculpt.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scripts/kart_render_portraits.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scripts/kart_visual.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scripts/kart_voxel_driver.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scripts/main.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scripts/menu_ui.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scripts/preferences.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scripts/race_hud.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scripts/race_objects.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scripts/race_sim.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scripts/rally_data.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scripts/rally_sound.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scripts/startup_splash.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scripts/track_world.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scripts/ui_kart_preview.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scripts/ui_menu_icon.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scripts/ui_paw.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scripts/ui_racer_stage.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scripts/ui_wood_sign.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://scripts/world_meshes.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://.godot/global_script_class_cache.cfg[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://assets/icon.svg[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://.godot/uid_cache.bin[39m[0m
+[  98% ] [90m[1msavepack[22m | Storing File: res://project.binary[39m[0m
+[92m[ DONE ][39m [1msavepack[22m
+[0m
+[  50% ] [90m[1mexport[22m | Code signing bundle[39m[0m
+[92m[ DONE ][39m [1mexport[22m
+[0m
+/Users/aiden/Documents/Codex/2026-09-13/take-a-look-at-this-repo-2/outputs/Doodle_Rally_3D/builds/Doodle Rally 1.3.2.app: replacing existing signature
+Built /Users/aiden/Documents/Codex/2026-09-13/take-a-look-at-this-repo-2/outputs/Doodle_Rally_3D/builds/Doodle Rally 1.3.2.app

@@ -47,6 +47,7 @@ func _run() -> void:
 	_test_solid_contacts()
 	_test_finish_crossing()
 	_test_full_races()
+	_test_difficulty_pace()
 	_test_real_courses()
 	await _test_pause_and_timestep()
 	_test_preferences()
@@ -75,7 +76,7 @@ func _near(actual: float, expected: float, tolerance: float, description: String
 	_expect(absf(actual - expected) <= tolerance, "%s (actual %.6f, expected %.6f ± %.6f)" % [description, actual, expected, tolerance])
 
 
-func _new_sim(character: int = 0, difficulty: int = 0, mode: String = "cats", course_items: bool = false) -> RefCounted:
+func _new_sim(character: int = 0, difficulty: int = 2, mode: String = "cats", course_items: bool = false) -> RefCounted:
 	var world: TestTrack = TestTrack.new()
 	_tracks.append(world)
 	if course_items:
@@ -122,7 +123,7 @@ func _test_setup() -> void:
 	_expect(sim.pickups.size() == 4, "setup copies the course pickup locations")
 	_expect(sim.racers[0].distance < 0 and sim.racers[0].lap == 1, "staging grid precedes lap one start")
 	_expect(sim.standings().size() == 8 and sim.player_place() in range(1, 9), "initial standings cover all racers")
-	sim.setup(sim.world, 2, 0, "cats")
+	sim.setup(sim.world, 2, 2, "cats")
 	_expect(sim.racers.size() == 8 and sim.race_time == 0 and not sim.finished, "setup resets an existing simulation")
 
 
@@ -441,8 +442,8 @@ func _drive_race(difficulty: int, mode: String, throttle: float = 1.0, use_items
 
 
 func _test_full_races() -> void:
-	var first: Dictionary = _drive_race(1, "cats")
-	var second: Dictionary = _drive_race(1, "cats")
+	var first: Dictionary = _drive_race(2, "cats")
+	var second: Dictionary = _drive_race(2, "cats")
 	_expect(first.snapshot == second.snapshot and first.time == second.time and first.order == second.order and first.events == second.events, "identical seeds and controls produce identical full race outcomes")
 	_expect(first.events.get("pickup", 0) > 0 and first.events.get("item", 0) > 0, "full race exercises real pickups and item use")
 	var block_race: Dictionary = _drive_race(2, "minecraft", 0.68, false)
@@ -454,6 +455,22 @@ func _test_full_races() -> void:
 	_expect(block_race.sim.player_place() == 8, "a slower player receives eighth place behind seven completed AI")
 	print("Full races: normal %.2fs, repeated %.2fs, Minecraft expert %.2fs" % [first.time, second.time, block_race.time])
 
+func _test_difficulty_pace() -> void:
+	var speeds: Array[float] = []
+	for level in [2,3,4]:
+		var sim: RefCounted = _new_sim(0,level)
+		sim.racers[0].distance = 300.0
+		for i in range(2,8): sim.racers[i].finish_time = 1.0
+		var rival: Dictionary = sim.racers[1]
+		rival.distance = 200.0
+		rival.lane = 0.0
+		rival.ai_item_time = 999.0
+		for tick in range(120):
+			sim.race_time += STEP
+			sim._ai_step(rival,1,STEP)
+		speeds.append(float(rival.speed))
+	_expect(speeds[0] < speeds[1] and speeds[1] < speeds[2],"Easy, Medium and Hard progressively increase actual rival pace")
+
 
 func _test_real_courses() -> void:
 	var world_script: GDScript = load("res://scripts/track_world.gd")
@@ -462,7 +479,7 @@ func _test_real_courses() -> void:
 		root.add_child(track)
 		track.build(course, "cats")
 		var sim: RefCounted = Sim.new()
-		sim.setup(track, 0, 0, "cats")
+		sim.setup(track, 0, 2, "cats")
 		var wall_count: int = 0
 		var maximum_lane: float = 0
 		var finite_transforms: bool = true
@@ -510,23 +527,23 @@ func _test_pause_and_timestep() -> void:
 func _test_preferences() -> void:
 	var prefs: RefCounted = Prefs.new()
 	prefs.file_path = _temp_path
-	_expect(prefs.best(1, 0, "cats") < 0, "new preference file starts with no best record")
-	_expect(prefs.record(1, 0, 102.5, "cats"), "first valid race establishes a best record")
-	_expect(not prefs.record(1, 0, 103.0, "cats"), "slower race does not replace an existing best")
-	_expect(not prefs.record(1, 0, 102.5, "cats"), "equal race does not claim a new best")
-	_expect(prefs.record(1, 0, 100.0, "cats"), "faster race improves the best record")
-	_expect(prefs.record(1, 1, 115.0, "cats"), "difficulty has its own best record")
-	_expect(prefs.record(1, 0, 94.0, "minecraft"), "game mode has its own best record")
-	_expect(prefs.record(2, 0, 88.0, "cats"), "course has its own best record")
-	_near(prefs.best(1, 0, "cats"), 100.0, 0.0001, "base cat record is isolated")
-	_near(prefs.best(1, 1, "cats"), 115.0, 0.0001, "difficulty record is isolated")
-	_near(prefs.best(1, 0, "minecraft"), 94.0, 0.0001, "Minecraft record is isolated")
-	_expect(prefs.best(1, 2, "cats") < 0 and prefs.best(1, 1, "minecraft") < 0, "unused difficulty and mode combinations stay empty")
+	_expect(prefs.best(1, 2, "cats") < 0, "new preference file starts with no best record")
+	_expect(prefs.record(1, 2, 102.5, "cats"), "first valid Easy race establishes a best record")
+	_expect(not prefs.record(1, 2, 103.0, "cats"), "slower race does not replace an existing best")
+	_expect(not prefs.record(1, 2, 102.5, "cats"), "equal race does not claim a new best")
+	_expect(prefs.record(1, 2, 100.0, "cats"), "faster race improves the best record")
+	_expect(prefs.record(1, 3, 115.0, "cats"), "Medium has its own best record")
+	_expect(prefs.record(1, 2, 94.0, "minecraft"), "game mode has its own best record")
+	_expect(prefs.record(2, 2, 88.0, "cats"), "course has its own best record")
+	_near(prefs.best(1, 2, "cats"), 100.0, 0.0001, "Easy cat record retains the old Fast cats key")
+	_near(prefs.best(1, 3, "cats"), 115.0, 0.0001, "Medium record is isolated")
+	_near(prefs.best(1, 2, "minecraft"), 94.0, 0.0001, "Minecraft record is isolated")
+	_expect(prefs.best(1, 4, "cats") < 0 and prefs.best(1, 3, "minecraft") < 0, "unused difficulty and mode combinations stay empty")
 	for invalid: float in [0.0, -1.0, INF, -INF, NAN]:
-		_expect(not prefs.record(0, 0, invalid, "cats"), "reject invalid race time %s" % invalid)
-	_expect(not prefs.record(-1, 0, 50, "cats") and not prefs.record(3, 0, 50, "cats"), "reject out-of-range course records")
-	_expect(not prefs.record(0, -1, 50, "cats") and not prefs.record(0, 3, 50, "cats"), "reject out-of-range difficulty records")
-	_expect(not prefs.record(0, 0, 50, "unknown"), "reject unknown game-mode records")
+		_expect(not prefs.record(0, 2, invalid, "cats"), "reject invalid race time %s" % invalid)
+	_expect(not prefs.record(-1, 2, 50, "cats") and not prefs.record(3, 2, 50, "cats"), "reject out-of-range course records")
+	_expect(not prefs.record(0, 1, 50, "cats") and not prefs.record(0, 5, 50, "cats"), "reject out-of-range difficulty records")
+	_expect(not prefs.record(0, 2, 50, "unknown"), "reject unknown game-mode records")
 	prefs.selected_character = 5
 	prefs.selected_course = 2
 	prefs.selected_mode = "minecraft"
@@ -544,14 +561,22 @@ func _test_preferences() -> void:
 	_expect(restored.records == prefs.records, "all course/difficulty/mode best records survive reload")
 	_expect(restored.values == prefs.values, "settings survive reload")
 	_expect(restored.selected_character == 5 and restored.selected_course == 2 and restored.selected_mode == "minecraft", "racer, course and mode selection survive reload")
+	var legacy := ConfigFile.new()
+	legacy.set_value("settings", "difficulty", 1)
+	legacy.set_value("records", "cats_1_2", 100.0)
+	_expect(legacy.save(_temp_path) == OK, "legacy difficulty fixture saves")
+	var migrated: RefCounted = Prefs.new()
+	migrated.file_path = _temp_path
+	migrated.load_data()
+	_expect(migrated.values.difficulty == 2 and migrated.best(1, 2, "cats") == 100.0, "old settings become Easy while previous Fast cats best is retained")
 	var config: ConfigFile = ConfigFile.new()
 	config.set_value("settings", "master_volume", 50.0)
 	config.set_value("settings", "music_volume", -2.0)
 	config.set_value("settings", "difficulty", 99)
 	config.set_value("settings", "graphics_quality", 99)
 	config.set_value("settings", "reduced_motion", "wrong_type")
-	config.set_value("records", "cats_0_0", -45.0)
-	config.set_value("records", "minecraft_0_0", "bad_record")
+	config.set_value("records", "cats_0_2", -45.0)
+	config.set_value("records", "minecraft_0_2", "bad_record")
 	config.set_value("racer", "character", 100)
 	config.set_value("racer", "course", -2)
 	config.set_value("racer", "mode", "not_a_mode")
@@ -559,7 +584,7 @@ func _test_preferences() -> void:
 	var sanitized: RefCounted = Prefs.new()
 	sanitized.file_path = _temp_path
 	sanitized.load_data()
-	_expect(sanitized.values.master_volume == 1 and sanitized.values.music_volume == 0 and sanitized.values.difficulty == 2 and sanitized.values.graphics_quality == 2, "loading clamps numeric settings to safe ranges")
+	_expect(sanitized.values.master_volume == 1 and sanitized.values.music_volume == 0 and sanitized.values.difficulty == 4 and sanitized.values.graphics_quality == 2, "loading clamps numeric settings to safe ranges")
 	_expect(sanitized.values.reduced_motion == false, "loading ignores a wrong-typed boolean setting")
 	_expect(sanitized.selected_character == 7 and sanitized.selected_course == 0 and sanitized.selected_mode == "cats", "loading sanitizes racer and course selections")
 	_expect(sanitized.records.is_empty(), "loading ignores corrupt or nonpositive record values")

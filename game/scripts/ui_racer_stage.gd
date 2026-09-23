@@ -3,6 +3,7 @@ extends Control
 var characters: Array[int] = []
 var mode := "cats"
 var selected_character := 0
+var selected_course := 1
 var rear_view := false
 var single_preview := false
 var reduced_motion := false
@@ -11,6 +12,8 @@ var _viewport: SubViewport
 var _camera: Camera3D
 var _canvas: TextureRect
 var _reference_sprites: Array[TextureRect] = []
+var _rear_motion: Dictionary = {}
+var _head_look: Dictionary = {}
 var _elapsed := 0.0
 var _resize_clock := 0.0
 
@@ -19,6 +22,10 @@ var _resize_clock := 0.0
 # the two hero cats remain readable in the centre pair.
 const PRESENTATION_YAW := [-0.15, -0.18, 0.16, -0.12, 0.12, -0.16, 0.19, 0.22]
 const PRESENTATION_ROLL := [0.022, -0.024, 0.012, -0.016, 0.020, -0.012, 0.020, -0.020]
+const REAR_MOTION = preload("res://scripts/track_lineup_motion.gdshader")
+# The clean rear crops share a canvas, but the visible tails sit on different
+# sides. Zizi's and Biscuit's tails are mostly hidden by their karts.
+const TAIL_CENTERS := [Vector2(-1.0,-1.0),Vector2(0.22,0.46),Vector2(0.20,0.52),Vector2(0.76,0.51),Vector2(0.20,0.56),Vector2(0.21,0.50),Vector2(0.83,0.45),Vector2(0.20,0.47)]
 # These are the supplied asset-sheet poses used for the static presentation
 # lineup. The live 3D racers remain underneath for anchors and interaction;
 # a transparent sprite gives each photographed kitten the same soft fur and
@@ -123,6 +130,15 @@ func _ready() -> void:
 				var slot_width: float = size.x / maxf(1.0, float(characters.size()))
 				sprite.position = Vector2(slot * slot_width, 0.0)
 				sprite.size = Vector2(slot_width, size.y)
+				var motion := ShaderMaterial.new()
+				motion.shader = REAR_MOTION
+				motion.set_shader_parameter("tail_center",TAIL_CENTERS[character])
+				if character == 6:
+					motion.set_shader_parameter("head_center",Vector2(0.51,0.30))
+					motion.set_shader_parameter("tail_radius",Vector2(0.17,0.22))
+				sprite.material = motion
+				_rear_motion[slot] = motion
+				_head_look[slot] = 0.0
 			else:
 				sprite.position = Vector2(6.0 + slot * 174.0, -1.0)
 				sprite.size = Vector2(166.0, 284.0)
@@ -300,3 +316,14 @@ func _process(delta: float) -> void:
 		kart.rotation.y=base_rotation+presentation_angle+motion
 		kart.rotation.z = 0.0 if rear_view else PRESENTATION_ROLL[characters[slot]] + sin(_elapsed*.55 + slot)*.006
 		if not reduced_motion and kart.visible: kart.call("animate",delta,0.0,0.0,0.0,false)
+	if rear_view and not _rear_motion.is_empty():
+		var course_x := size.x * (0.125 + 0.375 * float(selected_course))
+		var slot_width := size.x / maxf(1.0,float(characters.size()))
+		for slot in _rear_motion:
+			var head_target := clampf((course_x - (float(slot)+0.5)*slot_width) / (size.x / 3.0),-1.0,1.0)
+			var prior: float = float(_head_look[slot])
+			var current := head_target if reduced_motion else lerpf(prior,head_target,1.0-exp(-delta*3.5))
+			_head_look[slot] = current
+			var material: ShaderMaterial = _rear_motion[slot]
+			material.set_shader_parameter("look",current)
+			material.set_shader_parameter("tail_wag",0.0 if reduced_motion else sin(_elapsed*2.2 + float(slot)*1.05)*0.8)

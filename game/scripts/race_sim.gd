@@ -17,7 +17,9 @@ var race_time := 0.0
 var finished := false
 var track_length := 1000.0
 var road_half := 9.0
-var difficulty := 0
+## Levels 2/3/4 are Easy/Medium/Hard. Level 2 deliberately preserves the
+## previous Fast cats pace and its saved best-lap key.
+var difficulty := 2
 var mode := "cats"
 var world: Node3D
 var _rng := RandomNumberGenerator.new()
@@ -26,7 +28,7 @@ func setup(track: Node3D, character: int, level: int = 0, racer_mode: String = "
 	world = track
 	track_length = float(world.length)
 	road_half = float(world.road_width) * 0.5
-	difficulty = clampi(level, 0, 2)
+	difficulty = clampi(level, 2, 4)
 	mode = racer_mode
 	race_time = 0
 	finished = false
@@ -34,7 +36,9 @@ func setup(track: Node3D, character: int, level: int = 0, racer_mode: String = "
 	pickups.clear()
 	hazards.clear()
 	events.clear()
-	_rng.seed = 9419 + character * 117 + level
+	# Keep Easy's established item sequence, and compare the higher levels on
+	# the same item layout so their extra race pressure is predictable.
+	_rng.seed = 9419 + character * 117 + 2
 	var roster: Array[int] = [character]
 	for id in range(8):
 		if id != character: roster.append(id)
@@ -157,7 +161,7 @@ func _player_step(r: Dictionary, controls: Dictionary, dt: float) -> void:
 	if wants_drift: turn_rate *= 1.28
 	r.angle = float(r.angle) + steer * turn_rate * dt
 	# A gentle steering assist damps overcorrection, while input still controls the actual heading.
-	var align := 3.5 if difficulty == 0 else 2.6 if difficulty == 1 else 2.0
+	var align := 2.0
 	if wants_drift: align *= 0.62
 	r.angle = lerpf(float(r.angle), 0, minf(1, dt * align))
 	r.angle = clampf(float(r.angle), -0.8, 0.8)
@@ -167,19 +171,20 @@ func _player_step(r: Dictionary, controls: Dictionary, dt: float) -> void:
 	r.lane = float(r.lane) + float(r.speed) * sin(float(r.angle)) * dt
 	var after: Vector3 = world.tangent(float(r.distance))
 	var bend := wrapf(atan2(-after.x, -after.z) - atan2(-before.x, -before.z), -PI, PI)
-	r.angle = float(r.angle) + bend * (0.38 if difficulty == 0 else 0.62)
+	r.angle = float(r.angle) + bend * 0.62
 
 func _ai_step(r: Dictionary, i: int, dt: float) -> void:
 	var ch := int(r.character)
-	# The default is now Fast cats. Rivals keep a visible pace through corners
-	# instead of falling far behind while the player is on the straight.
-	var base: float = float(Data.TOP_SPEED[ch]) * float([0.89, 1.00, 1.10][difficulty])
+	# Easy preserves the old Fast cats pace. Higher levels increase rival pace,
+	# recovery and passing rather than changing the player's handling.
+	var tier := difficulty - 2
+	var base: float = float(Data.TOP_SPEED[ch]) * float([1.10, 1.12, 1.21][tier])
 	var behind := float(racers[0].distance) - float(r.distance)
-	base *= 1.0 + clampf(behind / track_length, -0.10, 0.07)
+	base *= 1.0 + clampf(behind / track_length, float([-0.10, -0.09, -0.07][tier]), float([0.07, 0.08, 0.125][tier]))
 	base *= 0.98 + sin(race_time * 0.27 + i * 1.4) * 0.035
 	if float(r.turbo) > 0: base *= 1.35
 	if float(r.stun) > 0: base *= 0.36
-	var ai_accel: float = float(Data.ACCEL[ch]) * float([0.92, 1.02, 1.12][difficulty])
+	var ai_accel: float = float(Data.ACCEL[ch]) * float([1.12, 1.14, 1.27][tier])
 	r.speed = move_toward(float(r.speed), base, ai_accel * dt)
 	var target_lane := sin(float(r.distance) * 0.013 + i * 2.3) * (road_half - 3.3)
 	# Racers choose a collectable line when a box approaches.
@@ -210,7 +215,7 @@ func _ai_step(r: Dictionary, i: int, dt: float) -> void:
 	var old_lane := float(r.lane)
 	# Steering needs forward motion. Full lateral speed from a standing grid
 	# would rotate AI cars sideways and create an immediate launch pileup.
-	var lateral_speed := minf(3.5 + difficulty * 0.6, float(r.speed) * (0.30 + difficulty * 0.025))
+	var lateral_speed := minf(4.7 + tier * 0.30, float(r.speed) * (0.35 + tier * 0.012))
 	r.lane = move_toward(old_lane, target_lane, dt * lateral_speed)
 	r.angle = atan2((float(r.lane) - old_lane) / dt, maxf(1, float(r.speed)))
 	r.steer = float(r.angle) * 2.0
@@ -218,7 +223,7 @@ func _ai_step(r: Dictionary, i: int, dt: float) -> void:
 	r.ai_item_time = float(r.ai_item_time) - dt
 	if float(r.ai_item_time) <= 0:
 		_use_item(i)
-		r.ai_item_time = (4.15 + i * 0.34) if difficulty == 2 else 5.0 + i * 0.45
+		r.ai_item_time = (4.15 - tier * 0.15) + i * 0.34
 
 func _check_pickups(r: Dictionary, index: int, old_d: float) -> void:
 	for p in pickups:

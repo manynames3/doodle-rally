@@ -38,7 +38,7 @@ var _graphics_window_size := Vector2i.ZERO
 var startup_splash: CanvasLayer
 
 func _ready() -> void:
-	get_window().title = "Doodle Rally — Cat Racers · 1.3.1"
+	get_window().title = "Doodle Rally — Cat Racers · 1.3.2"
 	_qa = "--qa" in OS.get_cmdline_user_args()
 	preferences.enabled = not _qa
 	preferences.load_data()
@@ -506,6 +506,8 @@ func _qa_run() -> void:
 	menu.selected_mode = _arg("--qa-mode", "cats")
 	menu.selected_course = int(_arg("--qa-course", "1"))
 	menu.selected_character = clampi(int(_arg("--qa-character", "0")), 0, 7)
+	preferences.values.difficulty = clampi(int(_arg("--qa-difficulty", "2")),2,4)
+	menu.preferences.difficulty = preferences.values.difficulty
 	if screen == "splash":
 		startup_splash.set_process(false)
 		startup_splash._process(.8)
@@ -550,5 +552,5 @@ func _qa_run() -> void:
 		RenderingServer.force_draw(false)
 		var result := get_viewport().get_texture().get_image().save_png(filename)
 		print("QA_SCREENSHOT ", filename, " result=", result)
-	print("QA_STATE ", state, " screen=", screen, " mode=", menu.selected_mode, " character=", menu.selected_character)
+	print("QA_STATE ", state, " screen=", screen, " mode=", menu.selected_mode, " character=", menu.selected_character, " difficulty=", int(preferences.values.difficulty))
 	if "--qa-quit" in OS.get_cmdline_user_args(): get_tree().quit()

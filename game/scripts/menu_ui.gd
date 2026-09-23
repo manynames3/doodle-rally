@@ -20,6 +20,7 @@ const INK := Color("17212b")
 const DISPLAY_ORDER := [1, 2, 3, 0, 6, 4, 5, 7]
 const DESCRIPTIONS := ["Your tuxedo.\nReady to rally.", "Steady and reliable\non any track.", "Light and quick.\nBorn to zoom.", "Strong and sturdy.\nGo full throttle.", "Smooth and nimble.\nLoves the corners.", "Unexpected moves.\nAlways a surprise.", "Calico. Golden halo.\nFinds the best line.", "Precise and clever.\nFinds the best line."]
 const STATS := [[0.70,0.73,0.72],[0.65,0.78,0.82],[0.92,0.94,0.59],[0.80,0.58,0.53],[0.67,0.73,0.99],[0.74,0.90,0.72],[0.69,0.82,0.93],[0.72,0.82,0.91]]
+const DIFFICULTY_NAMES := ["Easy", "Medium", "Hard"]
 var selected_mode := "cats"
 var selected_character := 0
 var selected_course := 1
@@ -29,6 +30,7 @@ var _background: TextureRect
 var _wash: TextureRect
 var _stage: Control
 var _cards: Array[Button] = []
+var _difficulty_buttons: Array[Button] = []
 var _previews: Array[Control] = []
 var _placards: Array[Panel] = []
 var _spotlights: Array[Panel] = []
@@ -104,6 +106,7 @@ func _reset(next_screen: String, title_art: bool = false) -> void:
 	screen = next_screen
 	visible = true
 	_cards.clear()
+	_difficulty_buttons.clear()
 	_previews.clear()
 	_placards.clear()
 	_spotlights.clear()
@@ -461,7 +464,17 @@ func show_tracks() -> void:
 	_lineup=_racer_stage(Rect2(130,573,1180,224),display_roster,true)
 	_selection_label = _label(_stage,"",Rect2(324,774,792,32),21,GOLD,true)
 	_choose_course(selected_course)
-	_footer(show_characters, _launch)
+	_button(_stage, "B / Esc   Back", Rect2(37,810,218,56), show_characters)
+	_label(_stage,"LEVEL",Rect2(285,819,118,43),20,CREAM,true)
+	for index in range(3):
+		var level := index + 2
+		var button := _button(_stage,DIFFICULTY_NAMES[index],Rect2(408 + index*185,810,170,56),_choose_difficulty.bind(level))
+		button.name = "Difficulty_" + DIFFICULTY_NAMES[index]
+		button.focus_mode = Control.FOCUS_NONE
+		button.add_theme_font_size_override("font_size",22)
+		_difficulty_buttons.append(button)
+	_choose_difficulty(int(preferences.difficulty),false)
+	_button(_stage,"LET'S RACE!   →",Rect2(1085,797,317,73),_launch,true)
 
 func _choose_course(course: int) -> void:
 	selected_course = course
@@ -475,7 +488,19 @@ func _choose_course(course: int) -> void:
 			style.shadow_offset = Vector2.ZERO
 		_cards[i].add_theme_stylebox_override("normal",style)
 	if is_instance_valid(_selection_label):
-		_selection_label.text = _name_for(selected_character) + "   →   " + Data.COURSES[course] + "   •   8 racers / 3 laps"
+		_selection_label.text = _name_for(selected_character) + "   →   " + Data.COURSES[course] + "   •   " + DIFFICULTY_NAMES[clampi(int(preferences.difficulty)-2,0,2)] + " / 3 laps"
+	if is_instance_valid(_lineup):
+		_lineup.selected_course = course
+
+func _choose_difficulty(level: int, save: bool = true) -> void:
+	level = clampi(level,2,4)
+	if save: _preference("difficulty",level)
+	for index in range(_difficulty_buttons.size()):
+		var selected := index + 2 == level
+		var button := _difficulty_buttons[index]
+		button.add_theme_stylebox_override("normal",_style(Color("ffda4b") if selected else Color(0.055,0.09,0.10,0.86),GOLD if selected else Color(1,0.89,0.68,0.23),3 if selected else 2,11))
+		button.add_theme_color_override("font_color",INK if selected else CREAM)
+	if is_instance_valid(_selection_label) and screen == "tracks": _choose_course(selected_course)
 
 func _launch() -> void:
 	if screen != "tracks":
@@ -523,14 +548,14 @@ func show_settings() -> void:
 	var difficulty := OptionButton.new()
 	difficulty.position = Vector2(710,447)
 	difficulty.size = Vector2(390,45)
-	for difficulty_name in ["Cozy cruise", "Club racer", "Fast cats"]:
+	for difficulty_name in DIFFICULTY_NAMES:
 		difficulty.add_item(difficulty_name)
-	difficulty.selected = int(preferences.difficulty)
+	difficulty.selected = clampi(int(preferences.difficulty)-2,0,2)
 	difficulty.add_theme_font_override("font",CHALK)
 	difficulty.add_theme_font_size_override("font_size",24)
 	difficulty.add_theme_stylebox_override("normal",_style(Color("314441"),Color("597068"),1,8))
 	difficulty.add_theme_stylebox_override("focus",_style(Color.TRANSPARENT,GOLD,3,8))
-	difficulty.item_selected.connect(func(value: int): _preference("difficulty",value))
+	difficulty.item_selected.connect(func(value: int): _preference("difficulty",value+2))
 	_stage.add_child(difficulty)
 	_label(_stage,"Graphics",Rect2(270,510,344,40),25)
 	var graphics := OptionButton.new()
@@ -632,6 +657,10 @@ func _input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		return
 	if screen != "characters" and screen != "tracks" and screen != "garage":
+		return
+	if screen == "tracks" and (event.is_action_pressed("ui_up") or event.is_action_pressed("ui_down")):
+		_choose_difficulty(clampi(int(preferences.difficulty) + (-1 if event.is_action_pressed("ui_up") else 1),2,4))
+		get_viewport().set_input_as_handled()
 		return
 	if event is InputEventJoypadMotion and event.axis == JOY_AXIS_LEFT_X:
 		if absf(event.axis_value) < 0.4:

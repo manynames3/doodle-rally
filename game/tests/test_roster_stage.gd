@@ -42,6 +42,23 @@ func _run():
 		menu.show_tracks()
 		await process_frame
 		check(menu._lineup.characters.count(6)==1 and menu._lineup.characters[2]==6,"Track lineup shows the selected racer once in the center")
+		check(menu._lineup.selected_course==menu.selected_course,"Highlighted course reaches the rear lineup")
+		if mode=="cats":
+			var rear:Control=menu._lineup
+			check(rear._rear_motion.size()==6,"Each rear cat sprite has one seamless motion layer")
+			rear.reduced_motion=false
+			rear.selected_course=0
+			rear._process(1.0)
+			var left_look:float=float(rear._rear_motion[2].get_shader_parameter("look"))
+			var moving_tail:float=float(rear._rear_motion[1].get_shader_parameter("tail_wag"))
+			rear.selected_course=2
+			rear._process(1.0)
+			var right_look:float=float(rear._rear_motion[2].get_shader_parameter("look"))
+			check(left_look < -0.1 and right_look > left_look + 0.2,"Cat heads turn toward the newly highlighted course")
+			check(absf(moving_tail)>0.05,"Cat tails sway gently while track selection is visible")
+			rear.reduced_motion=true
+			rear._process(0.5)
+			check(absf(float(rear._rear_motion[1].get_shader_parameter("tail_wag")))<0.001,"Reduced motion stops idle tail movement")
 		menu.call("_show_garage")
 		await process_frame
 		check(menu.selected_character==6,"Garage preserves selected character")
