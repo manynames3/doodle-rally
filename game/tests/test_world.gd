@@ -5,6 +5,7 @@ func _initialize() -> void:
 	if script == null:
 		quit(1)
 		return
+	assert(float(script.DESKTOP_SHEET_TOP) - float(script.DESKTOP_DECK_TOP) >= 0.15, "Desktop Dojo paper surface stays above the wooden tabletop to prevent depth-buffer flicker")
 	for mode in ["cats", "minecraft"]:
 		for index in range(3):
 			var world: Node3D = script.new()

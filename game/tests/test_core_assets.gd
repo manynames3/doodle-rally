@@ -28,6 +28,13 @@ func _run() -> void:
 			for number in range(1, int(Core.FRAME_COUNTS[state]) + 1):
 				var frame: Texture2D = load(Core.frame(character, state, number))
 				check(frame != null and frame.get_size() == Vector2(640, 640), "%s frame %d for %d" % [state, number, character])
+		for frame_index in range(Core.TURNTABLE_FRAME_COUNT):
+			var turntable: Texture2D = load(Core.turntable_frame(character, frame_index))
+			check(turntable != null and turntable.get_size() == Vector2(1024, 1024), "1024px turntable view %02d for %d" % [frame_index, character])
+			if turntable != null:
+				var image: Image = turntable.get_image()
+				var edge_alpha := [image.get_pixel(0, 0).a, image.get_pixel(1023, 0).a, image.get_pixel(0, 1023).a, image.get_pixel(1023, 1023).a]
+				check(edge_alpha.max() <= 0.01, "Turntable view %02d preserves transparent canvas corners for %d" % [frame_index, character])
 		var player := Animator.new()
 		player.character_index = character
 		root.add_child(player)
@@ -47,36 +54,40 @@ func _run() -> void:
 	menu.show_characters()
 	await process_frame
 	var stage: Control = menu._lineup
-	check(stage._reference_sprites.size() == 8 and stage._turntable_sprite != null and stage._turntable_art != null, "Selection presents eight cutouts and one selected-art turntable")
+	check(stage._reference_sprites.size() == 8 and stage._turntable_sprite != null and stage._turntable_frames.size() == Core.TURNTABLE_FRAME_COUNT, "Selection presents eight previews and one 16-frame selected-racer turntable")
 	for slot in range(8):
 		var character: int = menu.DISPLAY_ORDER[slot]
 		var sprite: TextureRect = stage._reference_sprites[slot]
-		check(sprite.texture.resource_path == Core.selection(character), "Selection uses the matching core cutout")
-		check(sprite.size == Vector2(166, 190) and sprite.stretch_mode == TextureRect.STRETCH_KEEP_ASPECT_CENTERED, "Full cutout fits a normalized card")
+		check(sprite.texture.get_size() == Vector2(1024, 1024), "Selection uses the matching full-resolution turntable canvas")
+		check(sprite.size == Vector2.ONE * stage.TURNTABLE_DISPLAY_SIZE and sprite.stretch_mode == TextureRect.STRETCH_KEEP_ASPECT_CENTERED, "Every view fits the shared undistorted card box")
+		check(sprite.visible and sprite.texture_filter == CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, "Each card has one clean, visible preview")
+		check(is_equal_approx(sprite.position.x + sprite.size.x * 0.5, 89.0 + slot * 174.0), "Racer %d stays centered in its roster slot" % character)
+		check(is_equal_approx(sprite.position.y + stage.TURNTABLE_CANVAS_BASELINE * stage.TURNTABLE_DISPLAY_SIZE / 1024.0, stage.TURNTABLE_BASELINE_Y), "Racer %d stays on the shared pack baseline" % character)
 		if character == menu.selected_character:
-			check(not sprite.visible and stage._turntable_sprite.visible, "Selected racer replaces its lower cutout with one spinning preview")
+			check(stage._turntable_sprite == sprite and sprite.texture.resource_path == Core.turntable_frame(character, 0), "Selected card is the single frame-swapped preview")
 		else:
-			check(sprite.visible, "Unselected racer keeps one lower cutout")
-	check(stage._turntable_art.texture.resource_path == Core.selection(menu.selected_character), "Selected preview uses the same current core artwork as its roster cutout")
-	check(not stage._turntable_art.shaded, "Selected core artwork stays unlit and keeps its supplied colors and clean alpha edges")
-	check(is_equal_approx(stage._turntable_yaw(0.0), stage._turntable_yaw(6.0)), "Turntable returns to the same angle after six seconds")
-	var before_wrap: float = stage._turntable_yaw(5.99)
-	var after_wrap: float = stage._turntable_yaw(6.01)
-	var boundary_step := Vector2(cos(before_wrap), sin(before_wrap)).distance_to(Vector2(cos(after_wrap), sin(after_wrap)))
-	check(absf(boundary_step - TAU * 0.02 / 6.0) < 0.003, "Turntable crosses the loop boundary with uniform angular speed")
-	stage._spin_elapsed = 5.99
-	stage.call("_process", 0.02)
-	check(stage._spin_elapsed < 0.03, "Turntable advances continuously across each six-second loop")
-	var spin_before_reduced: float = stage._spin_elapsed
+			check(sprite.texture.resource_path == Core.turntable_frame(character, 0), "Unselected card stays on its front view")
+	check(stage._turntable_sprite.texture.resource_path == Core.turntable_frame(menu.selected_character, 0), "Selected preview starts on its front view from the turntable pack")
+	var timing_cases := {0.0: 0, 0.374: 0, 0.375: 1, 0.749: 1, 0.75: 2, 1.5: 4, 3.0: 8, 4.5: 12, 5.999: 15, 6.0: 0}
+	for seconds: float in timing_cases:
+		check(stage._turntable_frame_for_elapsed(seconds) == timing_cases[seconds], "Elapsed-time turntable frame at %.3f seconds" % seconds)
+	stage._spin_elapsed = 5.999
+	stage.call("_process", 0.002)
+	check(stage._turntable_frame_index == 0 and stage._turntable_sprite.texture.resource_path == Core.turntable_frame(menu.selected_character, 0), "Six-second wrap swaps frame 15 directly to the front frame")
+	stage._spin_elapsed = 0.374
+	stage._set_turntable_frame(0)
+	stage.call("_process", 0.002)
+	check(stage._turntable_frame_index == 1 and stage._turntable_sprite.texture.resource_path == Core.turntable_frame(menu.selected_character, 1), "Turntable swaps directly when elapsed time crosses 0.375 seconds")
 	stage.reduced_motion = true
 	stage.call("_process", 0.25)
-	check(is_equal_approx(stage._spin_elapsed, spin_before_reduced) and is_equal_approx(stage._turntable_kart.rotation.y, stage.TURNTABLE_BASE_YAW), "Reduced Motion holds the selected racer turntable still")
+	check(is_equal_approx(stage._spin_elapsed, 0.0) and stage._turntable_frame_index == 0 and stage._turntable_sprite.texture.resource_path == Core.turntable_frame(menu.selected_character, 0), "Reduced Motion holds view_00 as the static preview")
 	stage.reduced_motion = false
 	menu.call("_choose_character", 6)
 	await process_frame
 	var mak_slot: int = menu.DISPLAY_ORDER.find(6)
-	check(stage._turntable_character == 6 and not stage._reference_sprites[mak_slot].visible, "Changing selection moves the single turntable to Mak-Doong")
-	check(stage._turntable_art.texture.resource_path == Core.selection(6), "Turntable artwork changes with the selected character")
+	check(stage._turntable_character == 6 and stage._reference_sprites[mak_slot].visible and stage._reference_sprites[mak_slot] == stage._turntable_sprite, "Changing selection moves the single turntable to Mak-Doong's card")
+	check(stage._turntable_sprite.texture.resource_path == Core.turntable_frame(6, 0) and stage._turntable_frames.size() == Core.TURNTABLE_FRAME_COUNT, "Mak-Doong starts on its own view_00 with all frames loaded")
+	check(stage._reference_sprites[menu.DISPLAY_ORDER.find(0)].texture.resource_path == Core.turntable_frame(0, 0), "Previous selection returns to its static view_00 without duplicating a preview")
 	menu.selected_character = 0
 	menu.call("_show_garage")
 	await process_frame

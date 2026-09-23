@@ -14,11 +14,10 @@ var _canvas: TextureRect
 var _reference_sprites: Array[TextureRect] = []
 var _rear_motion: Dictionary = {}
 var _head_look: Dictionary = {}
-var _turntable_viewport: SubViewport
 var _turntable_sprite: TextureRect
-var _turntable_kart: Node3D
-var _turntable_art: Sprite3D
 var _turntable_character := -1
+var _turntable_frames: Array[Texture2D] = []
+var _turntable_frame_index := -1
 var _spin_elapsed := 0.0
 var _elapsed := 0.0
 var _resize_clock := 0.0
@@ -29,23 +28,28 @@ var _resize_clock := 0.0
 const PRESENTATION_YAW := [-0.15, -0.18, 0.16, -0.12, 0.12, -0.16, 0.19, 0.22]
 const PRESENTATION_ROLL := [0.022, -0.024, 0.012, -0.016, 0.020, -0.012, 0.020, -0.020]
 const TURNTABLE_PERIOD := 6.0
-const TURNTABLE_BASE_YAW := 0.22
+const TURNTABLE_FRAME_COUNT := 16
+const TURNTABLE_FRAME_SECONDS := 0.375
+const TURNTABLE_DISPLAY_SIZE := 140.0
+const TURNTABLE_CANVAS_BASELINE := 1024.0
+## The 1024px pack places the ground line at its canvas bottom; retain the roster's existing UI baseline.
+const TURNTABLE_BASELINE_Y := 92.0 + 12.0 + 390.0 * 166.0 / 512.0
 const REAR_MOTION = preload("res://scripts/track_lineup_motion.gdshader")
 const Core = preload("res://scripts/cat_core_assets.gd")
 # The clean rear crops share a canvas, but the visible tails sit on different
 # sides. Zizi's and Biscuit's tails are mostly hidden by their karts.
 const TAIL_CENTERS := [Vector2(-1.0,-1.0),Vector2(0.22,0.46),Vector2(0.20,0.52),Vector2(0.76,0.51),Vector2(0.20,0.56),Vector2(0.21,0.50),Vector2(0.83,0.45),Vector2(0.20,0.47)]
-# Individual transparent core-pack files replace the former sheet crops.
-# The 3D racers remain as hidden alignment and hit-testing anchors.
+# All roster previews start from the turntable pack's shared normalized canvas.
+# The selected card swaps its own texture; other cards stay on view_00.
 const REFERENCE_SPRITES := {
-	0: "res://assets/characters/core/zizi/selection/select_sprite.png",
-	1: "res://assets/characters/core/luna/selection/select_sprite.png",
-	2: "res://assets/characters/core/milo/selection/select_sprite.png",
-	3: "res://assets/characters/core/biscuit/selection/select_sprite.png",
-	4: "res://assets/characters/core/mochi/selection/select_sprite.png",
-	5: "res://assets/characters/core/pumpkin/selection/select_sprite.png",
-	6: "res://assets/characters/core/mak-doong/selection/select_sprite.png",
-	7: "res://assets/characters/core/nori/selection/select_sprite.png",
+	0: "res://assets/characters/turntable/zizi/view_00.png",
+	1: "res://assets/characters/turntable/luna/view_00.png",
+	2: "res://assets/characters/turntable/milo/view_00.png",
+	3: "res://assets/characters/turntable/biscuit/view_00.png",
+	4: "res://assets/characters/turntable/mochi/view_00.png",
+	5: "res://assets/characters/turntable/pumpkin/view_00.png",
+	6: "res://assets/characters/turntable/mak-doong/view_00.png",
+	7: "res://assets/characters/turntable/nori/view_00.png",
 }
 const REFERENCE_REAR_SPRITES := {
 	0: "res://assets/characters/reference/hires/zizi_back_hires.png",
@@ -101,9 +105,9 @@ func _ready() -> void:
 		if mode != "cats" or not has_reference:
 			_contact_shadow(scene,kart.position)
 	_bench(scene,float(characters.size())*3.05+0.8)
-	# Character Select uses the normalized side-view cutouts and portraits from
-	# the core pack. Track Select keeps its rear illustrations, since the pack
-	# has no rear-facing frames for that camera angle.
+	# Character Select uses the supplied normalized turntable canvases. Track
+	# Select keeps the existing rear illustrations because this pack has no rear
+	# views for that camera angle.
 	if mode == "cats" and not single_preview:
 		var reference_map: Dictionary = REFERENCE_REAR_SPRITES if rear_view else REFERENCE_SPRITES
 		for slot in range(characters.size()):
@@ -132,8 +136,12 @@ func _ready() -> void:
 				_rear_motion[slot] = motion
 				_head_look[slot] = 0.0
 			else:
-				sprite.position = Vector2(6.0 + slot * 174.0, 92.0)
-				sprite.size = Vector2(166.0, 190.0)
+				# The supplied artwork fills more of its 1024px canvas than the
+				# preview pack, so scale the square down to retain the card footprint.
+				var preview_x: float = 89.0 + slot * 174.0 - TURNTABLE_DISPLAY_SIZE * 0.5
+				var preview_y: float = TURNTABLE_BASELINE_Y - TURNTABLE_CANVAS_BASELINE * TURNTABLE_DISPLAY_SIZE / 1024.0
+				sprite.position = Vector2(preview_x, preview_y)
+				sprite.size = Vector2.ONE * TURNTABLE_DISPLAY_SIZE
 			sprite.z_index = 0
 			add_child(sprite)
 			_reference_sprites.append(sprite)
@@ -157,74 +165,57 @@ func _ready() -> void:
 	_sync_visibility()
 
 func _setup_turntable() -> void:
-	# Spin the supplied high-resolution cutout on a transparent 3D plane. This
-	# keeps the selected art identical to the other cards while still giving the
-	# selected racer a continuous 360-degree turntable.
-	_turntable_viewport = SubViewport.new()
-	_turntable_viewport.name = "SelectedRacerTurntable"
-	_turntable_viewport.size = Vector2i(498, 570)
-	_turntable_viewport.transparent_bg = true
-	_turntable_viewport.own_world_3d = true
-	_turntable_viewport.msaa_3d = Viewport.MSAA_4X
-	_turntable_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
-	add_child(_turntable_viewport)
-	var scene := Node3D.new()
-	_turntable_viewport.add_child(scene)
-	_turntable_kart = Node3D.new()
-	_turntable_kart.name = "SelectedRacerArtTurntable"
-	scene.add_child(_turntable_kart)
-	_turntable_art = Sprite3D.new()
-	_turntable_art.name = "SelectedRacerCoreArtwork"
-	_turntable_art.texture = load(Core.selection(selected_character))
-	_turntable_art.pixel_size = 0.0035
-	_turntable_art.shaded = false
-	_turntable_art.position.y = 2.0
-	_turntable_kart.add_child(_turntable_art)
+	# Load one character's frames and animate that card's existing TextureRect.
+	var selected_slot := characters.find(selected_character)
+	if selected_slot < 0: return
 	_turntable_character = selected_character
-	var turn_camera := Camera3D.new()
-	scene.add_child(turn_camera)
-	turn_camera.projection = Camera3D.PROJECTION_ORTHOGONAL
-	turn_camera.near = 0.1
-	turn_camera.far = 80.0
-	turn_camera.size = 4.9
-	turn_camera.position = Vector3(0.0, 2.0, -9.0)
-	turn_camera.look_at(Vector3(0.0, 2.0, 0.0))
-	turn_camera.current = true
-	_turntable_sprite = TextureRect.new()
-	_turntable_sprite.name = "SelectedRacerTurntableTexture"
-	_turntable_sprite.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	_turntable_sprite.stretch_mode = TextureRect.STRETCH_SCALE
-	_turntable_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
-	_turntable_sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_turntable_sprite.texture = _turntable_viewport.get_texture()
-	_turntable_sprite.size = Vector2(166.0, 190.0)
-	_turntable_sprite.z_index = 2
-	add_child(_turntable_sprite)
+	_turntable_sprite = _reference_sprites[selected_slot]
+	_turntable_frames = _load_turntable_frames(selected_character)
 
 func _sync_turntable_selection() -> void:
-	if not is_instance_valid(_turntable_kart) or not is_instance_valid(_turntable_sprite): return
 	var selected_slot := characters.find(selected_character)
-	var showing := selected_slot >= 0 and is_visible_in_tree()
-	_turntable_kart.visible = showing
-	_turntable_sprite.visible = showing
-	for slot in range(_reference_sprites.size()):
-		_reference_sprites[slot].visible = not showing or slot != selected_slot
-	if not showing: return
-	_turntable_sprite.position = Vector2(6.0 + selected_slot * 174.0, 92.0)
+	if selected_slot < 0: return
 	if _turntable_character != selected_character:
+		var old_slot := characters.find(_turntable_character)
+		if old_slot >= 0:
+			_reference_sprites[old_slot].texture = load(Core.turntable_frame(_turntable_character, 0))
 		_turntable_character = selected_character
-		_turntable_art.texture = load(Core.selection(selected_character))
-	_turntable_kart.rotation.y = _turntable_yaw(_spin_elapsed)
+		_turntable_sprite = _reference_sprites[selected_slot]
+		_turntable_frames = _load_turntable_frames(selected_character)
+		_turntable_frame_index = -1
+		_spin_elapsed = 0.0
+	_set_turntable_frame(0 if reduced_motion else _turntable_frame_for_elapsed(_spin_elapsed))
 
-func _turntable_yaw(seconds: float) -> float:
-	return TURNTABLE_BASE_YAW + TAU * fposmod(seconds, TURNTABLE_PERIOD) / TURNTABLE_PERIOD
+func _load_turntable_frames(character: int) -> Array[Texture2D]:
+	var frames: Array[Texture2D] = []
+	for frame_index in range(TURNTABLE_FRAME_COUNT):
+		var path: String = Core.turntable_frame(character, frame_index)
+		var texture := load(path) as Texture2D
+		if texture == null:
+			push_error("Missing turntable frame: " + path)
+			frames.clear()
+			var fallback := load(Core.selection(character)) as Texture2D
+			if fallback != null: frames.append(fallback)
+			return frames
+		frames.append(texture)
+	return frames
+
+func _turntable_frame_for_elapsed(seconds: float) -> int:
+	if seconds <= 0.0: return 0
+	var frame_index := int(floor(fposmod(seconds, TURNTABLE_PERIOD) / TURNTABLE_FRAME_SECONDS))
+	return clampi(frame_index, 0, TURNTABLE_FRAME_COUNT - 1)
+
+func _set_turntable_frame(frame_index: int) -> void:
+	if not is_instance_valid(_turntable_sprite) or _turntable_frames.is_empty(): return
+	var safe_index := clampi(frame_index, 0, _turntable_frames.size() - 1)
+	if safe_index == _turntable_frame_index and _turntable_sprite.texture == _turntable_frames[safe_index]: return
+	_turntable_frame_index = safe_index
+	_turntable_sprite.texture = _turntable_frames[safe_index]
 
 func _sync_visibility() -> void:
 	if not is_instance_valid(_viewport): return
 	var showing := is_visible_in_tree()
 	_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS if showing else SubViewport.UPDATE_DISABLED
-	if is_instance_valid(_turntable_viewport):
-		_turntable_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS if showing and is_instance_valid(_turntable_kart) and _turntable_kart.visible else SubViewport.UPDATE_DISABLED
 	set_process(showing)
 
 func _resize_target() -> void:
@@ -376,14 +367,15 @@ func _process(delta: float) -> void:
 		kart.rotation.y=base_rotation+presentation_angle+motion
 		kart.rotation.z = 0.0 if rear_view else PRESENTATION_ROLL[characters[slot]] + sin(_elapsed*.55 + slot)*.006
 		if not reduced_motion and kart.visible: kart.call("animate",delta,0.0,0.0,0.0,false)
-	if is_instance_valid(_turntable_kart):
+	if is_instance_valid(_turntable_sprite):
 		_sync_turntable_selection()
-		if _turntable_kart.visible:
+		if _turntable_sprite.visible:
 			if reduced_motion:
-				_turntable_kart.rotation.y = TURNTABLE_BASE_YAW
+				_spin_elapsed = 0.0
+				_set_turntable_frame(0)
 			else:
 				_spin_elapsed = fposmod(_spin_elapsed + delta, TURNTABLE_PERIOD)
-				_turntable_kart.rotation.y = _turntable_yaw(_spin_elapsed)
+				_set_turntable_frame(_turntable_frame_for_elapsed(_spin_elapsed))
 	if rear_view and not _rear_motion.is_empty():
 		var course_x := size.x * (0.125 + 0.375 * float(selected_course))
 		var slot_width := size.x / maxf(1.0,float(characters.size()))

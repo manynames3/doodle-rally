@@ -5,9 +5,9 @@ import argparse
 import subprocess
 import struct
 ROOT = Path(__file__).resolve().parents[1]
-APP = ROOT / "builds/Doodle Rally 1.3.5.app/Contents/MacOS/Doodle Rally — Cat Racers"
-SHOTS = ROOT / "screenshots/1.3.5"
-LOGS = ROOT / "docs/test-results/1.3.5"
+APP = ROOT / "builds/Doodle Rally 1.3.6.app/Contents/MacOS/Doodle Rally — Cat Racers"
+SHOTS = ROOT / "screenshots/1.3.6"
+LOGS = ROOT / "docs/test-results/1.3.6"
 SHOTS.mkdir(parents=True, exist_ok=True)
 LOGS.mkdir(parents=True, exist_ok=True)
 CASES = [
@@ -16,6 +16,12 @@ CASES = [
     ("intro", "title", "cats", 1, 0),
     ("settings", "settings", "cats", 1, 0),
     ("character_select", "characters", "cats", 1, 0),
+    ("character_select_luna", "characters", "cats", 1, 1),
+    ("character_select_milo", "characters", "cats", 1, 2),
+    ("character_select_biscuit", "characters", "cats", 1, 3),
+    ("character_select_mochi", "characters", "cats", 1, 4),
+    ("character_select_pumpkin", "characters", "cats", 1, 5),
+    ("character_select_nori", "characters", "cats", 1, 7),
     ("character_select_quarter_turn", "characters", "cats", 1, 0),
     ("character_select_half_turn", "characters", "cats", 1, 0),
     ("character_select_three_quarter_turn", "characters", "cats", 1, 0),
@@ -34,6 +40,7 @@ CASES = [
     ("glitch_race", "race", "cats", 2, 0),
     ("minecraft_race", "race", "minecraft", 1, 0),
     ("drive_cats", "drive", "cats", 1, 0),
+    ("drive_desktop_dojo", "drive", "cats", 0, 0),
     ("drive_mak_doong", "drive", "cats", 1, 6),
     ("drive_minecraft", "drive", "minecraft", 1, 0),
     ("results_zizi", "results", "cats", 1, 0),
@@ -79,9 +86,9 @@ for name, screen, mode, course, character in selected_cases:
     expected_marker = f"QA_STATE {expected_state} screen={screen} mode={mode} character={character} difficulty={difficulty}"
     expected_animation = "QA_GARAGE state=boost" if name == "mak_doong_garage_boost" else "QA_GARAGE state=brake" if name == "zizi_garage_brake" else ""
     expected_spins = {
-        "character_select_quarter_turn": "QA_SPIN phase=1.5 yaw=1.79079",
-        "character_select_half_turn": "QA_SPIN phase=3.0 yaw=3.36159",
-        "character_select_three_quarter_turn": "QA_SPIN phase=4.5 yaw=4.93238",
+        "character_select_quarter_turn": "QA_SPIN phase=1.5 frame=4",
+        "character_select_half_turn": "QA_SPIN phase=3.0 frame=8",
+        "character_select_three_quarter_turn": "QA_SPIN phase=4.5 frame=12",
     }
     expected_spin = expected_spins.get(name, "")
     if result.returncode or "ERROR:" in output or expected_marker not in output or (expected_animation and expected_animation not in output) or (expected_spin and expected_spin not in output) or not screenshot.is_file():

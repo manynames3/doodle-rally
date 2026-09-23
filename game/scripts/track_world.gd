@@ -19,6 +19,8 @@ var _animated_materials: Array[ShaderMaterial] = []
 var _animations_enabled: bool = true
 var _elapsed: float = 0.0
 var _road_points: PackedVector3Array = PackedVector3Array()
+const DESKTOP_DECK_TOP: float = 2.8
+const DESKTOP_SHEET_TOP: float = 3.0
 
 
 func build(course_index: int, mode: String = "cats") -> void:
@@ -787,7 +789,9 @@ func _desktop() -> void:
 	wood.uv1_triplanar_sharpness = 3.0
 	wood.roughness = 0.91
 	_add_surface_bump(wood, 0.065, 1.45, 0.22)
-	_stamp("box", Vector3(0, -7, -15), Vector3(980, 20, 1080), wood)
+	# Keep the deck and paper top faces apart. They used to share y=3 exactly,
+	# which made the depth buffer flicker across the tabletop as the chase camera moved.
+	_stamp("box", Vector3(0, DESKTOP_DECK_TOP - 10.0, -15), Vector3(980, 20, 1080), wood)
 	var paper := _noise_mat("sheet", Color("d5cbb2"), Color("f4ead2"), 0.065)
 	paper.roughness = 0.94
 	_add_surface_bump(paper, 0.18, 0.7, 0.12)
@@ -795,7 +799,7 @@ func _desktop() -> void:
 	# Those strips alias at the shallow chase-camera angle and produced a
 	# shimmering checkerboard outside the road as the kart moved.  Keep the
 	# sheet itself textured and reserve drawn markings for the actual road.
-	_stamp("box", Vector3(0, 2.5, 0), Vector3(900, 1, 950), paper)
+	_stamp("box", Vector3(0, DESKTOP_SHEET_TOP - 0.5, 0), Vector3(900, 1, 950), paper)
 	var rail_dark := _mat("desk_barrier_dark", Color("945c38"))
 	var rail_light := _mat("desk_barrier_light", Color("d8a65b"))
 	for i in range(int(length / 12)):
