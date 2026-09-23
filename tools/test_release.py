@@ -5,9 +5,9 @@ import argparse
 import subprocess
 import struct
 ROOT = Path(__file__).resolve().parents[1]
-APP = ROOT / "builds/Doodle Rally 1.3.2.app/Contents/MacOS/Doodle Rally — Cat Racers"
-SHOTS = ROOT / "screenshots/1.3.2"
-LOGS = ROOT / "docs/test-results/1.3.2"
+APP = ROOT / "builds/Doodle Rally 1.3.3.app/Contents/MacOS/Doodle Rally — Cat Racers"
+SHOTS = ROOT / "screenshots/1.3.3"
+LOGS = ROOT / "docs/test-results/1.3.3"
 SHOTS.mkdir(parents=True, exist_ok=True)
 LOGS.mkdir(parents=True, exist_ok=True)
 CASES = [
@@ -22,6 +22,8 @@ CASES = [
     ("track_hard", "tracks", "cats", 2, 0),
     ("zizi_garage", "garage", "cats", 1, 0),
     ("mak_doong_garage", "garage", "cats", 1, 6),
+    ("mak_doong_garage_boost", "garage", "cats", 1, 6),
+    ("zizi_garage_brake", "garage", "cats", 1, 0),
     ("quarry_race", "race", "cats", 1, 0),
     ("quarry_hard", "race", "cats", 1, 0),
     ("mak_doong_race", "race", "cats", 1, 6),
@@ -47,6 +49,8 @@ for name, screen, mode, course, character in selected_cases:
         "--qa-course=" + str(course), "--qa-character=" + str(character),
         "--qa-difficulty=" + str(difficulty),
         "--qa-distance=65", "--qa-output=" + str(screenshot), "--qa-quit"]
+    if name == "mak_doong_garage_boost": command.append("--qa-garage-phase=3.2")
+    if name == "zizi_garage_brake": command.append("--qa-garage-phase=4.2")
     try:
         result = subprocess.run(command, capture_output=True, text=True, timeout=75)
     except subprocess.TimeoutExpired as error:
@@ -64,7 +68,8 @@ for name, screen, mode, course, character in selected_cases:
         if "QA_DRIVE" in line or "QA_FRAME_TIMES" in line: print(line, flush=True)
     expected_state = "splash" if screen == "splash" else "menu" if screen in ("startup", "title", "settings", "characters", "tracks", "garage") else "results" if screen == "results" else "racing"
     expected_marker = f"QA_STATE {expected_state} screen={screen} mode={mode} character={character} difficulty={difficulty}"
-    if result.returncode or "ERROR:" in output or expected_marker not in output or not screenshot.is_file():
+    expected_animation = "QA_GARAGE state=boost" if name == "mak_doong_garage_boost" else "QA_GARAGE state=brake" if name == "zizi_garage_brake" else ""
+    if result.returncode or "ERROR:" in output or expected_marker not in output or (expected_animation and expected_animation not in output) or not screenshot.is_file():
         print(output, flush=True)
         if expected_marker not in output:
             print("Missing expected QA state: " + expected_marker, flush=True)

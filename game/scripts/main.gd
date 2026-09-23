@@ -38,7 +38,7 @@ var _graphics_window_size := Vector2i.ZERO
 var startup_splash: CanvasLayer
 
 func _ready() -> void:
-	get_window().title = "Doodle Rally — Cat Racers · 1.3.2"
+	get_window().title = "Doodle Rally — Cat Racers · 1.3.3"
 	_qa = "--qa" in OS.get_cmdline_user_args()
 	preferences.enabled = not _qa
 	preferences.load_data()
@@ -545,6 +545,13 @@ func _qa_run() -> void:
 				_qa_frame_times.sort()
 				print("QA_FRAME_TIMES samples=", _qa_frame_times.size(), " median_ms=", _qa_frame_times[_qa_frame_times.size() / 2], " p95_ms=", _qa_frame_times[int(_qa_frame_times.size() * .95)])
 	for i in range(18): await get_tree().process_frame
+	if screen == "garage" and not _arg("--qa-garage-phase").is_empty():
+		var core_sprite: Node = menu._stage.find_child("CoreSpriteAnimator", true, false)
+		if core_sprite != null:
+			core_sprite.get_parent()._process(float(_arg("--qa-garage-phase")))
+			core_sprite._process(0.1)
+			print("QA_GARAGE state=", core_sprite.motion_state)
+			await get_tree().process_frame
 	var filename := _arg("--qa-output")
 	if not filename.is_empty() and DisplayServer.get_name() != "headless":
 		# An inactive macOS test window may suspend automatic draws. Request

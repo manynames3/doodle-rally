@@ -12,6 +12,7 @@ var _viewport: SubViewport
 var _camera: Camera3D
 var _canvas: TextureRect
 var _reference_sprites: Array[TextureRect] = []
+var _portrait_sprites: Array[TextureRect] = []
 var _rear_motion: Dictionary = {}
 var _head_look: Dictionary = {}
 var _elapsed := 0.0
@@ -23,22 +24,21 @@ var _resize_clock := 0.0
 const PRESENTATION_YAW := [-0.15, -0.18, 0.16, -0.12, 0.12, -0.16, 0.19, 0.22]
 const PRESENTATION_ROLL := [0.022, -0.024, 0.012, -0.016, 0.020, -0.012, 0.020, -0.020]
 const REAR_MOTION = preload("res://scripts/track_lineup_motion.gdshader")
+const Core = preload("res://scripts/cat_core_assets.gd")
 # The clean rear crops share a canvas, but the visible tails sit on different
 # sides. Zizi's and Biscuit's tails are mostly hidden by their karts.
 const TAIL_CENTERS := [Vector2(-1.0,-1.0),Vector2(0.22,0.46),Vector2(0.20,0.52),Vector2(0.76,0.51),Vector2(0.20,0.56),Vector2(0.21,0.50),Vector2(0.83,0.45),Vector2(0.20,0.47)]
-# These are the supplied asset-sheet poses used for the static presentation
-# lineup. The live 3D racers remain underneath for anchors and interaction;
-# a transparent sprite gives each photographed kitten the same soft fur and
-# expressive proportions as the reference renderings.
+# Individual transparent core-pack files replace the former sheet crops.
+# The 3D racers remain as hidden alignment and hit-testing anchors.
 const REFERENCE_SPRITES := {
-	0: "res://assets/characters/reference/hires/zizi_garage_ai.png",
-	1: "res://assets/characters/reference/hires/luna_garage_ai.png",
-	2: "res://assets/characters/reference/hires/milo_garage_ai.png",
-	3: "res://assets/characters/reference/hires/biscuit_garage_ai.png",
-	4: "res://assets/characters/reference/hires/mochi_garage_ai.png",
-	5: "res://assets/characters/reference/hires/pumpkin_garage_ai.png",
-	6: "res://assets/characters/reference/hires/mak_doong_garage_ai.png",
-	7: "res://assets/characters/reference/hires/nori_garage_ai.png",
+	0: "res://assets/characters/core/zizi/selection/select_sprite.png",
+	1: "res://assets/characters/core/luna/selection/select_sprite.png",
+	2: "res://assets/characters/core/milo/selection/select_sprite.png",
+	3: "res://assets/characters/core/biscuit/selection/select_sprite.png",
+	4: "res://assets/characters/core/mochi/selection/select_sprite.png",
+	5: "res://assets/characters/core/pumpkin/selection/select_sprite.png",
+	6: "res://assets/characters/core/mak-doong/selection/select_sprite.png",
+	7: "res://assets/characters/core/nori/selection/select_sprite.png",
 }
 const REFERENCE_REAR_SPRITES := {
 	0: "res://assets/characters/reference/hires/zizi_back_hires.png",
@@ -50,17 +50,6 @@ const REFERENCE_REAR_SPRITES := {
 	6: "res://assets/characters/reference/hires/mak_doong_back_clean.png",
 	7: "res://assets/characters/reference/hires/nori_back_hires.png",
 }
-const REFERENCE_GARAGE_SPRITES := {
-	0: "res://assets/characters/reference/hires/zizi_garage_ai.png",
-	1: "res://assets/characters/reference/hires/luna_garage_ai.png",
-	2: "res://assets/characters/reference/hires/milo_garage_ai.png",
-	3: "res://assets/characters/reference/hires/biscuit_garage_ai.png",
-	4: "res://assets/characters/reference/hires/mochi_garage_ai.png",
-	5: "res://assets/characters/reference/hires/pumpkin_garage_ai.png",
-	6: "res://assets/characters/reference/hires/mak_doong_garage_ai.png",
-	7: "res://assets/characters/reference/hires/nori_garage_ai.png",
-}
-
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_canvas = TextureRect.new()
@@ -105,11 +94,9 @@ func _ready() -> void:
 		if mode != "cats" or not has_reference:
 			_contact_shadow(scene,kart.position)
 	_bench(scene,float(characters.size())*3.05+0.8)
-	# The supplied asset sheets contain the intended soft, cinematic look. Use
-	# their driving sprites in both menu lineups, while retaining the live 3D
-	# roster as an invisible anchor for hit testing and marker placement. The
-	# front lineup uses the expressive front-left pose; the track lineup uses
-	# the matching rear pose from the same sheet.
+	# Character Select uses the normalized side-view cutouts and portraits from
+	# the core pack. Track Select keeps its rear illustrations, since the pack
+	# has no rear-facing frames for that camera angle.
 	if mode == "cats" and not single_preview:
 		var reference_map: Dictionary = REFERENCE_REAR_SPRITES if rear_view else REFERENCE_SPRITES
 		for slot in range(characters.size()):
@@ -121,9 +108,7 @@ func _ready() -> void:
 			sprite.texture = load(path)
 			sprite.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 			sprite.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-			# The source sheets are premultiplied and rendered from a 3x canvas;
-			# mipmapped bilinear sampling keeps the alpha fringe around whiskers,
-			# tires and halos stable while the stage scales with the window.
+			# Keep the entire straight-alpha canvas; no cropped wheels or halo.
 			sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 			sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			if rear_view:
@@ -140,11 +125,23 @@ func _ready() -> void:
 				_rear_motion[slot] = motion
 				_head_look[slot] = 0.0
 			else:
-				sprite.position = Vector2(6.0 + slot * 174.0, -1.0)
-				sprite.size = Vector2(166.0, 284.0)
+				sprite.position = Vector2(6.0 + slot * 174.0, 92.0)
+				sprite.size = Vector2(166.0, 190.0)
 			sprite.z_index = 0
 			add_child(sprite)
 			_reference_sprites.append(sprite)
+			if not rear_view:
+				var portrait := TextureRect.new()
+				portrait.name = "CorePortrait_%d" % character
+				portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+				portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+				portrait.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+				portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
+				portrait.texture = load(Core.portrait(character))
+				portrait.position = Vector2(39.0 + slot * 174.0, 2.0)
+				portrait.size = Vector2(100.0, 100.0)
+				add_child(portrait)
+				_portrait_sprites.append(portrait)
 	_camera = Camera3D.new()
 	scene.add_child(_camera)
 	_camera.projection = Camera3D.PROJECTION_ORTHOGONAL

@@ -1,5 +1,11 @@
 # Build status — September 22, 2026
 
+**Doodle Rally — Cat Racers 1.3.3** integrates the supplied eight-character core asset pack. Character Select uses each individual normalized transparent cutout and portrait, with Zizi and Mak-Doong centered. The Garage plays every racer’s numbered idle, drive, boost, and brake sequences and displays Shared_VFX on separate layers. The race HUD uses core portraits. Previous sheet-derived front crops and cat HUD portraits were removed; Track Select retains its required rear-view cutouts, while playable racing remains the existing full 3D system.
+
+The Universal app is `builds/Doodle Rally 1.3.3.app`, packaged as `Doodle_Rally_1.3.3_Mac.zip` beside this repository. Godot 4.7.2 imports the unchanged PNGs losslessly with mipmaps, premultiplied alpha, and alpha-border repair. Source verification passed **566 functional checks**, six course/mode builds, and three temporal collision replays. The packaged app passed **24 native launch, menu, Garage, race, driving, and results cases**; all 24 screenshots were freshly captured at 1280×800. ZIP CRC and SHA-256 comparisons confirm **147 unchanged PNGs** from the supplied pack. The app signature and distribution ZIP integrity passed. Evidence and screenshots are in `docs/test-results/1.3.3/` and `screenshots/1.3.3/`. The app is locally signed, not Apple-notarized.
+
+## Previous 1.3.2 verification
+
 **Doodle Rally — Cat Racers 1.3.2** adds the animated course-selection lineup and visible Easy, Medium, and Hard difficulty choices. The current Universal app is **builds/Doodle Rally 1.3.2.app**, packaged as **Doodle_Rally_1.3.2_Mac.zip** in the parent output directory. Easy retains the former default rival pace and player handling. Medium and Hard progressively strengthen rival pacing, acceleration, catch-up, and item use. The selected difficulty persists and keeps personal-best records separate.
 
 On Track Select, the rear-facing cats gently sway their visible tails and tilt their heads toward the highlighted course. The motion is confined to each illustration, and Reduced Motion disables the idle tail sway. The deterministic three-course replay shows increasing rival pressure from Easy through Hard on every course. Evidence is in `docs/test-results/1.3.2/`; native captures are in `screenshots/1.3.2/`. The 1.3.2 app is locally signed rather than Apple-notarized.

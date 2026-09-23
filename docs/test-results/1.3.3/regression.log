@@ -1,0 +1,42 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+Full races: normal 76.58s, repeated 76.58s, Minecraft expert 136.08s
+Real course 0: length 1294.7m; three laps 105.02s; fence impacts 0; max lane 7.12m
+Real course 1: length 1298.5m; three laps 105.48s; fence impacts 0; max lane 7.17m
+Real course 2: length 1296.3m; three laps 107.00s; fence impacts 0; max lane 3.20m
+RACE_TESTS_PASS: 188 checks; deterministic three-lap races, controls, items, pause, and isolated persistence
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+MENU QA: 31 checks; 0 failures
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+MENU STAGE QA: 86 checks; 0 failures
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+CORE_ASSETS 220 checks; 0 failures
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+QA_STATE splash screen=title mode=cats character=0 difficulty=2
+Input drive: state=racing time=1.45 speed=18.0801768620809 distance=-14.7900699563608 lane=-3.43063545148469 gas=1.0
+INTEGRATION_TESTS 32 checks; 0 failures
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+WORLD_VALID cats course=0 length=1294.708984375 nodes=358 seam=0.0 items=15
+WORLD_VALID cats course=1 length=1298.47839355469 nodes=534 seam=0.0 items=15
+WORLD_VALID cats course=2 length=1296.34313964844 nodes=309 seam=0.0 items=15
+WORLD_VALID minecraft course=0 length=1294.708984375 nodes=358 seam=0.0 items=15
+WORLD_VALID minecraft course=1 length=1298.47839355469 nodes=553 seam=0.0 items=15
+WORLD_VALID minecraft course=2 length=1296.34313964844 nodes=309 seam=0.0 items=15
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+AUDIO QA: 9 checks; 0 failures
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+COLLISION VISUAL QA: {"barrier_pack":{"boost_samples":0,"camera_inside_rival_frames":0,"camera_near_margin_frames":0,"hop_samples":0,"max_camera_angle_step_degrees":0.0969132939991531,"max_camera_offset_step":0.040827751159668,"max_pairs":0,"max_penetration":0.0,"overlap_frames":0,"player_visual_bounds":"[P: (-1.496924, 0.00132, -1.979), S: (3.15673, 4.621584, 3.891651)]","rival_occlusion_frames":0,"samples":180,"solid_meshes":438,"stun_samples":0},"effects_contact":{"boost_samples":172,"camera_inside_rival_frames":0,"camera_near_margin_frames":0,"hop_samples":60,"max_camera_angle_step_degrees":0.167858782403086,"max_camera_offset_step":0.000000238418579101562,"max_pairs":0,"max_penetration":0.0,"overlap_frames":0,"player_visual_bounds":"[P: (-1.496924, 0.00132, -1.979), S: (3.15673, 4.621584, 3.891651)]","rival_occlusion_frames":0,"samples":180,"solid_meshes":438,"stun_samples":70},"rear_end":{"boost_samples":0,"camera_inside_rival_frames":0,"camera_near_margin_frames":0,"hop_samples":0,"max_camera_angle_step_degrees":0.0395646811852521,"max_camera_offset_step":0.0,"max_pairs":0,"max_penetration":0.0,"overlap_frames":0,"player_visual_bounds":"[P: (-1.496924, 0.00132, -1.979), S: (3.15673, 4.621584, 3.891651)]","rival_occlusion_frames":0,"samples":180,"solid_meshes":438,"stun_samples":0},"side_contact":{"boost_samples":0,"camera_inside_rival_frames":0,"camera_near_margin_frames":0,"hop_samples":0,"max_camera_angle_step_degrees":0.373253109513816,"max_camera_offset_step":0.0130538940429688,"max_pairs":0,"max_penetration":0.0,"overlap_frames":0,"player_visual_bounds":"[P: (-1.496923, 0.00132, -1.979), S: (3.156729, 4.621584, 3.891651)]","rival_occlusion_frames":0,"samples":180,"solid_meshes":438,"stun_samples":0}} assertion violations=0
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+COLLISION VISUAL QA: {"barrier_pack":{"boost_samples":0,"camera_inside_rival_frames":0,"camera_near_margin_frames":0,"hop_samples":0,"max_camera_angle_step_degrees":0.51737711795324,"max_camera_offset_step":0.0570816360414028,"max_pairs":0,"max_penetration":0.0,"overlap_frames":0,"player_visual_bounds":"[P: (-1.496927, 0.001314, -1.979), S: (3.156733, 4.621588, 3.891651)]","rival_occlusion_frames":0,"samples":180,"solid_meshes":438,"stun_samples":0},"effects_contact":{"boost_samples":172,"camera_inside_rival_frames":0,"camera_near_margin_frames":0,"hop_samples":60,"max_camera_angle_step_degrees":0.859572957104611,"max_camera_offset_step":0.101691626012325,"max_pairs":0,"max_penetration":0.0,"overlap_frames":0,"player_visual_bounds":"[P: (-1.496927, 0.001318, -1.979), S: (3.156725, 4.621588, 3.891651)]","rival_occlusion_frames":0,"samples":180,"solid_meshes":438,"stun_samples":70},"rear_end":{"boost_samples":0,"camera_inside_rival_frames":0,"camera_near_margin_frames":0,"hop_samples":0,"max_camera_angle_step_degrees":0.737013430020077,"max_camera_offset_step":0.105320245027542,"max_pairs":0,"max_penetration":0.0,"overlap_frames":0,"player_visual_bounds":"[P: (-1.496934, 0.001316, -1.979), S: (3.156733, 4.62159, 3.891651)]","rival_occlusion_frames":0,"samples":180,"solid_meshes":438,"stun_samples":0},"side_contact":{"boost_samples":0,"camera_inside_rival_frames":0,"camera_near_margin_frames":0,"hop_samples":0,"max_camera_angle_step_degrees":0.830865618662194,"max_camera_offset_step":0.0986865237355232,"max_pairs":0,"max_penetration":0.0,"overlap_frames":0,"player_visual_bounds":"[P: (-1.496923, 0.001316, -1.979), S: (3.156733, 4.621588, 3.891651)]","rival_occlusion_frames":0,"samples":180,"solid_meshes":438,"stun_samples":0}} assertion violations=0
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+COLLISION VISUAL QA: {"barrier_pack":{"boost_samples":0,"camera_inside_rival_frames":0,"camera_near_margin_frames":0,"hop_samples":0,"max_camera_angle_step_degrees":0.47642325032899,"max_camera_offset_step":0.0591683983802795,"max_pairs":0,"max_penetration":0.0,"overlap_frames":0,"player_visual_bounds":"[P: (-1.444929, -0.005008, -1.815), S: (2.889867, 3.120008, 3.727651)]","rival_occlusion_frames":0,"samples":180,"solid_meshes":391,"stun_samples":0},"effects_contact":{"boost_samples":172,"camera_inside_rival_frames":0,"camera_near_margin_frames":0,"hop_samples":60,"max_camera_angle_step_degrees":0.820437734068583,"max_camera_offset_step":0.103533715009689,"max_pairs":0,"max_penetration":0.0,"overlap_frames":0,"player_visual_bounds":"[P: (-1.444937, -0.005002, -1.815), S: (2.889867, 3.120002, 3.727651)]","rival_occlusion_frames":0,"samples":180,"solid_meshes":391,"stun_samples":70},"rear_end":{"boost_samples":0,"camera_inside_rival_frames":0,"camera_near_margin_frames":0,"hop_samples":0,"max_camera_angle_step_degrees":0.746510221091598,"max_camera_offset_step":0.104438863694668,"max_pairs":0,"max_penetration":0.0,"overlap_frames":0,"player_visual_bounds":"[P: (-1.444937, -0.005004, -1.815), S: (2.889867, 3.120004, 3.727651)]","rival_occlusion_frames":0,"samples":180,"solid_meshes":391,"stun_samples":0},"side_contact":{"boost_samples":0,"camera_inside_rival_frames":0,"camera_near_margin_frames":0,"hop_samples":0,"max_camera_angle_step_degrees":0.825194000330145,"max_camera_offset_step":0.0975271165370941,"max_pairs":0,"max_penetration":0.0,"overlap_frames":0,"player_visual_bounds":"[P: (-1.444933, -0.005006, -1.815), S: (2.88987, 3.120006, 3.727651)]","rival_occlusion_frames":0,"samples":180,"solid_meshes":391,"stun_samples":0}} assertion violations=0
+All seven functional suites and three temporal collision replays passed.

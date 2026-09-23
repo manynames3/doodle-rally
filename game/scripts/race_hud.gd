@@ -3,6 +3,7 @@ const Data = preload("res://scripts/rally_data.gd")
 const FONT = preload("res://assets/fonts/Kalam-Bold.ttf")
 const RACE_FONT = preload("res://assets/fonts/BarlowCondensed-ExtraBoldItalic.ttf")
 const Sim = preload("res://scripts/race_sim.gd")
+const Core = preload("res://scripts/cat_core_assets.gd")
 signal pause_requested
 var sim: RefCounted
 var course := 1
@@ -22,7 +23,7 @@ var block_portraits: Array[Texture2D] = []
 
 func _ready() -> void:
 	for i in range(8):
-		var path := "res://assets/portraits/cat_%d.png" % i
+		var path := Core.portrait(i)
 		cat_portraits.append(load(path) as Texture2D if ResourceLoader.exists(path) else null)
 		path = "res://assets/portraits/block_%d.png" % i
 		block_portraits.append(load(path) as Texture2D if ResourceLoader.exists(path) else null)

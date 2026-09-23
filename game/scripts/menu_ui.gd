@@ -419,9 +419,12 @@ func _choose_character(character: int) -> void:
 		if slot<_markers.size():
 			_markers[slot].visible=selected
 			if selected and is_instance_valid(_lineup):
-				var visual_bounds:Rect2=_lineup.racer_screen_rect(slot)
-				var top_in_card:Vector2=_cards[slot].get_global_transform_with_canvas().affine_inverse()*visual_bounds.position
-				_markers[slot].position.y=top_in_card.y-43
+				if selected_mode == "cats":
+					_markers[slot].position.y=-12
+				else:
+					var visual_bounds:Rect2=_lineup.racer_screen_rect(slot)
+					var top_in_card:Vector2=_cards[slot].get_global_transform_with_canvas().affine_inverse()*visual_bounds.position
+					_markers[slot].position.y=top_in_card.y-43
 	if is_instance_valid(_lineup): _lineup.selected_character=character
 	if is_instance_valid(_selection_label):
 		_selection_label.text="P1   "+_name_for(character)+"  •  "+Data.STYLES[character]+"   /   Ready for adventure!"

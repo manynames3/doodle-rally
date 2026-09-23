@@ -7,29 +7,23 @@ Final prompt:
 > Use case: product-mockup. Asset type: seamless grayscale fur microtexture for a high-quality 3D cat racing game's physically shaded kitten models. Generate one square1024x1024 full-bleed seamless tileable macro photograph of extremely dense, fine, short soft cat fur. Neutral MIDGRAY monochrome only, evenly diffuse unlit material capture, mostly small gently curved individual fine hairs flowing approximately vertically downward with slight natural variation, delicate natural overlapping strands with shallow tiny creases. It must read like actual velvety kitten fur at close range, not grass, not fabric, not burlap, not long human hair, no thick ropes or large wavy clumps. Low-to-moderate contrast centered on midgray, no purewhite highlights or black shadows, no directional light, no castshadow, no vignette, no perspective, no animalface/body outline, no background. Uniform density and detail across tile edges so repeated texture shows no border. Intended for luminancealbedomicrovariation and bump sampling underneath black/orange/white photo-matched cat coat masks in Godot; avoid any baked colored markings or features. No text, no labels, no borders.
 # Character art
 
-The game keeps the cat drivers as live opaque 3D meshes so their collisions,
-lighting, and rear-facing animation remain deterministic. Cats with supplied
-asset sheets also have transparent presentation sprites:
+`core/` contains the eight individual character folders and `Shared_VFX` from
+the supplied **Cat_Racers_Core_Assets.zip**. PNG bytes are extracted unchanged.
+Each racer has `selection/select_sprite.png`, `selection/portrait.png`, and
+numbered `animation/idle`, `drive`, `boost`, and `brake` frames. `asset_manifest.json`
+records the shared 1280×1024 selection canvas, 640×640 animation canvas, and
+normalization metadata. Zizi shares the same 860-pixel cutout height and ground
+baseline as the other seven racers.
 
-- `reference/zizi_stage_frontleft.png` — Zizi's red-kart front-left pose.
-- `reference/luna_stage_frontleft.png` — Luna's blue-kart front-left pose.
-- `reference/biscuit_stage_frontleft.png` — Biscuit's orange-kart front-left
-  pose.
-- `reference/mochi_stage_frontleft.png` — Mochi's purple-kart front-left pose.
-- `reference/pumpkin_stage_frontleft.png` — Pumpkin's green-kart front-left
-  pose.
-- `reference/mak_doong_stage_frontleft.png` — Mak-Doong's calico front-left
-  pose with her gold halo.
-- `reference/nori_stage_frontleft.png` — Nori's yellow-kart front-left pose.
+Godot imports each PNG as a lossless texture with mipmaps, alpha-border repair,
+and premultiplied alpha; the per-file `.png.import` files are committed so a
+fresh checkout uses the same settings. Open `game/project.godot` in Godot 4.7.2
+or run `godot --headless --path game --editor --import --quit` before a command-line
+export. No atlas conversion or composite sheet extraction is required.
 
-The matching `*_stage_back.png` crops are used by the rear-facing racer lineup
-on Track Select (Mak-Doong uses the sheet's back-left pose because her sheet
-does not include a straight-back frame).
-
-Matching `*_portrait_default.png` crops are kept beside the stage poses and
-are copied into the HUD portrait slots at build time.
-
-Those sprites are used in the character-select lineup and the Garage, where
-they match the supplied cinematic references closely. The source sheets remain
-outside the repository; these cropped presentation assets are the project-bound
-copies.
+Character Select uses each complete side-view cutout and a separate portrait.
+The HUD uses the same portrait. The Garage plays all four numbered frame
+sequences, and layers dust, boost flame, and skid smoke from `Shared_VFX` as
+separate sprites. The race camera and collision model remain full 3D; these
+side-view frames cannot faithfully replace a rear-view 3D racer. `reference/`
+keeps only the eight rear-facing cutouts needed by Track Select.

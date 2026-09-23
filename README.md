@@ -2,7 +2,7 @@
 
 **Doodle Rally** is a standalone single player 3D kart racer for macOS. Pick a cat, choose a course, and race seven rivals through a paper craft studio, an alpine quarry, or a neon block world. The game keeps the playful hand painted feel of the supplied Cat Racers references while using a real time 3D chase camera, physics based kart contact, items, drifting, boosts, and a second Minecraft Racing roster.
 
-The current source and Universal Mac build are version **1.3.2**. The original Doodle Rumble project is separate and is not modified.
+The current source and Universal Mac build are version **1.3.3**. The original Doodle Rumble project is separate and is not modified.
 
 ## Screenshots
 
@@ -10,20 +10,20 @@ The visual review gallery is in [docs/SCREENSHOTS.md](docs/SCREENSHOTS.md). Thes
 
 <table>
   <tr>
-    <td><img src="screenshots/1.3.1/intro.png" alt="Cat Racers intro menu" width="320"></td>
-    <td><img src="screenshots/1.3.1/mak_doong_character_select.png" alt="Character Select with Zizi and Mak-Doong" width="320"></td>
-    <td><img src="screenshots/1.3.2/track_select.png" alt="Track Select with Easy, Medium and Hard" width="320"></td>
+    <td><img src="screenshots/1.3.3/intro.png" alt="Cat Racers intro menu" width="320"></td>
+    <td><img src="screenshots/1.3.3/mak_doong_character_select.png" alt="Character Select with Zizi and Mak-Doong" width="320"></td>
+    <td><img src="screenshots/1.3.3/track_select.png" alt="Track Select with Easy, Medium and Hard" width="320"></td>
   </tr>
   <tr>
-    <td><img src="screenshots/1.3.1/quarry_race.png" alt="Block Quarry race" width="320"></td>
-    <td><img src="screenshots/1.3.1/desktop_race.png" alt="Desktop Dojo race" width="320"></td>
-    <td><img src="screenshots/1.3.1/minecraft_race.png" alt="Minecraft Racing race" width="320"></td>
+    <td><img src="screenshots/1.3.3/quarry_race.png" alt="Block Quarry race" width="320"></td>
+    <td><img src="screenshots/1.3.3/desktop_race.png" alt="Desktop Dojo race" width="320"></td>
+    <td><img src="screenshots/1.3.3/minecraft_race.png" alt="Minecraft Racing race" width="320"></td>
   </tr>
 </table>
 
 ## Play the Mac build
 
-Unzip **Doodle_Rally_1.3.2_Mac.zip** and open **Doodle Rally 1.3.2.app**, or open the app inside `builds/Doodle Rally 1.3.2.app`. Godot is not required to play. The bundle contains Apple Silicon and Intel executables. It is signed locally and is not Apple notarized, so macOS may ask you to choose **Open Anyway** in **System Settings → Privacy & Security** when the ZIP came from another Mac.
+Unzip **Doodle_Rally_1.3.3_Mac.zip** and open **Doodle Rally 1.3.3.app**, or open the app inside `builds/Doodle Rally 1.3.3.app`. Godot is not required to play. The bundle contains Apple Silicon and Intel executables. It is signed locally and is not Apple notarized, so macOS may ask you to choose **Open Anyway** in **System Settings → Privacy & Security** when the ZIP came from another Mac.
 
 Choose **Start Game** for the cat roster or **Minecraft Racing** for the block characters. Pick a racer and a track, select **Easy**, **Medium**, or **Hard** beneath the track cards, then select **LET'S RACE!** Up/down also changes difficulty on that screen. Easy keeps the previous default rival pace; Medium and Hard raise the competition. The BenJam Games logo appears briefly when the app launches and can be skipped with any key, click, or controller button.
 
@@ -33,6 +33,7 @@ Choose **Start Game** for the cat roster or **Minecraft Racing** for the block c
 - Eight Minecraft style drivers: Steve, Alex, Creeper, Enderman, Zombie, Skeleton, Pig, and Villager. Their block geometry and pixel faces are original procedural game assets.
 - Three courses: **Desktop Dojo**, **Block Quarry**, and **Glitch Core**. Each has its own surface, scenery, lighting, panorama, props, and soundtrack. Minecraft Racing swaps in block scenery and drivers on every course.
 - Three lap races with seven AI rivals, selectable **Easy**, **Medium**, and **Hard** rival pacing, acceleration, braking, steering, drift hops, charged mini turbos, refillable boost, track boost pads, item boxes, barriers, minimap, speedometer, results, restart, and a Garage preview.
+- The supplied Cat Racers core pack provides transparent, normalized selection sprites and portraits for all eight cats. The Garage cycles each racer’s idle, drive, boost, and brake frames with separate dust, flame, and smoke effects. Racing remains full 3D.
 - On Cat Racers Track Select, the illustrated rear lineup gently sways its visible tails and leans its heads toward the highlighted course. Reduced Motion stops the idle tail movement.
 - Items include a fish projectile, a yarn trap, catnip turbo, and a protective bubble. The game saves preferences and personal bests by course, difficulty, and roster.
 - A longer evolving soundtrack uses three arrangements with crossfaded loop boundaries so the music does not stop or restart abruptly.
@@ -63,12 +64,12 @@ Choose **Start Game** for the cat roster or **Minecraft Racing** for the block c
 | Platform | macOS Universal build: Apple Silicon + Intel, Metal graphics driver |
 | 3D | Procedural meshes with `SurfaceTool`, spatially grouped `MultiMeshInstance3D`, `ShaderMaterial`, `PanoramaSkyMaterial`, custom fur and water shaders; FSR 1 spatial upscaling |
 | Game systems | Fixed 60 Hz simulation, interpolated render transforms, collision aware AI, deterministic course sampling, saved preferences |
-| Interface | Godot `Control`, `CanvasLayer`, `TextureRect`, `Label3D`, custom Kalam and Barlow fonts |
+| Interface | Godot `Control`, `CanvasLayer`, `TextureRect`, numbered transparent PNG animation, `Label3D`, custom Kalam and Barlow fonts |
 | Audio | Godot audio buses and generated WAV arrangements; no external audio plugin |
 | Verification | Godot headless QA, Python 3 test/export helpers, native Mac smoke captures |
 | Distribution | Godot macOS export preset, locally signed `.app`, ZIP package |
 
-No add ons, game account, network service, or .NET runtime is needed to run the game. The visual assets combine procedural geometry, supplied reference renderings, supplied asset sheets, and generated transparent presentation sprites. Source and license notes are in [docs/ASSET_PROVENANCE.md](docs/ASSET_PROVENANCE.md).
+No add ons, game account, network service, or .NET runtime is needed to run the game. The visual assets combine procedural geometry, supplied reference renderings, supplied individual core-pack sprites, retained rear-view cutouts, and generated menu art. Source and license notes are in [docs/ASSET_PROVENANCE.md](docs/ASSET_PROVENANCE.md).
 
 ## Build from source
 
@@ -80,6 +81,6 @@ python3 tools/export_mac.py --godot /path/to/Godot.app/Contents/MacOS/Godot --te
 python3 tools/test_release.py
 ```
 
-`tools/test.py` runs simulation, menu, roster, integration, world, audio, and collision checks. `game/tests/benchmark_difficulty.gd` replays all three difficulty levels on each course. `tools/test_release.py` launches the packaged app through the title, character, track, Garage, race, drive, and results screens and records fresh screenshots. The current verification record is [BUILD_STATUS.md](BUILD_STATUS.md), with release notes in [docs/releases/1.3.2.md](docs/releases/1.3.2.md).
+`tools/test.py` runs simulation, menu, roster, integration, world, audio, and collision checks. `game/tests/benchmark_difficulty.gd` replays all three difficulty levels on each course. `tools/test_release.py` launches the packaged app through the title, character, track, Garage, race, drive, and results screens and records fresh screenshots. The current verification record is [BUILD_STATUS.md](BUILD_STATUS.md), with release notes in [docs/releases/1.3.3.md](docs/releases/1.3.3.md).
 
 Preferences are stored in Godot's separate **Doodle Rally Cat Racers** application data folder as `rally_3d.cfg`. The app does not read or change the original game's settings. Generated app bundles and temporary telemetry are excluded from the source repository.

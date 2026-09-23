@@ -1,0 +1,268 @@
+{
+  "title": "Cat Racers Core Gameplay Asset Pack",
+  "format": "transparent RGBA PNG",
+  "character_names": [
+    "mak-doong",
+    "zizi",
+    "biscuit",
+    "mochi",
+    "pumpkin",
+    "nori",
+    "luna",
+    "milo"
+  ],
+  "animation_frame_canvas": [
+    640,
+    640
+  ],
+  "animation_baseline_y": 592,
+  "animation_normalization": "One uniform scale per character, normalized to shared cast median; shared frame canvas and baseline.",
+  "selection_sprite_canvas": [
+    1280,
+    1024
+  ],
+  "selection_sprite_content_height": 860,
+  "selection_art": "Side-view selection sprite reuses normalized drive frame 01 to keep the silhouette, wheel count, and kart design consistent. All eight racer cutouts share the same content height and ground line. Portraits are separate and equalized to one head-height target.",
+  "characters": {
+    "mak-doong": {
+      "display_name": "Mak-doong",
+      "frame_counts": {
+        "idle": 4,
+        "drive": 6,
+        "boost": 3,
+        "brake": 3
+      },
+      "animation_scale_factor": 1.1749,
+      "files": [
+        "animation/boost/boost_01.png",
+        "animation/boost/boost_02.png",
+        "animation/boost/boost_03.png",
+        "animation/brake/brake_01.png",
+        "animation/brake/brake_02.png",
+        "animation/brake/brake_03.png",
+        "animation/drive/drive_01.png",
+        "animation/drive/drive_02.png",
+        "animation/drive/drive_03.png",
+        "animation/drive/drive_04.png",
+        "animation/drive/drive_05.png",
+        "animation/drive/drive_06.png",
+        "animation/idle/idle_01.png",
+        "animation/idle/idle_02.png",
+        "animation/idle/idle_03.png",
+        "animation/idle/idle_04.png",
+        "selection/portrait.png",
+        "selection/select_sprite.png"
+      ]
+    },
+    "zizi": {
+      "display_name": "Zizi",
+      "frame_counts": {
+        "idle": 4,
+        "drive": 6,
+        "boost": 3,
+        "brake": 3
+      },
+      "animation_scale_factor": 1.1924,
+      "files": [
+        "animation/boost/boost_01.png",
+        "animation/boost/boost_02.png",
+        "animation/boost/boost_03.png",
+        "animation/brake/brake_01.png",
+        "animation/brake/brake_02.png",
+        "animation/brake/brake_03.png",
+        "animation/drive/drive_01.png",
+        "animation/drive/drive_02.png",
+        "animation/drive/drive_03.png",
+        "animation/drive/drive_04.png",
+        "animation/drive/drive_05.png",
+        "animation/drive/drive_06.png",
+        "animation/idle/idle_01.png",
+        "animation/idle/idle_02.png",
+        "animation/idle/idle_03.png",
+        "animation/idle/idle_04.png",
+        "selection/portrait.png",
+        "selection/select_sprite.png"
+      ]
+    },
+    "biscuit": {
+      "display_name": "Biscuit",
+      "frame_counts": {
+        "idle": 4,
+        "drive": 6,
+        "boost": 3,
+        "brake": 3
+      },
+      "animation_scale_factor": 1.2754,
+      "files": [
+        "animation/boost/boost_01.png",
+        "animation/boost/boost_02.png",
+        "animation/boost/boost_03.png",
+        "animation/brake/brake_01.png",
+        "animation/brake/brake_02.png",
+        "animation/brake/brake_03.png",
+        "animation/drive/drive_01.png",
+        "animation/drive/drive_02.png",
+        "animation/drive/drive_03.png",
+        "animation/drive/drive_04.png",
+        "animation/drive/drive_05.png",
+        "animation/drive/drive_06.png",
+        "animation/idle/idle_01.png",
+        "animation/idle/idle_02.png",
+        "animation/idle/idle_03.png",
+        "animation/idle/idle_04.png",
+        "selection/portrait.png",
+        "selection/select_sprite.png"
+      ]
+    },
+    "mochi": {
+      "display_name": "Mochi",
+      "frame_counts": {
+        "idle": 4,
+        "drive": 6,
+        "boost": 3,
+        "brake": 3
+      },
+      "animation_scale_factor": 1.1579,
+      "files": [
+        "animation/boost/boost_01.png",
+        "animation/boost/boost_02.png",
+        "animation/boost/boost_03.png",
+        "animation/brake/brake_01.png",
+        "animation/brake/brake_02.png",
+        "animation/brake/brake_03.png",
+        "animation/drive/drive_01.png",
+        "animation/drive/drive_02.png",
+        "animation/drive/drive_03.png",
+        "animation/drive/drive_04.png",
+        "animation/drive/drive_05.png",
+        "animation/drive/drive_06.png",
+        "animation/idle/idle_01.png",
+        "animation/idle/idle_02.png",
+        "animation/idle/idle_03.png",
+        "animation/idle/idle_04.png",
+        "selection/portrait.png",
+        "selection/select_sprite.png"
+      ]
+    },
+    "pumpkin": {
+      "display_name": "Pumpkin",
+      "frame_counts": {
+        "idle": 4,
+        "drive": 6,
+        "boost": 3,
+        "brake": 3
+      },
+      "animation_scale_factor": 1.1168,
+      "files": [
+        "animation/boost/boost_01.png",
+        "animation/boost/boost_02.png",
+        "animation/boost/boost_03.png",
+        "animation/brake/brake_01.png",
+        "animation/brake/brake_02.png",
+        "animation/brake/brake_03.png",
+        "animation/drive/drive_01.png",
+        "animation/drive/drive_02.png",
+        "animation/drive/drive_03.png",
+        "animation/drive/drive_04.png",
+        "animation/drive/drive_05.png",
+        "animation/drive/drive_06.png",
+        "animation/idle/idle_01.png",
+        "animation/idle/idle_02.png",
+        "animation/idle/idle_03.png",
+        "animation/idle/idle_04.png",
+        "selection/portrait.png",
+        "selection/select_sprite.png"
+      ]
+    },
+    "nori": {
+      "display_name": "Nori",
+      "frame_counts": {
+        "idle": 4,
+        "drive": 6,
+        "boost": 3,
+        "brake": 3
+      },
+      "animation_scale_factor": 1.1503,
+      "files": [
+        "animation/boost/boost_01.png",
+        "animation/boost/boost_02.png",
+        "animation/boost/boost_03.png",
+        "animation/brake/brake_01.png",
+        "animation/brake/brake_02.png",
+        "animation/brake/brake_03.png",
+        "animation/drive/drive_01.png",
+        "animation/drive/drive_02.png",
+        "animation/drive/drive_03.png",
+        "animation/drive/drive_04.png",
+        "animation/drive/drive_05.png",
+        "animation/drive/drive_06.png",
+        "animation/idle/idle_01.png",
+        "animation/idle/idle_02.png",
+        "animation/idle/idle_03.png",
+        "animation/idle/idle_04.png",
+        "selection/portrait.png",
+        "selection/select_sprite.png"
+      ]
+    },
+    "luna": {
+      "display_name": "Luna",
+      "frame_counts": {
+        "idle": 4,
+        "drive": 6,
+        "boost": 3,
+        "brake": 3
+      },
+      "animation_scale_factor": 1.1,
+      "files": [
+        "animation/boost/boost_01.png",
+        "animation/boost/boost_02.png",
+        "animation/boost/boost_03.png",
+        "animation/brake/brake_01.png",
+        "animation/brake/brake_02.png",
+        "animation/brake/brake_03.png",
+        "animation/drive/drive_01.png",
+        "animation/drive/drive_02.png",
+        "animation/drive/drive_03.png",
+        "animation/drive/drive_04.png",
+        "animation/drive/drive_05.png",
+        "animation/drive/drive_06.png",
+        "animation/idle/idle_01.png",
+        "animation/idle/idle_02.png",
+        "animation/idle/idle_03.png",
+        "animation/idle/idle_04.png",
+        "selection/portrait.png",
+        "selection/select_sprite.png"
+      ]
+    },
+    "milo": {
+      "display_name": "Milo",
+      "frame_counts": {
+        "idle": 4,
+        "drive": 6,
+        "boost": 3,
+        "brake": 3
+      },
+      "animation_scale_factor": 1.0918,
+      "files": [
+        "animation/boost/boost_01.png",
+        "animation/boost/boost_02.png",
+        "animation/boost/boost_03.png",
+        "animation/brake/brake_01.png",
+        "animation/brake/brake_02.png",
+        "animation/brake/brake_03.png",
+        "animation/drive/drive_01.png",
+        "animation/drive/drive_02.png",
+        "animation/drive/drive_03.png",
+        "animation/drive/drive_04.png",
+        "animation/drive/drive_05.png",
+        "animation/drive/drive_06.png",
+        "animation/idle/idle_01.png",
+        "animation/idle/idle_02.png",
+        "animation/idle/idle_03.png",
+        "animation/idle/idle_04.png",
+        "selection/portrait.png",
+        "selection/select_sprite.png"
+      ]
+    }
+  }
+}

@@ -1,5 +1,9 @@
 # Doodle Rally visual gallery
 
+Version 1.3.3 integrates the supplied core sprites. Inspect all eight cats together in [Character Select](../screenshots/1.3.3/character_select.png), including [Mak-Doong selected](../screenshots/1.3.3/mak_doong_character_select.png). The [Zizi Garage](../screenshots/1.3.3/zizi_garage.png), [Mak-Doong boost](../screenshots/1.3.3/mak_doong_garage_boost.png), and [Zizi brake](../screenshots/1.3.3/zizi_garage_brake.png) show the separate animation and effects. These are native packaged-app captures; the full set is in [`screenshots/1.3.3/`](../screenshots/1.3.3/).
+
+## Previous 1.3.2 gallery
+
 Version 1.3.2 adds [Easy track selection](../screenshots/1.3.2/track_select.png), [Hard track selection](../screenshots/1.3.2/track_hard.png), and a [Hard Block Quarry race](../screenshots/1.3.2/quarry_hard.png). The game animates the illustrated cats' head direction and visible tails between still captures. The native QA set is in [`screenshots/1.3.2/`](../screenshots/1.3.2/), with replay and export evidence in [`docs/test-results/1.3.2/`](test-results/1.3.2/).
 
 ## 1.3.1 graphics gallery
