@@ -1,5 +1,11 @@
 # Build status — September 24, 2026
 
+## Doodle Rally — Cat Racers 1.3.8
+
+The title menu now focuses on the next meaningful choice: start Cat Racers or Minecraft Racing, open the shared Garage, or change Options. Character Select and Track Select no longer appear as duplicate shortcuts; both modes still open racer choice and then course choice in sequence.
+
+The Universal Mac app is `builds/Doodle Rally 1.3.8.app`, with `Doodle_Rally_1.3.8_Mac.zip` beside the repository. All seven source suites passed **861 counted functional checks**, six course/mode world builds, and three temporal collision replays with zero assertion violations. The packaged app passed **34 native cases**. Fresh captures and logs are in `screenshots/1.3.8/` and `docs/test-results/1.3.8/`. The app is locally ad-hoc signed and not Apple-notarized.
+
 ## Doodle Rally — Cat Racers 1.3.7
 
 The current Universal Mac build is `builds/Doodle Rally 1.3.7.app`; its playable ZIP is `Doodle_Rally_1.3.7_Mac.zip` beside the repository. The export uses Godot 4.7.2 and contains the latest rear-fur shading and course-landmark updates. Desktop Dojo's distant mountains, wider rail rhythm, pencil-pit, and ruler gates are visible in the native driving capture. Glitch Core retains its neon skyline presentation.

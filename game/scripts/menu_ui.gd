@@ -302,12 +302,12 @@ func show_title() -> void:
 	subtitle.rotation = -0.045
 	_stage.add_child(subtitle)
 	_label(subtitle,"SMALL CATS\nBIG ADVENTURES",Rect2(8,4,343,78),27,CREAM,true)
-	var start := _wood_button("Start Game",Rect2(48,314,422,73),_start_cats,"flag",true)
-	_wood_button("Character Select",Rect2(48,397,403,66),show_characters,"cat")
-	_wood_button("Track Select",Rect2(48,473,377,66),show_tracks,"mountain")
-	_wood_button("Garage",Rect2(48,549,352,66),_show_garage,"wrench")
-	_wood_button("Minecraft Racing",Rect2(48,625,408,66),_start_blocks,"cube")
-	_wood_button("Options",Rect2(48,701,352,66),show_settings,"gear")
+	# Character and track choice happen inside each racing mode, so keep the
+	# title menu focused on starting a mode and the shared garage/settings.
+	var start := _wood_button("Start Game",Rect2(48,337,422,73),_start_cats,"flag",true)
+	_wood_button("Garage",Rect2(48,426,352,66),_show_garage,"wrench")
+	_wood_button("Minecraft Racing",Rect2(48,515,408,66),_start_blocks,"cube")
+	_wood_button("Options",Rect2(48,604,352,66),show_settings,"gear")
 	_label(_stage,"Ready, Set, Meow!",Rect2(59,778,433,55),32,CREAM)
 	_paw(_stage,Rect2(368,787,40,40),CREAM)
 	_button(_stage,"How to play",Rect2(47,843,202,42),_show_controls)

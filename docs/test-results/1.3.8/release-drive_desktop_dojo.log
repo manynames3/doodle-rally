@@ -1,0 +1,7 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Metal 4.0 - Forward+ - Using Device #0: Apple - Apple M1 (Apple7)
+
+QA_DRIVE distance=539.413206983914 speed=38.0 fps=60.0
+QA_FRAME_TIMES samples=608 median_ms=16.6666666666667 p95_ms=16.6666666666667
+QA_SCREENSHOT <project-root>/screenshots/1.3.8/drive_desktop_dojo.png result=0
+QA_STATE racing screen=drive mode=cats character=0 difficulty=2

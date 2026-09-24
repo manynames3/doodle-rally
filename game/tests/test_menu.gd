@@ -47,21 +47,6 @@ func _joy(button: int) -> void:
 	Input.parse_input_event(event)
 	await process_frame
 
-func _click(control: Control) -> void:
-	var point := control.get_global_rect().get_center()
-	var motion := InputEventMouseMotion.new()
-	motion.position = point
-	motion.global_position = point
-	Input.parse_input_event(motion)
-	for pressed: bool in [true,false]:
-		var event := InputEventMouseButton.new()
-		event.button_index = MOUSE_BUTTON_LEFT
-		event.position = point
-		event.global_position = point
-		event.pressed = pressed
-		Input.parse_input_event(event)
-		await process_frame
-
 func _axis(value: float) -> void:
 	var event := InputEventJoypadMotion.new()
 	event.axis = JOY_AXIS_LEFT_X
@@ -118,10 +103,16 @@ func _go() -> void:
 	ui.call("_launch")
 	ui.call("_launch")
 	_check(launches.size() == 1 and launches[0] == [chosen,1,"minecraft"], "track confirmation emits one race with correct roster")
-	for route in ["Character Select","Track Select","Garage","Options"]:
+	ui.show_title()
+	var title_routes: Array[String] = []
+	for child in ui.get_node("MenuStage").get_children():
+		if child is Button and child.name.begins_with("Menu_"):
+			title_routes.append(str(child.name))
+	_check(title_routes == ["Menu_Start_Game","Menu_Garage","Menu_Minecraft_Racing","Menu_Options"],"title menu contains modes, garage and options without duplicate character/track routes")
+	for route in ["Garage","Options"]:
 		ui.show_title()
 		_press_title(route)
-		var expected: String = {"Character Select":"characters","Track Select":"tracks","Garage":"garage","Options":"settings"}[route]
+		var expected: String = {"Garage":"garage","Options":"settings"}[route]
 		_check(ui.screen == expected,"title route " + route)
 	ui.show_settings()
 	var stage: Control = ui.get_node("MenuStage")
@@ -167,12 +158,8 @@ func _go() -> void:
 	_check(quit_count == 1, "Quit requests application shutdown")
 	ui.show_title()
 	await process_frame
-	await _click(ui.get_node("MenuStage/Menu_Character_Select"))
-	_check(ui.screen == "characters","native mouse click opens Character Select")
-	ui.selected_mode = "minecraft"
-	ui.show_title()
 	await process_frame
-	await process_frame
+	await _joy(JOY_BUTTON_DPAD_DOWN)
 	await _joy(JOY_BUTTON_DPAD_DOWN)
 	await _joy(JOY_BUTTON_A)
 	_check(ui.screen == "characters" and ui.selected_mode == "minecraft","title native focus navigates and confirms with gamepad")
