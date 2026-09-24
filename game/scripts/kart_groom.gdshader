@@ -33,23 +33,28 @@ void vertex() {
 	float head = smoothstep(1.98, 2.24, p.y);
 	if (coat_pattern == 1) {
 		float around = atan(p.x, p.z - 0.13);
-		float bands = sin(around * 9.0 + p.y * 2.3 + soft * 0.8);
+		float bands = sin(around * 6.4 + p.y * 1.9 + soft * 0.65);
 		float rear = smoothstep(-0.16, 0.26, p.z);
 		float crown = smoothstep(2.87, 3.06, p.y);
 		float forehead = smoothstep(0.62, 0.87, sin(p.x * 25.0 + p.y * 0.6 + soft * 0.3));
 		float cheek = smoothstep(0.56, 0.78, abs(p.x)) * smoothstep(0.62, 0.9, sin(p.y * 25.0 + p.z * 4.0));
-		float stripe = max(smoothstep(0.58, 0.84, bands) * rear, max(forehead * crown, cheek));
+		float stripe = max(smoothstep(0.52, 0.79, bands) * rear, max(forehead * crown, cheek));
 		fur = mix(fur, dark_color.rgb, stripe * head * 0.77);
 	} else if (coat_pattern == 2) {
 		float taper = clamp((2.99 - p.y) * 0.53, 0.025, 0.33);
 		float blaze = 1.0 - smoothstep(taper, taper + 0.055, abs(p.x));
 		blaze *= (1.0 - smoothstep(-0.35, -0.22, p.z)) * smoothstep(2.30, 2.42, p.y) * (1.0 - smoothstep(2.88, 3.01, p.y));
 		fur = mix(fur, cream_color.rgb, blaze);
+		// Match Pumpkin's broad rear tabby bars on the solid shell and groom.
+		float around = atan(p.x, p.z - 0.13);
+		float rear_bands = sin(around * 5.4 + p.y * 1.65 + soft * 0.4);
+		rear_bands = smoothstep(0.50, 0.80, rear_bands) * smoothstep(-0.12, 0.24, p.z);
+		fur = mix(fur, dark_color.rgb, rear_bands * head * 0.68);
 	} else if (coat_pattern == 4 || coat_pattern == 5) {
 		// The photographed calico has irregular tortoiseshell islands rather
 		// than tabby stripes. Coordinates stay fixed to the animated driver.
 		vec3 black_fur = vec3(0.032, 0.025, 0.023);
-		vec3 ginger_fur = vec3(0.38, 0.145, 0.045);
+		vec3 ginger_fur = vec3(0.46, 0.18, 0.052);
 		float island = soft_noise(p * vec3(3.3, 3.0, 3.8) + vec3(1.4, 3.6, 0.8));
 		float small_edge = soft_noise(p * 18.0) * 0.075;
 		float orange_island = smoothstep(0.59, 0.66, island + small_edge);
@@ -80,16 +85,21 @@ void vertex() {
 			float throat = (1.0 - smoothstep(0.29, 0.45, abs(p.x))) * (1.0 - smoothstep(2.20, 2.26, p.y)) * smoothstep(-0.76, -0.59, p.z);
 			face = mix(face, black_fur, throat);
 			fur = mix(fur, face, front * smoothstep(1.98, 2.11, p.y));
-			// Keep the rear-facing head consistent with the photographed calico:
-			// broad black/ginger patches and one soft white crown stripe.
-			float rear_head = smoothstep(-0.12, 0.18, p.z) * smoothstep(2.00, 2.38, p.y);
-			// Match the broad asymmetrical islands on the supplied Mak-Doong sheet.
-			float back_patch_a = 1.0 - smoothstep(0.08, 0.64, length(vec2((p.x + 0.30) * 1.15, (p.y - 2.60) * 0.78)));
-			back_patch_a *= smoothstep(2.14, 2.34, p.y) * (1.0 - smoothstep(3.02, 3.18, p.y));
-			float back_patch_b = 1.0 - smoothstep(0.10, 0.56, length(vec2((p.x - 0.28) * 1.10, (p.y - 2.48) * 0.82)));
-			back_patch_b *= smoothstep(2.18, 2.54, p.y) * (1.0 - smoothstep(2.92, 3.13, p.y));
-			float back_ginger = max(back_patch_a * 0.78, back_patch_b * 0.60);
+			// Match the solid fur shader: broad cheek sweeps and a pale nape keep
+			// the photographed calico design coherent at rear-camera distance.
+			float rear_head = smoothstep(-0.10, 0.08, p.z) * smoothstep(1.92, 2.08, p.y);
+			float stripe_width = mix(0.30, 0.085, smoothstep(2.18, 3.08, p.y));
+			float stripe_center = -0.035 + sin(p.y * 5.1) * 0.026;
+			float crown_blaze = 1.0 - smoothstep(stripe_width, stripe_width + 0.055, abs(p.x - stripe_center));
+			crown_blaze *= smoothstep(2.12, 2.30, p.y) * (1.0 - smoothstep(3.08, 3.22, p.y));
+			float left_sweep = 1.0 - smoothstep(0.055, 0.28, abs(p.x + 0.48 + (p.y - 2.48) * 0.10));
+			left_sweep *= smoothstep(2.18, 2.34, p.y) * (1.0 - smoothstep(2.86, 3.02, p.y));
+			float right_sweep = 1.0 - smoothstep(0.06, 0.25, abs(p.x - 0.50 - (p.y - 2.45) * 0.08));
+			right_sweep *= smoothstep(2.22, 2.38, p.y) * (1.0 - smoothstep(2.78, 2.95, p.y));
+			float back_ginger = max(crown_blaze, max(left_sweep * 0.76, right_sweep * 0.66));
 			vec3 rear_face = mix(black_fur, ginger_fur, back_ginger);
+			float pale_nape = 1.0 - smoothstep(2.04, 2.25, p.y);
+			rear_face = mix(rear_face, cream_color.rgb, pale_nape * 0.78);
 			fur = mix(fur, rear_face, rear_head);
 		}
 	} else if (coat_pattern == 3) {

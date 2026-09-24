@@ -20,6 +20,12 @@ func _initialize() -> void:
 						assert(normal.y > 0.8, "Road normals must face upward")
 					checked_surfaces += 1
 			assert(checked_surfaces == 3, "Validate road and both shoulders")
+			if index == 0:
+				assert(world.get_node_or_null("DesktopDojoWriteOfWay") is Label3D, "Desktop Dojo has its ruler checkpoint landmark")
+				assert(world.get_node_or_null("DesktopDojoDriftOnce") is Label3D, "Desktop Dojo has its second themed checkpoint landmark")
+			elif index == 2:
+				assert(world.get_node_or_null("GlitchPortalMeowtrix") is Label3D, "Glitch Core has its first arcade portal landmark")
+				assert(world.get_node_or_null("GlitchPortalPawtalSync") is Label3D, "Glitch Core has its second arcade portal landmark")
 			world.set_animations_enabled(false)
 			assert(not world.is_processing(), "Reduced motion must stop shader time updates")
 			world.set_animations_enabled(true)

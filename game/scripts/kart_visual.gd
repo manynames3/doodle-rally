@@ -3,7 +3,7 @@ extends Node3D
 ## Every visible part is geometry; all eight drivers can be viewed from any angle.
 
 const PALETTE: Array[Color] = [Color("e52f37"), Color("168ff0"), Color("f159b0"), Color("ff921d"), Color("9446e8"), Color("48b73d"), Color("ffd044"), Color("efbf3c")]
-const COATS: Array[Color] = [Color("1b1d22"), Color("9296a4"), Color("ddd7d0"), Color("e99136"), Color("e6d2b3"), Color("c97931"), Color("29211e"), Color("85818b")]
+const COATS: Array[Color] = [Color("24252b"), Color("9296a4"), Color("ddd7d0"), Color("e99136"), Color("e6d2b3"), Color("c97931"), Color("29211e"), Color("85818b")]
 const IRIS: Array[Color] = [Color("bdc45f"), Color("9edd83"), Color("63c9ed"), Color("b8d75f"), Color("67bff9"), Color("92db76"), Color("9d9e60"), Color("9edb76")]
 const VOXEL_DRIVER = preload("res://scripts/kart_voxel_driver.gd")
 const FUR_SHADER = preload("res://scripts/kart_fur.gdshader")
@@ -304,7 +304,10 @@ func _build_cat() -> void:
 	var white: Material = _fur_material(Color("d9d3c7"))
 	var body_coat: Material = _fur_material(base, 4 if character_index == 6 else 1 if character_index in [1,3,7] else 0)
 	var points: Material = _fur_material(Color("594849")) if character_index == 4 else body_coat
-	var paws: Material = white if character_index in [0,2,5,6,7] else points
+	# All eight reference sheets show light paws and a pale chest/bib. Keeping
+	# those marks readable from side angles helps the live models retain their
+	# illustrated identities under the race lighting.
+	var paws: Material = white
 	var nose: Material = _material(Color("16191d") if character_index in [0,7] else Color("ac7a67") if character_index == 6 else Color("c88f92"), 0.43)
 	var mouth: Material = _material(Color("1d0c11"), 0.82)
 	var tongue: Material = _material(Color("e07b86"), 0.70)
@@ -317,7 +320,7 @@ func _build_cat() -> void:
 	# the jaw; keeping it broad makes the silhouette read from the race camera.
 	var bib_width: float = 0.86 if character_index == 0 else 0.98 if character_index == 6 else 0.70
 	var bib_height: float = 0.96 if character_index in [0,6] else 0.77
-	_fur_sphere(_driver, Vector3(0,1.80,-0.20),Vector3(bib_width,bib_height,0.34),white if character_index in [0,2,5,6] else points)
+	_fur_sphere(_driver, Vector3(0,1.80,-0.20),Vector3(bib_width,bib_height,0.34),white)
 	if character_index in [0,6]:
 		# A second soft lobe makes the white throat read beneath the larger head
 		# instead of disappearing behind the dashboard in the lineup camera.
@@ -393,21 +396,23 @@ func _build_cat() -> void:
 		# Keep the halo clearly above both ears. A thinner, smoother torus reads as
 		# a soft accessory in the chase camera instead of a thick floating arch.
 		var halo_mat := _material(Color("f6d56c"),0.20,0.35,0.65)
-		var halo: MeshInstance3D = _torus(_driver,Vector3(0,4.46,0.17),0.55,0.63,halo_mat)
+		var halo: MeshInstance3D = _torus(_driver,Vector3(0,4.52,0.52),0.55,0.63,halo_mat)
 		halo.name = "GoldenHalo"
-		halo.rotation.x = -deg_to_rad(10.0)
-		halo.scale = Vector3(1.0,0.46,1.0)
+		# Cant the loop gently toward the rear camera so it stays identifiable in
+		# the chase view instead of disappearing edge-on behind the ears.
+		halo.rotation.x = deg_to_rad(60.0)
+		halo.scale = Vector3(1.0,0.55,1.0)
 		halo.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		var halo_light := OmniLight3D.new()
 		halo_light.name = "HaloGlow"
-		halo_light.position = Vector3(0,4.40,0.16)
+		halo_light.position = Vector3(0,4.44,0.52)
 		halo_light.light_color = Color("ffd96e")
 		halo_light.light_energy = 0.22
 		halo_light.omni_range = 3.8
 		halo_light.shadow_enabled = false
 		_driver.add_child(halo_light)
 	if character_index == 2:
-		_build_bow(_driver,Vector3(-0.38,3.22,-0.05),_material(Color("d873a5"),0.74))
+		_build_bow(_driver,Vector3(0.0,3.22,-0.05),_material(Color("d873a5"),0.74))
 
 
 func _build_eye(side: float) -> void:

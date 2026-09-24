@@ -178,14 +178,17 @@ COLOR=pow(COLOR,vec3(2.0))*1.15;
 		cloud_texture.noise = cloud_noise
 		day_material.set_shader_parameter("cloud_noise", cloud_texture)
 		sky.sky_material = day_material
-	# A full panorama keeps the forward vista rich as the chase camera rounds
-	# the loop. It replaces the old flat procedural sky on the two stylized
-	# circuits while the quarry keeps its natural sky and haze.
-	var panorama_path: String = "res://assets/world/desktop_dojo_backdrop_panorama2.jpg" if _course == 0 else "res://assets/world/glitch_core_backdrop_panorama2.jpg"
-	if _course != 1 and ResourceLoader.exists(panorama_path):
+	# The Desktop Dojo panorama is a full 360-degree illustration of a raised,
+	# looping road. At every yaw it competes with the actual course and makes the
+	# playable desk props look like a miniature pasted into the background, so
+	# keep its procedural day sky. Glitch Core's panorama is a city vista without
+	# that composition clash and remains a useful sense of place.
+	var panorama_path := "res://assets/world/glitch_core_backdrop_panorama2.jpg"
+	if _course == 2 and ResourceLoader.exists(panorama_path):
 		var panorama := PanoramaSkyMaterial.new()
 		panorama.panorama = load(panorama_path) as Texture2D
-		panorama.energy_multiplier = 0.82 if _course == 0 else 0.68
+		env.sky_rotation = Vector3(0.0, deg_to_rad(-38.0), 0.0)
+		panorama.energy_multiplier = 0.82
 		panorama.filter = true
 		sky.sky_material = panorama
 	env.background_mode = Environment.BG_SKY
@@ -806,37 +809,27 @@ func _desktop() -> void:
 		var d: float = i * 12.0
 		var p: Vector3 = sample(d)
 		_stamp("box", p - Vector3.UP * 1.5, Vector3(21, 3, 13), _mat("cardboard", Color("b99a6c")), frame(d))
-		for side in [-1.0, 1.0]:
-			var at: Vector3 = sample(d, float(side) * 10.5)
-			_stamp("box", at + Vector3.UP * 1.45, Vector3(0.65, 3.4, 0.65), rail_dark, frame(d))
-			_beam(at + Vector3.UP * 2.1, sample(d + 12, float(side) * 10.5) + Vector3.UP * 2.1, 0.48, rail_light)
-			if i % 4 == 0:
-				var outside: Vector3 = sample(d, float(side) * _rng.randf_range(44, 56))
+		# A post every 24 m keeps the rail sturdy without a dense comb of thin
+		# silhouettes crawling across the horizon in the chase camera.
+		if i % 2 == 0:
+			for side in [-1.0, 1.0]:
+				var at: Vector3 = sample(d, float(side) * 10.5)
+				_stamp("box", at + Vector3.UP * 1.45, Vector3(0.72, 3.4, 0.72), rail_dark, frame(d))
+				_beam(at + Vector3.UP * 2.1, sample(d + 24, float(side) * 10.5) + Vector3.UP * 2.1, 0.52, rail_light)
+		if i % 32 == 0:
+			for side in [-1.0, 1.0]:
+				var outside: Vector3 = sample(d, float(side) * _rng.randf_range(43, 51))
 				outside.y = 3.3
-				_book_stack(outside, _rng.randi_range(2, 4), _rng.randf_range(0.65, 1.12), _rng.randf_range(-0.7, 0.7))
-			elif i % 4 == 2:
+				_book_stack(outside, _rng.randi_range(2, 4), _rng.randf_range(0.62, 0.9), _rng.randf_range(-0.45, 0.45))
+		elif i % 32 == 16:
+			for side in [-1.0, 1.0]:
 				var outside: Vector3 = sample(d, float(side) * 38)
 				outside.y = 4.5
-				_pencil(outside, _rng.randf_range(22, 39), _rng.randf_range(0, TAU), i)
-	# Cozy studio: a window wall, painted shelves, stationery and an open laptop.
-	var wall_wood: StandardMaterial3D = _texture_mat("desk_backdrop_wood", "res://assets/world/wood.png", Color("76523f"))
-	wall_wood.uv1_triplanar = true
-	wall_wood.uv1_world_triplanar = true
-	wall_wood.uv1_scale = Vector3.ONE * 0.024
-	wall_wood.roughness = 0.95
-	_stamp("box", Vector3(0, 93, -435), Vector3(970, 185, 8), wall_wood)
-	# Thick beams and shelves frame the windows, adding real foreground depth to
-	# the little paper circuit instead of a wall of flat pastel boxes.
-	for x in [-470.0, -315.0, -155.0, 5.0, 165.0, 325.0, 470.0]:
-		_stamp("box", Vector3(x, 94, -420), Vector3(8, 182, 12), wood)
-	for y in [26.0, 72.0, 118.0, 161.0]:
-		_stamp("box", Vector3(0, y, -411), Vector3(950, 6, 19), wood)
-	var window := _mat("window", Color("9bd5f3"), 0.3, 0, 0.4)
-	for x in [-290, -100, 100, 290]:
-		_stamp("box", Vector3(float(x), 105, -429), Vector3(163, 148, 2), _mat("window_wood", Color("eddbb5")))
-		_stamp("box", Vector3(float(x), 105, -427), Vector3(147, 132, 2), window)
-		_stamp("box", Vector3(float(x), 105, -424), Vector3(4, 132, 3), _mat("window_wood", Color("eddbb5")))
-		_stamp("box", Vector3(float(x), 105, -424), Vector3(147, 4, 3), _mat("window_wood", Color("eddbb5")))
+				_pencil(outside, _rng.randf_range(25, 36), _rng.randf_range(-0.5, 0.5), i)
+	# A distant, soft mountain horizon echoes the view through the studio windows
+	# in the supplied Dojo illustration, without putting another road behind the
+	# playable course.
+	_dojo_mountain_horizon()
 	_stamp("box", Vector3(-260, 14, -322), Vector3(180, 9, 125), _mat("laptop_shell", Color("687a91")))
 	_stamp("box", Vector3(-260, 64, -369), Vector3(180, 104, 7), _mat("laptop_shell", Color("687a91")), Basis.from_euler(Vector3(-0.12, 0, 0)))
 	_stamp("box", Vector3(-260, 66, -363), Vector3(163, 88, 1), _mat("laptop_screen", Color("e4e9e4"), 0.7, 0, 0.2))
@@ -847,27 +840,33 @@ func _desktop() -> void:
 	_mug(Vector3(-7, 3, -145), 1.25, Color("f4e7c6"), "GOOD IDEAS\nMEOW")
 	_mug(Vector3(270, 3, 110), 1.1, Color("b8dce4"), "FUELED BY\nTREATS")
 	_mug(Vector3(-205, 3, 130), 0.8, Color("e6b5ac"), "RACE.\nCREATE.")
+	_pencil_pit(length * 0.205, 43.0)
 	for i in range(11):
 		var p := Vector3(300 + _rng.randf_range(-15, 15), 3, -295 + i * 6)
 		_pencil(p, 75, 0.3, i)
 	for i in range(7):
 		var p := Vector3(-310, 7 + i * 12.0, 230)
 		_book_stack(p, 1, 1.8, sin(i) * 0.16)
-	for i in range(20):
-		# Lift the stationery clear of the sheet so its underside never
-		# intersects the paper surface and creates a second source of shimmer.
+	for i in range(8):
+		# A few chunky erasers read as playful props without a field of shallow
+		# edges that crawl in the chase camera.
 		var p := Vector3(_rng.randf_range(-390, 390), 3.95, _rng.randf_range(-340, 340))
 		if _distance_to_road(p) > 28:
-			_stamp("box", p, Vector3(18, 1.3, 12), _mat("eraser%d" % (i % 3), [Color("e6a4b0"), Color("a5c8da"), Color("edc368")][i % 3]), Basis.from_euler(Vector3(0, _rng.randf_range(-1, 1), 0)))
+			_stamp("box", p, Vector3(19, 2.2, 13), _mat("eraser%d" % (i % 3), [Color("e6a4b0"), Color("a5c8da"), Color("edc368")][i % 3]), Basis.from_euler(Vector3(0, _rng.randf_range(-1, 1), 0)))
 	# Keep the first sign as a readable landmark without letting it cover the
 	# whole left side of the camera view.
 	_sign(85, -28, "DRAW. RACE.\nREPEAT.", Color("f1d88e"), 8.5, 5.7)
 	_sign(length * 0.3, 18, "DESKTOP\nDOJO →", Color("bce2dd"), 12, 8)
 	_sign(length * 0.69, -18, "GOOD IDEAS\nGO FAST", Color("eebac4"), 12, 8)
+	_sign(length * 0.16, 28, "NO. 2 PENCIL\nNO. 1 PAWS", Color("e7bd76"), 12, 8)
+	_sign(length * 0.83, -28, "ERASER? NEVER.\nWE RACE CLEAN.", Color("a9d7de"), 14, 8)
 	_bunting(115, 10, 9)
 	_bunting(length * 0.55, 11, 9)
-	# Oversized stationery landmarks echo the reference card: a ruler bridge,
-	# sticky-note ramps and scattered paper clips around the racing line.
+	# Two oversized ruler checkpoints give the desk circuit a clear visual
+	# rhythm and friendly jokes as the scenery changes.
+	_stationery_gate(length * 0.11, "WRITE OF WAY!", Color("7cb9ce"), "DesktopDojoWriteOfWay")
+	_stationery_gate(length * 0.64, "MEASURE TWICE.\nDRIFT ONCE.", Color("e7bd76"), "DesktopDojoDriftOnce")
+	# Sticky-note pennants flank the late turns like a hand-made pit crew.
 	var ruler := _mat("ruler_blue", Color("74b6d0"), 0.65, 0.05)
 	for fraction in [0.18, 0.48, 0.77]:
 		var marker_d: float = length * float(fraction)
@@ -876,6 +875,70 @@ func _desktop() -> void:
 			var note_p: Vector3 = sample(marker_d, float(side) * 26.0) + Vector3.UP * 0.85
 			_stamp("box", note_p, Vector3(15, 0.18, 10), _mat("sticky_%d" % int(fraction * 100), [Color("e8a1ad"), Color("e5c05b"), Color("82bdd2")][int(fraction * 100) % 3]), marker_basis * Basis.from_euler(Vector3(0.0, 0.0, 0.035 * side)))
 		_stamp("box", sample(marker_d) + Vector3.UP * 1.15, Vector3(20.0, 0.20, 1.2), ruler, marker_basis)
+
+
+func _dojo_mountain_horizon() -> void:
+	# Layer broad, low-contrast ridges beyond the tabletop. Unlike the previous
+	# window-wall ring, this gives the track a calm horizon and lets the sky and
+	# large race landmarks breathe.
+	var hill_colors: Array[Color] = [Color("72948c"), Color("668391"), Color("829a83"), Color("647c8a")]
+	for i in range(24):
+		var angle: float = float(i) / 24.0 * TAU
+		var radial := Vector3(cos(angle), 0.0, sin(angle))
+		var hill_center: Vector3 = radial * 670.0
+		var height: float = 148.0 + float((i * 37) % 91)
+		hill_center.y = height * 0.5 - 27.0
+		var hill_basis := Basis(Vector3(-sin(angle), 0.0, cos(angle)), Vector3.UP, -radial)
+		var color: Color = hill_colors[i % hill_colors.size()]
+		_stamp("ridge", hill_center, Vector3(235.0, height, 255.0), _mat("dojo_hill_%d" % (i % hill_colors.size()), color, 0.96), hill_basis)
+		if i % 3 == 0:
+			var tree_position: Vector3 = radial * 570.0 + Vector3.UP * 7.0
+			tree_position += Vector3(-sin(angle), 0.0, cos(angle)) * 54.0
+			_tree(tree_position, 0.72 + float(i % 3) * 0.12)
+
+
+func _pencil_pit(distance: float, lane: float) -> void:
+	var center: Vector3 = sample(distance, lane)
+	_mug(center, 1.55, Color("78aebe"), "")
+	for i in range(7):
+		var offset := Vector3((float(i) - 3.0) * 3.2, 48.0 + float(i % 2) * 3.0, 0.0)
+		_upright_pencil(center + offset, 27.0 + float(i % 3) * 2.0, i)
+
+
+func _upright_pencil(base: Vector3, height: float, color_index: int) -> void:
+	var colors: Array[Color] = [Color("e8b341"), Color("d5675d"), Color("5ea7bb"), Color("78a872"), Color("b78cb1")]
+	var body_height: float = height - 3.0
+	var color: Color = colors[posmod(color_index, colors.size())]
+	_stamp("box", base + Vector3.UP * (body_height * 0.5 + 2.0), Vector3(3.2, body_height, 3.2), _mat("upright_pencil_%d" % posmod(color_index, colors.size()), color))
+	_stamp("cylinder", base + Vector3.UP * 1.5, Vector3(3.35, 1.6, 3.35), _mat("pencil_band", Color("b8c3c1"), 0.3, 0.65))
+	_stamp("cylinder", base + Vector3.UP * 0.7, Vector3(3.3, 1.4, 3.3), _mat("upright_pencil_eraser", Color("e29899")))
+	_stamp("hex", base + Vector3.UP * (height - 0.1), Vector3(3.1, 3.3, 3.1), _mat("pencil_wood", Color("ddbd83")))
+	_stamp("box", base + Vector3.UP * (height + 1.25), Vector3(0.7, 1.5, 0.7), _mat("pencil_lead", Color("343845")))
+
+
+func _stationery_gate(distance: float, title: String, accent: Color, label_name: String) -> void:
+	var center: Vector3 = sample(distance)
+	var basis: Basis = frame(distance)
+	var wood: StandardMaterial3D = _mat("ruler_gate_wood", Color("79543c"))
+	var paint: StandardMaterial3D = _mat("ruler_gate_accent_%s" % accent.to_html(), accent)
+	var brass: StandardMaterial3D = _mat("ruler_gate_brass", Color("f2cf7c"), 0.35, 0.2)
+	# Giant No. 2 pencils hold up a square ruler arch. These themed uprights have
+	# an unmistakable silhouette from the chase camera and double as fun lap
+	# landmarks without reaching into the racing line.
+	for side in [-1.0, 1.0]:
+		var pencil_base: Vector3 = center + basis.x * (float(side) * 14.5)
+		_upright_pencil(pencil_base, 22.0, 0 if side < 0.0 else 2)
+	var top_center: Vector3 = center + Vector3.UP * 23.0
+	_stamp("box", top_center, Vector3(30.25, 1.35, 1.5), wood, basis)
+	_stamp("box", top_center + Vector3.UP * 0.72, Vector3(30.1, 0.20, 0.12), paint, basis)
+	for tick in range(-6, 7):
+		var tick_length: float = 2.1 if tick % 2 == 0 else 1.2
+		var tick_center: Vector3 = center + basis.x * (float(tick) * 2.25) + Vector3.UP * (22.05 - tick_length * 0.5)
+		_stamp("box", tick_center + basis.z * 0.83, Vector3(0.22, tick_length, 0.12), brass, basis)
+	var board := _mat("ruler_gate_board", Color("f3e3bb"))
+	_stamp("box", center + Vector3.UP * 18.5 + basis.z * 0.9, Vector3(17.5, 3.15, 0.16), board, basis)
+	_stamp("box", center + Vector3.UP * 16.85 + basis.z * 0.91, Vector3(17.5, 0.22, 0.18), paint, basis)
+	_label(title, center + Vector3.UP * 18.5 + basis.z * 1.02, basis, 0.028, Color("3a2a25"), 15.4, label_name)
 
 
 func _book_stack(p: Vector3, count: int, s: float, angle: float) -> void:
@@ -911,7 +974,8 @@ func _mug(p: Vector3, s: float, color: Color, text: String) -> void:
 		var a: float = float(i) / 20 * TAU
 		var b: float = float(i + 1) / 20 * TAU
 		_beam(p + Vector3(cos(a) * 7 + 16, sin(a) * 11 + 17, 0) * s, p + Vector3(cos(b) * 7 + 16, sin(b) * 11 + 17, 0) * s, 2.4 * s, ceramic)
-	_label(text, p + Vector3(0, 19, 13.7) * s, Basis.IDENTITY, 0.115 * s, Color("514138"))
+	if not text.is_empty():
+		_label(text, p + Vector3(0, 19, 13.7) * s, Basis.IDENTITY, 0.115 * s, Color("514138"))
 
 
 func _glitch() -> void:
@@ -935,57 +999,74 @@ func _glitch() -> void:
 				_stamp("box", edge + Vector3.UP * 3, Vector3(1.2, 3.7, 0.9), purple, frame(d))
 		if i % 6 == 0:
 			_stamp("box", p - Vector3.UP * (p.y + 40) * 0.5, Vector3(6, p.y + 40, 7), dark, frame(d))
-	# Individual stepped towers leave the course clear and build a neon canyon.
-	for i in range(125):
-		var p := Vector3(_rng.randf_range(-440, 440), -40, _rng.randf_range(-450, 410))
-		if _distance_to_road(p) < 35:
-			continue
-		var h: float = _rng.randf_range(32, 180)
-		var w: float = _rng.randf_range(16, 34)
-		var depth: float = _rng.randf_range(19, 40)
-		_stamp("box", p + Vector3.UP * h * 0.5, Vector3(w, h, depth), dark)
-		_stamp("box", p + Vector3.UP * h, Vector3(w + 1, 1.1, depth + 1), cyan if i % 3 == 0 else purple)
-		for level in range(3, int(h / 6)):
-			var y: float = level * 6.0
-			if _rng.randf() > 0.3:
-				_stamp("box", p + Vector3(0, y, depth * 0.5 + 0.08), Vector3(w * 0.7, 1.6, 0.12), cyan if i % 2 == 0 else pink)
-			if level % 2 == 0:
-				_stamp("box", p + Vector3(w * 0.5 + 0.08, y, 0), Vector3(0.12, 1.5, depth * 0.7), purple)
-		if i % 5 == 0:
-			_stamp("box", p + Vector3(w * 0.5 + 0.1, h * 0.55, 0), Vector3(0.2, h * 0.8, 2), pink)
-	# A repeating pair of illuminated server pylons gives the route a readable
-	# vanishing point and breaks up the random-box skyline.
-	for i in range(9):
-		var d: float = length * (0.06 + i * 0.105)
+	# Build the skyline as seven deliberate neighborhoods that follow the route.
+	# Each bank faces inward, creating a readable neon canyon with clear gaps for
+	# the road and its landmarks. The previous uniform scatter looked noisy and
+	# made the playable path disappear into a wall of boxes.
+	var window_cyan := _mat("city_window_cyan", Color("41d9eb"), 0.32, 0.15, 1.35)
+	var window_pink := _mat("city_window_pink", Color("ed69cb"), 0.32, 0.15, 1.15)
+	var window_gold := _mat("city_window_gold", Color("f4cf68"), 0.36, 0.12, 0.85)
+	for district in range(7):
+		var district_d: float = length * (0.035 + float(district) * 0.137)
+		for side in [-1.0, 1.0]:
+			for building_index in range(4):
+				var along: float = (float(building_index) - 1.5) * 20.0 + _rng.randf_range(-4.0, 4.0)
+				var building_d: float = district_d + along
+				var lane: float = float(side) * _rng.randf_range(49.0, 82.0)
+				var basis: Basis = frame(building_d)
+				var p: Vector3 = sample(building_d, lane)
+				p.y = -40.0
+				var h: float = _rng.randf_range(76.0, 205.0) + (18.0 if building_index == district % 4 else 0.0)
+				var w: float = _rng.randf_range(10.0, 18.0)
+				var depth: float = _rng.randf_range(13.0, 22.0)
+				var tower_mat: StandardMaterial3D = dark if (district + building_index) % 3 != 0 else purple
+				var cap_mat: StandardMaterial3D = cyan if (district + building_index) % 3 == 0 else pink if building_index % 2 == 0 else purple
+				_stamp("box", p + Vector3.UP * h * 0.5, Vector3(w, h, depth), tower_mat, basis)
+				_stamp("box", p + Vector3.UP * (h + 0.5), Vector3(w + 1.6, 1.1, depth + 1.6), cap_mat, basis)
+				# Only the road-facing façade gets windows; the quieter backs keep
+				# the skyline from becoming a grid of tiny lights.
+				var inward_x: float = -float(side) * (w * 0.5 + 0.16)
+				var window_mat: StandardMaterial3D = window_cyan if (district + building_index) % 3 == 0 else window_pink if building_index % 2 == 0 else window_gold
+				for level in range(4, floori(h / 12.0), 2):
+					var y: float = float(level) * 12.0
+					for bay in [-0.25, 0.25]:
+						var window_p: Vector3 = p + Vector3.UP * y + basis.x * inward_x + basis.z * (float(bay) * depth)
+						_stamp("box", window_p, Vector3(0.22, 2.6, depth * 0.24), window_mat, basis)
+	# Three beacon pairs frame the skyline without repeating every few seconds.
+	for i in range(3):
+		var d: float = length * [0.13, 0.49, 0.86][i]
 		var pylon_basis: Basis = frame(d)
 		for side in [-1.0, 1.0]:
-			var pylon_p: Vector3 = sample(d, float(side) * 24.0)
-			_stamp("box", pylon_p + Vector3.UP * 19.0, Vector3(4.8, 38.0, 4.8), dark, pylon_basis)
+			var pylon_p: Vector3 = sample(d, float(side) * 28.0)
+			_stamp("box", pylon_p + Vector3.UP * 21.0, Vector3(5.4, 42.0, 5.4), dark, pylon_basis)
 			for level in range(4):
-				var level_p: Vector3 = pylon_p + Vector3.UP * (7.0 + level * 8.0)
-				_stamp("box", level_p + pylon_basis.z * 2.48, Vector3(3.7, 1.25, 0.14), cyan if (i + level) % 2 == 0 else pink, pylon_basis)
-			_stamp("box", pylon_p + Vector3.UP * 39.2, Vector3(6.4, 1.0, 6.4), cyan if side < 0 else pink, pylon_basis)
+				var level_p: Vector3 = pylon_p + Vector3.UP * (9.0 + level * 8.0)
+				_stamp("box", level_p + pylon_basis.z * 2.8, Vector3(4.0, 1.4, 0.16), cyan if (i + level) % 2 == 0 else pink, pylon_basis)
+			_stamp("box", pylon_p + Vector3.UP * 42.5, Vector3(7.0, 1.2, 7.0), cyan if side < 0 else pink, pylon_basis)
 	for i in range(20):
 		var a: float = i / 20.0 * TAU
 		var p := Vector3(cos(a) * 700, -10, sin(a) * 700)
 		_stamp("box", p, Vector3(70, _rng.randf_range(180, 380), 90), _mat("far_city", Color("202343")))
-	for fraction in [0.1, 0.35, 0.6, 0.82]:
-		var d: float = length * float(fraction)
-		for side in [-1.0, 1.0]:
-			_stamp("box", sample(d, float(side) * 12) + Vector3.UP * 9, Vector3(1.8, 18, 1.8), dark, frame(d))
-			_stamp("box", sample(d, float(side) * 11.4) + Vector3.UP * 9, Vector3(0.4, 18, 0.5), cyan if side < 0 else pink, frame(d))
-		_stamp("box", sample(d) + Vector3.UP * 18, Vector3(26, 2, 2), dark, frame(d))
-		_stamp("box", sample(d) + Vector3.UP * 17.6, Vector3(24, 0.35, 2.2), cyan, frame(d))
-		_label("» » »   HYPERPAWS   » » »", sample(d) + Vector3.UP * 20.5, frame(d), 0.026, Color("7feaff"))
 	_sign(95, -28, "GLITCH\nCORE →", Color("253050"), 9.5, 6.4, Color("7df0f6"))
 	_sign(length * 0.49, 18, "WARP. DRIFT.\nSURVIVE.", Color("2b224e"), 14, 9, Color("f69de6"))
-	# Giant floating pixel cat sign and particle-like light cubes.
+	_sign(length * 0.84, -20, "NO LAG.\nJUST PAW-SPEED.", Color("243458"), 15, 8.5, Color("8be9ff"))
+	# Two oversized, segmented portals punctuate the lap like checkpoints in an
+	# arcade adventure. The labels are jokes; the rings are scenery only.
+	_digital_portal(length * 0.13, "MEOWTRIX", cyan, pink, "GlitchPortalMeowtrix")
+	_digital_portal(length * 0.53, "PAW-TAL SYNC", pink, cyan, "GlitchPortalPawtalSync")
+	# Giant floating pixel cats make the city feel like a playful game world.
 	_pixel_cat(Vector3(-10, 132, -240), 4.1, cyan)
 	_pixel_cat(Vector3(290, 118, 150), 2.8, pink)
-	for i in range(72):
-		var p := Vector3(_rng.randf_range(-330, 330), _rng.randf_range(12, 135), _rng.randf_range(-330, 330))
-		if _distance_to_road(p) > 20:
-			_stamp("box", p, Vector3.ONE * _rng.randf_range(0.28, 0.95), cyan if i % 2 == 0 else pink)
+	# A few floating data shards sparkle around the checkpoints without spilling
+	# into the racing line or turning the skyline into confetti noise.
+	for gate_fraction in [0.13, 0.53]:
+		var gate_d: float = length * float(gate_fraction)
+		for i in range(12):
+			var side: float = -1.0 if i % 2 == 0 else 1.0
+			var shard_d: float = gate_d + float(i / 4 - 1) * 5.5
+			var shard: Vector3 = sample(shard_d, side * _rng.randf_range(24.0, 42.0)) + Vector3.UP * _rng.randf_range(8.0, 21.0)
+			var scale: float = _rng.randf_range(0.65, 1.25)
+			_stamp("box", shard, Vector3(scale, scale, scale), cyan if i % 3 == 0 else pink)
 
 
 func _pixel_cat(p: Vector3, s: float, mat: StandardMaterial3D) -> void:
@@ -994,6 +1075,26 @@ func _pixel_cat(p: Vector3, s: float, mat: StandardMaterial3D) -> void:
 		for col in range(rows[row].length()):
 			if rows[row][col] == "1":
 				_stamp("box", p + Vector3((col - 5.5) * s, (5 - row) * s, 0), Vector3(s * 0.86, s * 0.86, s * 0.35), mat)
+
+
+func _digital_portal(distance: float, title: String, primary: StandardMaterial3D, secondary: StandardMaterial3D, label_name: String) -> void:
+	var road_point: Vector3 = sample(distance)
+	var basis: Basis = frame(distance)
+	var center: Vector3 = road_point + Vector3.UP * 17.0
+	# Double rings are built from short opaque segments, so they stay crisp and
+	# stable in motion without transparent billboard edges.
+	for ring in range(2):
+		var radius: float = 17.0 - float(ring) * 2.2
+		var ring_material: StandardMaterial3D = primary if ring == 0 else secondary
+		var segments: int = 32
+		for segment in range(segments):
+			var a0: float = float(segment) / float(segments) * TAU
+			var a1: float = float(segment + 1) / float(segments) * TAU
+			var start: Vector3 = center + basis.x * (cos(a0) * radius) + Vector3.UP * (sin(a0) * radius)
+			var end: Vector3 = center + basis.x * (cos(a1) * radius) + Vector3.UP * (sin(a1) * radius)
+			_beam(start, end, 0.86 if ring == 0 else 0.42, ring_material)
+	var label_basis: Basis = basis
+	_label(title, center + Vector3.UP * 19.6, label_basis, 0.036, Color("effbff"), 16.0, label_name)
 
 
 func _start_gate() -> void:
@@ -1061,8 +1162,9 @@ func _scenic_backdrop(path: String, tint: Color, radius: float, center_y: float)
 		add_child(backdrop)
 
 
-func _label(text: String, p: Vector3, basis: Basis, pixel_size: float, color: Color, max_width: float = 0.0) -> void:
+func _label(text: String, p: Vector3, basis: Basis, pixel_size: float, color: Color, max_width: float = 0.0, label_name: String = "") -> void:
 	var label := Label3D.new()
+	label.name = label_name if not label_name.is_empty() else "WorldLabel"
 	label.text = text
 	if ResourceLoader.exists("res://assets/fonts/Kalam-Bold.ttf"):
 		label.font = load("res://assets/fonts/Kalam-Bold.ttf") as Font
