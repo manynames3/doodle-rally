@@ -2,7 +2,7 @@
 
 **Doodle Rally** is a standalone single player 3D kart racer for macOS. Pick a cat, choose a course, and race seven rivals through a paper craft studio, an alpine quarry, or a neon block world. The game keeps the playful hand painted feel of the supplied Cat Racers references while using a real time 3D chase camera, physics based kart contact, items, drifting, boosts, and a second Minecraft Racing roster.
 
-The current source and Universal Mac build are version **1.3.6**. The original Doodle Rumble project is separate and is not modified.
+The current source and Universal Mac build are version **1.3.7**. The original Doodle Rumble project is separate and is not modified.
 
 ## Screenshots
 
@@ -10,20 +10,34 @@ The visual review gallery is in [docs/SCREENSHOTS.md](docs/SCREENSHOTS.md). Thes
 
 <table>
   <tr>
-    <td><img src="screenshots/1.3.3/intro.png" alt="Cat Racers intro menu" width="320"></td>
-    <td><img src="screenshots/1.3.6/character_select.png" alt="Character Select with the selected 16-view Zizi artwork" width="320"></td>
-    <td><img src="screenshots/1.3.3/track_select.png" alt="Track Select with Easy, Medium and Hard" width="320"></td>
+    <td><img src="screenshots/1.3.7/intro.png" alt="Cat Racers intro menu" width="320"></td>
+    <td><img src="screenshots/1.3.7/character_select.png" alt="Character Select with the selected 16-view Zizi artwork" width="320"></td>
+    <td><img src="screenshots/1.3.7/track_select.png" alt="Track Select with Easy, Medium and Hard" width="320"></td>
   </tr>
   <tr>
-    <td><img src="screenshots/1.3.3/quarry_race.png" alt="Block Quarry race" width="320"></td>
-    <td><img src="screenshots/1.3.6/desktop_race.png" alt="Desktop Dojo race after tabletop shimmer fix" width="320"></td>
-    <td><img src="screenshots/1.3.3/minecraft_race.png" alt="Minecraft Racing race" width="320"></td>
+    <td><img src="screenshots/1.3.7/quarry_race.png" alt="Block Quarry race" width="320"></td>
+    <td><img src="screenshots/1.3.7/desktop_race.png" alt="Desktop Dojo race with the revised studio world" width="320"></td>
+    <td><img src="screenshots/1.3.7/glitch_race.png" alt="Glitch Core race with neon city vista" width="320"></td>
   </tr>
 </table>
 
+## How the game has grown
+
+| Milestone | What changed |
+| --- | --- |
+| **1.1 · First playable Mac build** | Established the single-player kart-racing loop, three distinct course themes, rivals, items, and a native macOS app. |
+| **1.2–1.3.0 · Character identity** | Refined the roster around photo-guided Zizi and Mak-Doong, carried their markings through selection, Garage, racing, standings, and results, and expanded the illustrated presentation. |
+| **1.3.1–1.3.2 · Feel and competition** | Added Smooth Motion and graphics choices, interpolated rendering and scenery culling, then introduced Easy / Medium / Hard rivals and a living course-selection lineup. |
+| **1.3.3 · Eight-cat art pack** | Integrated individual transparent sprites, portraits, animation frames, and separate effects for all eight cats while keeping the race renderer and controls intact. |
+| **1.3.4–1.3.5 · Preview experiments** | Tested the selected-racer turntable presentation and refined its supplied artwork and selection layout. |
+| **1.3.6 · High-resolution turntable** | Replaced the compressed rotating cutout with 16 supplied 1024×1024 views per cat, swapped one frame at a time over six seconds, and fixed Desktop Dojo's paper/deck depth overlap. |
+| **1.3.7 · World and racer polish** | Improved rear-facing fur identity and racer shading. Desktop Dojo now has a quieter mountain horizon, hand-made pencil-pit landmarks, and playful ruler gates; Glitch Core keeps its neon city panorama. |
+
+Each release keeps earlier screenshots and verification evidence in the versioned folders under [`screenshots/`](screenshots/) and [`docs/test-results/`](docs/test-results/). The current build record is [BUILD_STATUS.md](BUILD_STATUS.md); release notes are in [`docs/releases/`](docs/releases/).
+
 ## Play the Mac build
 
-Unzip **Doodle_Rally_1.3.6_Mac.zip** and open **Doodle Rally 1.3.6.app**, or open the app inside `builds/Doodle Rally 1.3.6.app`. Godot is not required to play. The bundle contains Apple Silicon and Intel executables. It is signed locally and is not Apple notarized, so macOS may ask you to choose **Open Anyway** in **System Settings → Privacy & Security** when the ZIP came from another Mac.
+Unzip **Doodle_Rally_1.3.7_Mac.zip** and open **Doodle Rally 1.3.7.app**, or open the app inside `builds/Doodle Rally 1.3.7.app`. Godot is not required to play. The bundle contains Apple Silicon and Intel executables. It is signed locally and is not Apple notarized, so macOS may ask you to choose **Open Anyway** in **System Settings → Privacy & Security** when the ZIP came from another Mac.
 
 Choose **Start Game** for the cat roster or **Minecraft Racing** for the block characters. Pick a racer and a track, select **Easy**, **Medium**, or **Hard** beneath the track cards, then select **LET'S RACE!** Up/down also changes difficulty on that screen. Easy keeps the previous default rival pace; Medium and Hard raise the competition. The BenJam Games logo appears briefly when the app launches and can be skipped with any key, click, or controller button.
 
@@ -83,6 +97,6 @@ python3 tools/export_mac.py --godot /path/to/Godot.app/Contents/MacOS/Godot --te
 python3 tools/test_release.py
 ```
 
-`tools/test.py` runs simulation, menu, roster, integration, world, audio, and collision checks. `game/tests/benchmark_difficulty.gd` replays all three difficulty levels on each course. `tools/test_release.py` launches the packaged app through the title, every selected-cat preview, track, Garage, race, drive, and results screens and records fresh screenshots. The current verification record is [BUILD_STATUS.md](BUILD_STATUS.md), with release notes in [docs/releases/1.3.6.md](docs/releases/1.3.6.md).
+`tools/test.py` runs simulation, menu, roster, integration, world, audio, and collision checks. `game/tests/benchmark_difficulty.gd` replays all three difficulty levels on each course. `tools/test_release.py` launches the packaged app through the title, every selected-cat preview, track, Garage, race, drive, and results screens and records fresh screenshots. The current verification record is [BUILD_STATUS.md](BUILD_STATUS.md), with release notes in [docs/releases/1.3.7.md](docs/releases/1.3.7.md).
 
 Preferences are stored in Godot's separate **Doodle Rally Cat Racers** application data folder as `rally_3d.cfg`. The app does not read or change the original game's settings. Generated app bundles and temporary telemetry are excluded from the source repository.

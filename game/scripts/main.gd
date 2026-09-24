@@ -38,7 +38,7 @@ var _graphics_window_size := Vector2i.ZERO
 var startup_splash: CanvasLayer
 
 func _ready() -> void:
-	get_window().title = "Doodle Rally — Cat Racers · 1.3.6"
+	get_window().title = "Doodle Rally — Cat Racers · 1.3.7"
 	_qa = "--qa" in OS.get_cmdline_user_args()
 	preferences.enabled = not _qa
 	preferences.load_data()

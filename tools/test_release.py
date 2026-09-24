@@ -5,9 +5,10 @@ import argparse
 import subprocess
 import struct
 ROOT = Path(__file__).resolve().parents[1]
-APP = ROOT / "builds/Doodle Rally 1.3.6.app/Contents/MacOS/Doodle Rally — Cat Racers"
-SHOTS = ROOT / "screenshots/1.3.6"
-LOGS = ROOT / "docs/test-results/1.3.6"
+VERSION = "1.3.7"
+APP = ROOT / f"builds/Doodle Rally {VERSION}.app/Contents/MacOS/Doodle Rally — Cat Racers"
+SHOTS = ROOT / f"screenshots/{VERSION}"
+LOGS = ROOT / f"docs/test-results/{VERSION}"
 SHOTS.mkdir(parents=True, exist_ok=True)
 LOGS.mkdir(parents=True, exist_ok=True)
 CASES = [

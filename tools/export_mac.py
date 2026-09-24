@@ -6,6 +6,7 @@ import shutil
 import subprocess
 
 ROOT = Path(__file__).resolve().parents[1]
+VERSION = "1.3.7"
 parser = argparse.ArgumentParser()
 parser.add_argument("--godot", default=shutil.which("godot"), help="Path to standard Godot executable")
 parser.add_argument("--template", help="Optional path to matching macos.zip export template")
@@ -24,9 +25,9 @@ try:
     subprocess.run([args.godot, "--headless", "--path", str(ROOT / "game"), "--export-release", "macOS"], check=True)
 finally:
     preset.write_text(original)
-app = ROOT / "builds/Doodle Rally 1.3.6.app"
+app = ROOT / f"builds/Doodle Rally {VERSION}.app"
 shutil.copytree(ROOT / "docs/licenses", app / "Contents/Resources/Licenses", dirs_exist_ok=True)
 subprocess.run(["codesign", "--force", "--deep", "--sign", "-", "--preserve-metadata=entitlements,requirements,flags,runtime", str(app)], check=True)
 subprocess.run(["codesign", "--verify", "--deep", "--strict", str(app)], check=True)
-subprocess.run(["ditto", "-c", "-k", "--sequesterRsrc", "--keepParent", str(app), str(ROOT.parent / "Doodle_Rally_1.3.6_Mac.zip")], check=True)
+subprocess.run(["ditto", "-c", "-k", "--sequesterRsrc", "--keepParent", str(app), str(ROOT.parent / f"Doodle_Rally_{VERSION}_Mac.zip")], check=True)
 print("Built", app)

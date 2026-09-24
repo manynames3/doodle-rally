@@ -1,4 +1,10 @@
-# Build status — September 23, 2026
+# Build status — September 24, 2026
+
+## Doodle Rally — Cat Racers 1.3.7
+
+The current Universal Mac build is `builds/Doodle Rally 1.3.7.app`; its playable ZIP is `Doodle_Rally_1.3.7_Mac.zip` beside the repository. The export uses Godot 4.7.2 and contains the latest rear-fur shading and course-landmark updates. Desktop Dojo's distant mountains, wider rail rhythm, pencil-pit, and ruler gates are visible in the native driving capture. Glitch Core retains its neon skyline presentation.
+
+The source checks passed: **863 counted functional checks** across race simulation, menus, racer assets and selection, integration, and audio; six cat/Minecraft course builds; and three temporal collision replays with zero assertion violations. The packaged app passed **34 native cases**, including every selected cat, three turntable phases, course and Garage screens, both rosters, and four 12-second drives. All four drive samples measured a 16.67 ms median frame interval; p95 values ranged from 16.67 to 16.81 ms. Screenshots and logs are in `screenshots/1.3.7/` and `docs/test-results/1.3.7/`. The app is locally ad-hoc signed and not Apple-notarized.
 
 **Doodle Rally — Cat Racers 1.3.6** uses the supplied 1024×1024 transparent turntable views for every cat. Character Select keeps one image per card and directly swaps only the selected racer's 16 frames in order, completing a six-second stepped 2D turntable loop. Reduced Motion holds the front view. All 128 project frames match the supplied pack byte-for-byte.
 

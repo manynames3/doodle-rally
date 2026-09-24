@@ -1,5 +1,7 @@
 # Doodle Rally visual gallery
 
+Version 1.3.7 refreshes the captures after the rear-fur shading and course-landmark pass. Browse the [intro](../screenshots/1.3.7/intro.png), [eight-cat lineup](../screenshots/1.3.7/character_select.png), and [difficulty selection](../screenshots/1.3.7/track_select.png), then compare [Desktop Dojo](../screenshots/1.3.7/desktop_race.png), [Block Quarry](../screenshots/1.3.7/quarry_race.png), and [Glitch Core](../screenshots/1.3.7/glitch_race.png). The full native-app set also covers every selected cat, turntable phases, Garage animations, both rosters, and driving samples.
+
 Version 1.3.6 uses the supplied transparent 1024px turntable pack. The selected racer swaps directly through 16 supplied views in a six-second stepped rotation; Reduced Motion holds the front view. The [full roster with Zizi selected](../screenshots/1.3.6/character_select.png), [Mak-Doong selected](../screenshots/1.3.6/mak_doong_character_select.png), and [quarter](../screenshots/1.3.6/character_select_quarter_turn.png), [half](../screenshots/1.3.6/character_select_half_turn.png), and [three-quarter](../screenshots/1.3.6/character_select_three_quarter_turn.png) phases document frame swapping without horizontal compression. The release checks also capture each of the other six selected racers and a moving Desktop Dojo drive after the tabletop depth overlap fix.
 
 Version 1.3.5 used a single supplied image as a 3D turntable cutout. That preview is superseded by the 16-view pack in 1.3.6.
