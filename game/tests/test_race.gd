@@ -663,6 +663,7 @@ func _test_preferences() -> void:
 	prefs.selected_mode = "minecraft"
 	prefs.values.master_volume = 0.23
 	prefs.values.music_volume = 0.41
+	prefs.values.effects_volume = 0.67
 	prefs.values.reduced_motion = true
 	prefs.values.auto_accelerate = true
 	prefs.values.difficulty = 2
@@ -686,6 +687,7 @@ func _test_preferences() -> void:
 	var config: ConfigFile = ConfigFile.new()
 	config.set_value("settings", "master_volume", 50.0)
 	config.set_value("settings", "music_volume", -2.0)
+	config.set_value("settings", "effects_volume", INF)
 	config.set_value("settings", "difficulty", 99)
 	config.set_value("settings", "graphics_quality", 99)
 	config.set_value("settings", "reduced_motion", "wrong_type")
@@ -698,7 +700,7 @@ func _test_preferences() -> void:
 	var sanitized: RefCounted = Prefs.new()
 	sanitized.file_path = _temp_path
 	sanitized.load_data()
-	_expect(sanitized.values.master_volume == 1 and sanitized.values.music_volume == 0 and sanitized.values.difficulty == 4 and sanitized.values.graphics_quality == 2, "loading clamps numeric settings to safe ranges")
+	_expect(sanitized.values.master_volume == 1 and sanitized.values.music_volume == 0 and sanitized.values.effects_volume == 0.8 and sanitized.values.difficulty == 4 and sanitized.values.graphics_quality == 2, "loading clamps numeric settings to safe ranges")
 	_expect(sanitized.values.reduced_motion == false, "loading ignores a wrong-typed boolean setting")
 	_expect(sanitized.selected_character == 7 and sanitized.selected_course == 0 and sanitized.selected_mode == "cats", "loading sanitizes racer and course selections")
 	_expect(sanitized.records.is_empty(), "loading ignores corrupt or nonpositive record values")

@@ -65,7 +65,7 @@ func _go() -> void:
 	ui.start_race.connect(func(character: int,course: int): launches.append([character,course,ui.selected_mode]))
 	ui.settings_changed.connect(func(values: Dictionary): settings.append(values))
 	ui.quit_requested.connect(func(): quit_count += 1)
-	ui.set_preferences({"master_volume":0.25,"music_volume":0.5,"reduced_motion":true,"difficulty":2})
+	ui.set_preferences({"master_volume":0.25,"music_volume":0.5,"effects_volume":0.62,"reduced_motion":true,"difficulty":2})
 	ui.show_title()
 	await process_frame
 	await process_frame
@@ -132,8 +132,8 @@ func _go() -> void:
 		if child is OptionButton and child.get_item_text(0) == "Easy":
 			child.select(1)
 			child.item_selected.emit(1)
-	_check(sliders == 2 and toggles == 2 and settings.size() == settings_before + 6,"native sliders, toggles, graphics and difficulty emit preference changes")
-	_check(is_equal_approx(ui.preferences.master_volume,0.7) and ui.preferences.auto_accelerate,"preference payload contains changed values")
+	_check(sliders == 3 and toggles == 2 and settings.size() == settings_before + 7,"three audio sliders, toggles, graphics and difficulty emit preference changes")
+	_check(is_equal_approx(ui.preferences.master_volume,0.7) and is_equal_approx(ui.preferences.effects_volume,0.7) and ui.preferences.auto_accelerate,"preference payload contains changed values")
 	_check(ui.preferences.graphics_quality == 2,"graphics choice reaches saved preferences")
 	_check(ui.preferences.difficulty == 3,"Options difficulty matches the track selector")
 	_action("ui_cancel")

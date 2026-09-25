@@ -1,0 +1,9 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Metal 4.0 - Forward+ - Using Device #0: Apple - Apple M1 (Apple7)
+
+QA_ITEM item=treat_trail hazards=1 waves=0
+QA_ITEM_MARK index=0 kind=treat visible=true screen=(630.6415, 517.4163)
+QA_ITEM_PART index=0 kind=treat visible=true meshes=9 screen=(630.4769, 464.1234)
+QA_ITEM_MAP markers=1
+QA_SCREENSHOT <project-root>/screenshots/1.4.1/treat_trail_race.png result=0
+QA_STATE racing screen=race mode=cats character=0 difficulty=2

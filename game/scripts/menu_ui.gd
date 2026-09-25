@@ -25,7 +25,7 @@ var selected_mode := "cats"
 var selected_character := 0
 var selected_course := 1
 var screen := ""
-var preferences := {"master_volume": 0.8, "music_volume": 0.65, "reduced_motion": false, "auto_accelerate": false, "difficulty": 2, "graphics_quality": 0}
+var preferences := {"master_volume": 0.8, "music_volume": 0.65, "effects_volume": 0.8, "reduced_motion": false, "auto_accelerate": false, "difficulty": 2, "graphics_quality": 0}
 var _background: TextureRect
 var _wash: TextureRect
 var _stage: Control
@@ -547,9 +547,11 @@ func show_settings() -> void:
 	_slider("master_volume",Rect2(710,323,390,30))
 	_label(_stage,"Music volume",Rect2(270,382,344,40),25)
 	_slider("music_volume",Rect2(710,389,390,30))
-	_label(_stage,"Difficulty",Rect2(270,448,344,40),25)
+	_label(_stage,"Sound effects",Rect2(270,448,344,40),25)
+	_slider("effects_volume",Rect2(710,455,390,30))
+	_label(_stage,"Difficulty",Rect2(270,510,344,40),25)
 	var difficulty := OptionButton.new()
-	difficulty.position = Vector2(710,447)
+	difficulty.position = Vector2(710,509)
 	difficulty.size = Vector2(390,45)
 	for difficulty_name in DIFFICULTY_NAMES:
 		difficulty.add_item(difficulty_name)
@@ -560,9 +562,9 @@ func show_settings() -> void:
 	difficulty.add_theme_stylebox_override("focus",_style(Color.TRANSPARENT,GOLD,3,8))
 	difficulty.item_selected.connect(func(value: int): _preference("difficulty",value+2))
 	_stage.add_child(difficulty)
-	_label(_stage,"Graphics",Rect2(270,510,344,40),25)
+	_label(_stage,"Graphics",Rect2(270,572,344,40),25)
 	var graphics := OptionButton.new()
-	graphics.position = Vector2(710,510)
+	graphics.position = Vector2(710,571)
 	graphics.size = Vector2(390,45)
 	for quality_name in ["Smooth motion", "Balanced", "Full detail"]:
 		graphics.add_item(quality_name)
@@ -573,8 +575,8 @@ func show_settings() -> void:
 	graphics.add_theme_stylebox_override("focus",_style(Color.TRANSPARENT,GOLD,3,8))
 	graphics.item_selected.connect(func(value: int): _preference("graphics_quality",value))
 	_stage.add_child(graphics)
-	_toggle("auto_accelerate", "Auto-accelerate", "Keep moving while you focus on steering.", 574)
-	_toggle("reduced_motion", "Reduced motion", "Calmer camera and menu animation.", 656)
+	_toggle("auto_accelerate", "Auto-accelerate", "Keep moving while you focus on steering.", 636)
+	_toggle("reduced_motion", "Reduced motion", "Calmer camera and menu animation.", 704)
 	_button(_stage,"DONE   →",Rect2(1085,797,317,73),show_title,true)
 	_button(_stage,"B / Esc   Back",Rect2(37,810,218,56),show_title)
 	_label(_stage,"Your settings are saved automatically.",Rect2(329,819,710,43),22,CREAM,true)

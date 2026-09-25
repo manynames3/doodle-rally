@@ -1,5 +1,13 @@
 # Build status — September 24, 2026
 
+## Doodle Rally — Cat Racers 1.4.1
+
+Audio now has three course-specific, evolving stereo soundtracks: Desktop Dojo's playful mallet-and-wood palette, Block Quarry's adventurous woodwind-and-brass palette, and Glitch Core's driving synth palette. Each runs for 110–126 seconds, matches the other tracks at 0.130 measured RMS, and uses a generated loop seam below the 0.08 sample-step guard (measured: 0.004, 0.032, and 0.058). Course changes crossfade with equal-power gain; race cues duck music briefly. Twenty distinct generated effects cover race events and items, with a speed-responsive, layered engine loop. Options now separates master, music, and sound-effects volume.
+
+All **940 counted functional checks** passed across the seven source suites, along with six course/mode builds and three temporal collision replays with zero violations. The exported Universal macOS app passed **38 native release cases**, each with a fresh 1280×800 capture. Driving captures ran at 59–60 fps; p95 frame intervals were 16.67–16.95 ms. Screenshots and per-case logs are in `screenshots/1.4.1/` and `docs/test-results/1.4.1/`.
+
+The app is `builds/Doodle Rally 1.4.1.app`; the playable archive is `Doodle_Rally_1.4.1_Mac.zip` beside this repository (281 MB). The app passed strict local signature verification and the ZIP passed integrity verification. Archive SHA-256: `0cad42752ad4989f7fc07a1b8ab05c0bf6d49a26a4bb8a9dfde1e9bd1f52d23a`. It is ad-hoc signed and not Apple-notarized.
+
 ## Doodle Rally — Cat Racers 1.4.0
 
 The title now presents **Cat Racers**, **Minecraft Racing**, **Garage**, and **Options**, in that order. The racer and course picks remain inside each race mode. Garage continues as a secondary animated racer showcase with stats and a route to course choice; it does not yet offer kart customization.

@@ -38,7 +38,7 @@ var _graphics_window_size := Vector2i.ZERO
 var startup_splash: CanvasLayer
 
 func _ready() -> void:
-	get_window().title = "Doodle Rally — Cat Racers · 1.4.0"
+	get_window().title = "Doodle Rally — Cat Racers · 1.4.1"
 	_qa = "--qa" in OS.get_cmdline_user_args()
 	preferences.enabled = not _qa
 	preferences.load_data()
@@ -48,7 +48,7 @@ func _ready() -> void:
 	if not devices.is_empty(): controller = devices[0]
 	sound = Sound.new()
 	add_child(sound)
-	sound.set_mix(float(preferences.values.master_volume), float(preferences.values.music_volume))
+	sound.set_mix(float(preferences.values.master_volume), float(preferences.values.music_volume), float(preferences.values.effects_volume))
 	ui_layer = CanvasLayer.new()
 	add_child(ui_layer)
 	menu = load("res://scripts/menu_ui.gd").new()
@@ -134,7 +134,7 @@ func _controller_changed(device: int, connected: bool) -> void:
 func _settings_changed(values: Dictionary) -> void:
 	for key in values:
 		if preferences.values.has(key): preferences.values[key] = values[key]
-	sound.set_mix(float(preferences.values.master_volume), float(preferences.values.music_volume))
+	sound.set_mix(float(preferences.values.master_volume), float(preferences.values.music_volume), float(preferences.values.effects_volume))
 	preferences.save_data()
 
 func _start_race(chosen_character: int, chosen_course: int) -> void:

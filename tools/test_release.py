@@ -6,7 +6,7 @@ import subprocess
 import struct
 import re
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "1.4.0"
+VERSION = "1.4.1"
 APP = ROOT / f"builds/Doodle Rally {VERSION}.app/Contents/MacOS/Doodle Rally — Cat Racers"
 SHOTS = ROOT / f"screenshots/{VERSION}"
 LOGS = ROOT / f"docs/test-results/{VERSION}"

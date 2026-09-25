@@ -1,6 +1,6 @@
 extends RefCounted
 
-var values: Dictionary = {"master_volume": 0.7, "music_volume": 0.55, "reduced_motion": false, "auto_accelerate": false, "difficulty": 2, "graphics_quality": 0}
+var values: Dictionary = {"master_volume": 0.7, "music_volume": 0.55, "effects_volume": 0.8, "reduced_motion": false, "auto_accelerate": false, "difficulty": 2, "graphics_quality": 0}
 var records: Dictionary = {}
 var selected_character := 0
 var selected_course := 1
@@ -15,7 +15,7 @@ func load_data() -> void:
 	if config.load(file_path) != OK: return
 	for key in values:
 		var value: Variant = config.get_value("settings", key, values[key])
-		if key in ["master_volume", "music_volume"]:
+		if key in ["master_volume", "music_volume", "effects_volume"]:
 			if (value is float or value is int) and is_finite(float(value)): values[key] = clampf(float(value), 0, 1)
 		elif key == "difficulty":
 			# Older saves used 0/1/2 for Cozy/Club/Fast. Fast is the new Easy;
