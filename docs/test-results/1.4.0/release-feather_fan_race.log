@@ -1,0 +1,13 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Metal 4.0 - Forward+ - Using Device #0: Apple - Apple M1 (Apple7)
+
+QA_ITEM item=feather_fan hazards=3 waves=0
+QA_ITEM_MARK index=0 kind=feather visible=true screen=(611.0269, 512.2581)
+QA_ITEM_PART index=0 kind=feather visible=true meshes=10 screen=(610.9468, 474.6751)
+QA_ITEM_MARK index=1 kind=feather visible=true screen=(718.0063, 506.6614)
+QA_ITEM_PART index=1 kind=feather visible=true meshes=10 screen=(718.0444, 474.1787)
+QA_ITEM_MARK index=2 kind=feather visible=true screen=(810.4423, 501.7191)
+QA_ITEM_PART index=2 kind=feather visible=true meshes=10 screen=(810.5201, 474.432)
+QA_ITEM_MAP markers=3
+QA_SCREENSHOT <project-root>/screenshots/1.4.0/feather_fan_race.png result=0
+QA_STATE racing screen=race mode=cats character=0 difficulty=2

@@ -21,8 +21,8 @@ func _ready() -> void:
 		var v := AudioStreamPlayer.new()
 		add_child(v)
 		voices.append(v)
-	for kind in ["pickup", "boost", "drift", "item", "hit", "wall", "lap", "finish", "countdown", "go", "click", "shield"]:
-		var tones: Array = {"pickup": [780, 1320], "boost": [160, 970], "drift": [550, 1320], "item": [640, 350], "hit": [180, 60], "wall": [130, 65], "lap": [650, 1080], "finish": [523, 1568], "countdown": [420, 420], "go": [840, 1200], "click": [780, 840], "shield": [940, 1540]}[kind]
+	for kind in ["pickup", "boost", "drift", "item", "hit", "wall", "lap", "finish", "countdown", "go", "click", "shield", "purr_wave", "feather_fan", "treat", "paw_parry"]:
+		var tones: Array = {"pickup": [780, 1320], "boost": [160, 970], "drift": [550, 1320], "item": [640, 350], "hit": [180, 60], "wall": [130, 65], "lap": [650, 1080], "finish": [523, 1568], "countdown": [420, 420], "go": [840, 1200], "click": [780, 840], "shield": [940, 1540], "purr_wave": [260, 118], "feather_fan": [1080, 520], "treat": [720, 1480], "paw_parry": [1480, 740]}[kind]
 		clips[kind] = _tone(float(tones[0]), float(tones[1]), 0.65 if kind == "finish" else .28 if kind in ["lap", "go", "boost"] else .13)
 	clips["bump"] = _tone(95, 45, .075)
 	set_mix(master_volume, music_volume)

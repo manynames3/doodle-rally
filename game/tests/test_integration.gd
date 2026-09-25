@@ -106,6 +106,36 @@ func run() -> void:
 	await key(KEY_E, false)
 	for i in range(2): await physics_frame
 	check(main.sim.racers[0].shield > 0 and main.sim.racers[0].item == "", "E uses the held item")
+	main.sim.racers[0].item = "paw_parry"
+	main.sim._use_item(0)
+	main.objects.update_visuals(.016)
+	check(main.sim.racers[0].parry > 1.0 and main.objects.parries[0].visible, "Pawfect Parry opens its timing window and gold paw-ring visual")
+	main.sim.racers[0].parry = 0.0
+	main.objects.update_visuals(.016)
+	main.sim.racers[0].item = "purrquake"
+	main.sim._use_item(0)
+	await physics_frame
+	check(main.objects.waves.size() > 0, "Purrquake simulation event creates the 3D expanding ring")
+	if not main.objects.waves.is_empty():
+		var purr_ring: MeshInstance3D = main.objects.waves[0].rings[0].mesh
+		var purr_mesh := purr_ring.mesh as TorusMesh
+		check(purr_ring.scale.x >= 4.2 and purr_mesh.inner_radius <= .94, "Purrquake rings start beyond the kart footprint with a gameplay-visible stroke")
+	main.sim.racers[0].item = "feather_fan"
+	main.sim._use_item(0)
+	for item_event in main.sim.drain_events():
+		if str(item_event.kind) == "feather_fan": main.objects.launch_feather_fan(int(item_event.from))
+	main.objects.update_visuals(.12)
+	check(main.objects.tossed_items.size() == 3 and main.objects.tossed_items.all(func(toss: Dictionary) -> bool: return (toss.visual as Node3D).visible), "Feather Fan launches three visible feather arcs before settling into road hazards")
+	main.sim.racers[0].item = "treat_trail"
+	main.sim._use_item(0)
+	for item_event in main.sim.drain_events():
+		if str(item_event.kind) == "treat_toss": main.objects.launch_treat_toss(int(item_event.from))
+	main.objects.update_visuals(.12)
+	check(main.objects.tossed_items.size() == 4 and (main.objects.tossed_items[3].visual as Node3D).visible, "Treat Trail shows its glowing bait snack flying to the off-line pickup spot")
+	main.objects.update_visuals(.84)
+	main.objects.update_visuals(.016)
+	check(main.objects.tossed_items.is_empty() and main.objects.hazard_nodes.size() >= 4 and main.objects.hazard_nodes[0].visible and main.objects.hazard_parts[0].feather.visible and main.objects.hazard_parts[3].treat.visible, "feather and treat throws land cleanly without a duplicate projectile")
+	check(main.hud.visible_hazard_marker_count() == 4, "nearby road traps remain marked on the minimap when karts occlude their 3D models")
 	main._pause()
 	main._back_to_tracks()
 	await frame(3)

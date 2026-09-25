@@ -1,5 +1,13 @@
 # Build status — September 24, 2026
 
+## Doodle Rally — Cat Racers 1.4.0
+
+The title now presents **Cat Racers**, **Minecraft Racing**, **Garage**, and **Options**, in that order. The racer and course picks remain inside each race mode. Garage continues as a secondary animated racer showcase with stats and a route to course choice; it does not yet offer kart customization.
+
+The item set now includes Purrquake, Feather Fan, Treat Trail, and Pawfect Parry alongside Flying Fish, Yarn Ball, Catnip Turbo, and Bubble Shield. Purrquake sends two bright expanding road-level rings and lightly slows nearby rivals; Bubble Shield blocks it. Feather Fan launches three large hop-over feathers in a forward spread. Treat Trail drops a glowing bone biscuit with a paw icing mark that unshielded AI actively chases; contact briefly slows them while sniffing. Pawfect Parry opens a brief timing window that reflects Flying Fish or Yarn Ball back at the attacker, and the AI holds it until a nearby threat. Every item has its own HUD mark, 3D visual, and sound cue. Nearby Feather, Treat, and Yarn traps also use distinct minimap pins, keeping their positions readable when the race pack occludes the road model. Counterplay stays distinct: hop road traps, hold Bubble Shield for broad defense, or time Pawfect Parry precisely.
+
+The Universal macOS app is `builds/Doodle Rally 1.4.0.app`; the playable archive is `Doodle_Rally_1.4.0_Mac.zip` beside this repository. All **889 functional checks** passed, along with six course/mode builds and three temporal collision replays with zero violations. The packaged app passed **38 native release cases**, each with a fresh 1280×800 capture. All four new item scenes were exercised in the packaged game; Feather Fan and Treat Trail also verify their individual road meshes and nearby minimap threat markers. Screenshots and per-case logs are in `screenshots/1.4.0/` and `docs/test-results/1.4.0/`. The app signature and ZIP archive integrity passed; the app is locally ad-hoc signed and not Apple-notarized. Archive SHA-256: `d687c85ad6f2b9afded4549be77b63b4a6d62e6a13ef688463e0eb5e4d9ed18c`.
+
 ## Doodle Rally — Cat Racers 1.3.8
 
 The title menu now focuses on the next meaningful choice: start Cat Racers or Minecraft Racing, open the shared Garage, or change Options. Character Select and Track Select no longer appear as duplicate shortcuts; both modes still open racer choice and then course choice in sequence.

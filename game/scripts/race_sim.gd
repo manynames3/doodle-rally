@@ -2,7 +2,7 @@ extends RefCounted
 ## Fixed-step arcade handling on a continuous 3D road surface. Rendering has no say in race results.
 const Data = preload("res://scripts/rally_data.gd")
 const LAPS := 3
-const ITEMS := ["fish", "yarn", "turbo", "bubble"]
+const ITEMS := ["fish", "yarn", "turbo", "bubble", "purrquake", "feather_fan", "treat_trail", "paw_parry"]
 # Includes the enlarged kitten's measured animated lean envelope (1.673 m half-width).
 const KART_HALF_WIDTH := 1.70
 const KART_HALF_LENGTH := 2.02
@@ -23,6 +23,7 @@ var difficulty := 2
 var mode := "cats"
 var world: Node3D
 var _rng := RandomNumberGenerator.new()
+var _hazard_serial := 0
 
 func setup(track: Node3D, character: int, level: int = 0, racer_mode: String = "cats") -> void:
 	world = track
@@ -35,6 +36,7 @@ func setup(track: Node3D, character: int, level: int = 0, racer_mode: String = "
 	racers.clear()
 	pickups.clear()
 	hazards.clear()
+	_hazard_serial = 0
 	events.clear()
 	# Keep Easy's established item sequence, and compare the higher levels on
 	# the same item layout so their extra race pressure is predictable.
@@ -48,7 +50,7 @@ func setup(track: Node3D, character: int, level: int = 0, racer_mode: String = "
 		racers.append({"character": roster[i], "distance": d, "lane": -3.2 if grid_slot % 2 == 0 else 3.2,
 			"speed": 0.0, "angle": 0.0, "steer": 0.0, "boost": 100.0, "turbo": 0.0,
 			"drift": 0.0, "drift_direction": 0.0, "drifting": false, "hop": 0.0,
-			"hop_timer": 0.0, "stun": 0.0, "shield": 0.0, "item": "", "finish_time": -1.0,
+			"hop_timer": 0.0, "stun": 0.0, "shield": 0.0, "parry": 0.0, "item": "", "finish_time": -1.0,
 			"lap": 1, "last_lap_at": 0.0, "lap_time": 0.0, "best_lap": -1.0,
 			"ai_item_time": 3.0 + i * 1.7, "pad_cooldown": 0.0, "bump_cooldown": 0.0,
 			"position": Vector3.ZERO, "yaw": 0.0, "coins": 0})
@@ -62,7 +64,10 @@ func tick(dt: float, controls: Dictionary) -> void:
 	dt = minf(dt, 0.05)
 	race_time += dt
 	for pickup in pickups: pickup.cooldown = maxf(0, float(pickup.cooldown) - dt)
-	for hazard in hazards: hazard.life = float(hazard.life) - dt
+	for hazard in hazards:
+		hazard.life = float(hazard.life) - dt
+		if hazard.has("slide"):
+			hazard.lane = clampf(float(hazard.lane) + float(hazard.slide) * dt, -road_half + 1.1, road_half - 1.1)
 	hazards = hazards.filter(func(h: Dictionary) -> bool: return float(h.life) > 0)
 	var start_distances: Array[float] = []
 	for r in racers:
@@ -74,6 +79,7 @@ func tick(dt: float, controls: Dictionary) -> void:
 		r.turbo = maxf(0, float(r.turbo) - dt)
 		r.stun = maxf(0, float(r.stun) - dt)
 		r.shield = maxf(0, float(r.shield) - dt)
+		r.parry = maxf(0, float(r.parry) - dt)
 		r.pad_cooldown = maxf(0, float(r.pad_cooldown) - dt)
 		r.bump_cooldown = maxf(0, float(r.bump_cooldown) - dt)
 		r.boost = minf(100, float(r.boost) + dt * 5.5)
@@ -192,8 +198,20 @@ func _ai_step(r: Dictionary, i: int, dt: float) -> void:
 		for p in pickups:
 			var ahead := fposmod(float(p.distance) - float(r.distance), track_length)
 			if ahead < 28 and float(p.cooldown) <= 0:
-					target_lane = float(p.lane)
-					break
+				target_lane = float(p.lane)
+				break
+	# A visible Treat Trail is a lure: rivals without a Bubble Shield will
+	# briefly leave their ideal line to chase it, giving the player a setup.
+	if float(r.shield) <= 0:
+		var treat_target: Dictionary = {}
+		var nearest_treat := 24.0
+		for hazard in hazards:
+			if str(hazard.get("kind", "")) != "treat" or int(hazard.owner) == i: continue
+			var treat_ahead := fposmod(float(hazard.distance) - float(r.distance), track_length)
+			if treat_ahead > 1.5 and treat_ahead < nearest_treat:
+				nearest_treat = treat_ahead
+				treat_target = hazard
+		if not treat_target.is_empty(): target_lane = float(treat_target.lane)
 	# Look ahead before a pass; traffic does not deliberately drive through a rival.
 	var blocker := -1
 	var nearest := 18.0
@@ -222,8 +240,24 @@ func _ai_step(r: Dictionary, i: int, dt: float) -> void:
 	r.distance = float(r.distance) + float(r.speed) * dt
 	r.ai_item_time = float(r.ai_item_time) - dt
 	if float(r.ai_item_time) <= 0:
-		_use_item(i)
-		r.ai_item_time = (4.15 - tier * 0.15) + i * 0.34
+		if str(r.item) != "paw_parry" or _ai_has_parry_opening(i):
+			_use_item(i)
+			r.ai_item_time = (4.15 - tier * 0.15) + i * 0.34
+		else:
+			# Save the timing item until a rival or tossed yarn gets close.
+			r.ai_item_time = .45
+
+func _ai_has_parry_opening(index: int) -> bool:
+	var racer: Dictionary = racers[index]
+	for other in range(racers.size()):
+		if other == index or float(racers[other].finish_time) >= 0: continue
+		var gap := absf(wrapf(float(racers[other].distance) - float(racer.distance), -track_length * .5, track_length * .5))
+		if gap < 14.0 and absf(float(racers[other].lane) - float(racer.lane)) < 4.3: return true
+	for hazard in hazards:
+		if str(hazard.get("kind", "")) != "yarn" or int(hazard.owner) == index: continue
+		var ahead := fposmod(float(hazard.distance) - float(racer.distance), track_length)
+		if ahead < 9.0 and absf(float(hazard.lane) - float(racer.lane)) < 3.0: return true
+	return false
 
 func _check_pickups(r: Dictionary, index: int, old_d: float) -> void:
 	for p in pickups:
@@ -256,8 +290,16 @@ func _use_item(index: int) -> void:
 			r.turbo = maxf(float(r.turbo), 2.8)
 		"bubble":
 			r.shield = 8.0
+		"paw_parry":
+			r.parry = 1.05
 		"yarn":
-			hazards.append({"distance": fposmod(float(r.distance) - 7, track_length), "lane": float(r.lane), "owner": index, "life": 16.0})
+			# Toss the yarn just off the racing line, where the chase camera can
+			# frame the throw and the next racer can still clip it.
+			var yarn_side := signf(float(r.drift_direction))
+			if yarn_side == 0: yarn_side = 1.0 if index % 2 == 0 else -1.0
+			hazards.append({"id": _next_hazard_id(), "kind": "yarn", "distance": fposmod(float(r.distance) - 1.1, track_length),
+				"lane": clampf(float(r.lane) + yarn_side * 2.0, -road_half + 1.1, road_half - 1.1), "owner": index, "life": 16.0})
+			events.append({"kind": "yarn_toss", "from": index})
 		"fish":
 			var target := -1
 			var closest := 125.0
@@ -268,10 +310,53 @@ func _use_item(index: int) -> void:
 					closest = ahead
 					target = i
 			if target >= 0:
-				_hit(target, 1.55)
+				_hit(target, 1.55, "Bonked by a flying fish!", .4, index)
 				events.append({"kind": "projectile", "from": index, "to": target})
 			elif index == 0:
 				events.append({"kind": "info", "text": "No rival in fish range"})
+		"purrquake":
+			var targets := 0
+			for target in range(racers.size()):
+				if target == index or float(racers[target].finish_time) >= 0: continue
+				if absf(float(racers[target].distance) - float(r.distance)) > 26.0: continue
+				targets += 1
+				_hit(target, .9, "Caught in a Purrquake!", .62)
+			events.append({"kind": "purr_wave", "from": index})
+			if targets == 0 and index == 0:
+				events.append({"kind": "info", "text": "No rivals close enough for Purrquake"})
+		"feather_fan":
+			var direction := signf(float(r.drift_direction))
+			if direction == 0: direction = 1.0 if index % 2 == 0 else -1.0
+			var lane_limit := road_half - 1.2
+			for feather in range(3):
+				var offset := float(feather - 1) * 5.2
+				# A forward fan puts the three-hop puzzle in view immediately, then
+				# leaves a moving spread for the pack to navigate around.
+				hazards.append({"id": _next_hazard_id(), "kind": "feather", "distance": fposmod(float(r.distance) + 24.0 + float(feather) * 2.4, track_length),
+					"lane": clampf(float(r.lane) + offset, -lane_limit, lane_limit), "slide": float(feather - 1) * direction * .38,
+					"owner": index, "life": 11.0})
+			events.append({"kind": "feather_fan", "from": index})
+		"treat_trail":
+			# Toss a glowing lure into the visible approach line, just beyond the
+			# closest rival ahead when one is near enough to bait.
+			var treat_side := signf(float(r.drift_direction))
+			if treat_side == 0: treat_side = -1.0 if index % 2 == 0 else 1.0
+			var treat_distance := float(r.distance) + 14.0
+			var treat_lane := float(r.lane)
+			var nearest_target := 18.0
+			for target in range(racers.size()):
+				if target == index or float(racers[target].finish_time) >= 0: continue
+				var target_ahead := fposmod(float(racers[target].distance) - float(r.distance), track_length)
+				if target_ahead > 0.1 and target_ahead < nearest_target:
+					nearest_target = target_ahead
+					treat_distance = float(racers[target].distance) + 14.0
+					treat_lane = float(racers[target].lane)
+			# Keep the lure inside a safe driving lane, even when the user drops it
+			# near a rail or while turning sharply.
+			var treat_limit := maxf(0.5, road_half - 4.0)
+			hazards.append({"id": _next_hazard_id(), "kind": "treat", "distance": fposmod(treat_distance, track_length),
+				"lane": clampf(treat_lane + treat_side * 2.35, -treat_limit, treat_limit), "owner": index, "life": 12.0})
+			events.append({"kind": "treat_toss", "from": index})
 	if index == 0: events.append({"kind": "item", "text": item_name(item) + "!"})
 
 func _check_hazards(r: Dictionary, index: int) -> void:
@@ -281,18 +366,29 @@ func _check_hazards(r: Dictionary, index: int) -> void:
 		var delta := absf(wrapf(float(r.distance) - float(hazard.distance), -track_length / 2, track_length / 2))
 		if delta < 2.3 and absf(float(r.lane) - float(hazard.lane)) < 2.1:
 			hazard.life = 0.0
-			_hit(index, 1.3)
+			if str(hazard.get("kind", "yarn")) == "treat":
+				_hit(index, .65, "Stopped to sniff a treat!", .70)
+			elif str(hazard.get("kind", "yarn")) == "feather":
+				_hit(index, .85, "Feathered!", .68)
+			else:
+				_hit(index, 1.3, "You've been yarn-balled!", .4, int(hazard.owner))
 
-func _hit(index: int, duration: float) -> void:
+func _hit(index: int, duration: float, message: String = "You've been yarn-balled!", speed_factor: float = .4, source_index: int = -1, allow_reflect: bool = true) -> void:
 	var r := racers[index]
 	if float(r.shield) > 0:
 		r.shield = 0.0
 		if index == 0: events.append({"kind": "shield", "text": "Bubble saved you!"})
 		return
+	if allow_reflect and source_index >= 0 and source_index < racers.size() and source_index != index and float(r.parry) > 0:
+		r.parry = 0.0
+		_hit(source_index, .92, "Pawfect Parry! Your hit bounced back.", .56, -1, false)
+		events.append({"kind": "paw_parry", "from": index, "to": source_index})
+		if index == 0: events.append({"kind": "info", "text": "Pawfect Parry!"})
+		return
 	r.stun = duration
-	r.speed = float(r.speed) * 0.4
+	r.speed = float(r.speed) * speed_factor
 	r.drift = 0.0
-	if index == 0: events.append({"kind": "hit", "text": "You've been yarn-balled!"})
+	if index == 0: events.append({"kind": "hit", "text": message})
 
 func _bump_cars() -> void:
 	# Separating-axis hulls match the actual kart width/length, including steering.
@@ -414,4 +510,9 @@ func drain_events() -> Array[Dictionary]:
 	return pending
 
 static func item_name(item: String) -> String:
-	return {"fish": "Flying fish", "yarn": "Yarn ball", "turbo": "Catnip turbo", "bubble": "Bubble shield"}.get(item, "Find an item box")
+	return {"fish": "Flying fish", "yarn": "Yarn ball", "turbo": "Catnip turbo", "bubble": "Bubble shield",
+		"purrquake": "Purrquake", "feather_fan": "Feather Fan", "treat_trail": "Treat Trail", "paw_parry": "Pawfect Parry"}.get(item, "Find an item box")
+
+func _next_hazard_id() -> int:
+	_hazard_serial += 1
+	return _hazard_serial

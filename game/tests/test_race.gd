@@ -211,7 +211,7 @@ func _test_pickups_and_pads() -> void:
 	player.distance = 9.9
 	player.speed = 30.0
 	sim.tick(STEP, {"throttle": 1.0})
-	_expect(player.item in Sim.ITEMS and player.coins == 1, "crossing an item box grants one of four items")
+	_expect(player.item in Sim.ITEMS and player.coins == 1, "crossing an item box grants one of eight cat-racing items")
 	_expect(sim.pickups[0].cooldown == 5.0 and _has_event(sim, "pickup"), "collected box starts respawn timer and feedback")
 	player.item = ""
 	player.distance = 9.9
@@ -270,12 +270,12 @@ func _test_items_hits_and_hazards() -> void:
 	player.item = "yarn"
 	sim.tick(STEP, {"item": true})
 	_expect(player.item == "" and sim.hazards.size() == 1, "yarn item drops a persistent hazard")
-	_near(sim.hazards[0].distance, 93, 0.01, "yarn hazard is placed behind its owner")
-	player.distance = 93.0
+	_near(sim.hazards[0].distance, 98.9, 0.01, "yarn hazard is tossed just off the owner's racing line")
+	player.distance = float(sim.hazards[0].distance)
 	sim._check_hazards(player, 0)
 	_expect(player.stun == 0 and sim.hazards[0].life > 0, "owner cannot hit their own yarn hazard")
 	var rival: Dictionary = sim.racers[1]
-	rival.distance = 93.0
+	rival.distance = float(sim.hazards[0].distance)
 	rival.lane = 0.0
 	rival.speed = 25.0
 	rival.hop = 0.9
@@ -310,6 +310,120 @@ func _test_items_hits_and_hazards() -> void:
 	player.item = "fish"
 	sim._use_item(0)
 	_expect(player.item == "" and _has_event(sim, "info"), "fish with no opponent in range is consumed with explanatory feedback")
+	_expect(Sim.item_name("purrquake") == "Purrquake" and Sim.item_name("feather_fan") == "Feather Fan" and Sim.item_name("treat_trail") == "Treat Trail" and Sim.item_name("paw_parry") == "Pawfect Parry", "new tactical items have player-facing names")
+	var parry: RefCounted = _isolated()
+	parry.racers[0].distance = 100.0
+	parry.racers[0].speed = 30.0
+	parry.racers[0].item = "fish"
+	parry.racers[1].distance = 108.0
+	parry.racers[1].finish_time = -1.0
+	parry.racers[1].speed = 30.0
+	parry.racers[1].lane = 0.0
+	parry.racers[1].item = "paw_parry"
+	parry._use_item(1)
+	_near(float(parry.racers[1].parry), 1.05, .0001, "Pawfect Parry opens a brief, player-timed counter window")
+	parry._use_item(0)
+	_expect(parry.racers[1].stun == 0 and parry.racers[1].parry == 0 and parry.racers[0].stun == .92, "Pawfect Parry reflects a Flying Fish back at its thrower")
+	_expect(_has_event(parry, "paw_parry"), "a successful Pawfect Parry produces its own feedback event")
+	var trap_parry: RefCounted = _isolated()
+	trap_parry.racers[0].distance = 100.0
+	trap_parry.racers[0].lane = 0.0
+	trap_parry.racers[0].speed = 30.0
+	trap_parry.racers[0].parry = .8
+	trap_parry.racers[1].distance = 98.0
+	trap_parry.racers[1].speed = 30.0
+	trap_parry.hazards.append({"id": 10, "kind": "yarn", "distance": 100.0, "lane": 0.0, "owner": 1, "life": 5.0})
+	trap_parry._check_hazards(trap_parry.racers[0], 0)
+	_expect(trap_parry.racers[0].stun == 0 and trap_parry.racers[1].stun == .92, "Pawfect Parry can swat a Yarn Ball back into the thrower")
+	var patient_ai: RefCounted = _isolated()
+	patient_ai.racers[0].distance = 100.0
+	patient_ai.racers[1].distance = 300.0
+	patient_ai.racers[1].item = "paw_parry"
+	patient_ai.racers[1].ai_item_time = .01
+	for other in range(2, patient_ai.racers.size()): patient_ai.racers[other].finish_time = 0.0
+	patient_ai._ai_step(patient_ai.racers[1], 1, STEP)
+	_expect(patient_ai.racers[1].item == "paw_parry" and patient_ai.racers[1].parry == 0, "AI saves a parry while there is no nearby threat")
+	patient_ai.racers[0].distance = float(patient_ai.racers[1].distance) + 7.0
+	patient_ai.racers[1].ai_item_time = .01
+	patient_ai._ai_step(patient_ai.racers[1], 1, STEP)
+	_expect(patient_ai.racers[1].item == "" and patient_ai.racers[1].parry > 1.0, "AI times its parry as a rival closes in")
+	var purr: RefCounted = _isolated()
+	var purr_player: Dictionary = purr.racers[0]
+	purr_player.distance = 100.0
+	purr.racers[1].distance = 118.0
+	purr.racers[1].finish_time = -1.0
+	purr.racers[1].speed = 30.0
+	purr.racers[1].parry = .8
+	purr.racers[2].distance = 121.0
+	purr.racers[2].finish_time = -1.0
+	purr.racers[2].shield = 6.0
+	purr.racers[3].distance = 130.0
+	purr.racers[3].finish_time = -1.0
+	purr.racers[3].speed = 30.0
+	purr_player.item = "purrquake"
+	purr._use_item(0)
+	_expect(purr_player.item == "" and purr.racers[1].stun == .9, "Purrquake is a close-range pulse with a short hit")
+	_near(float(purr.racers[1].speed), 18.6, .001, "Purrquake preserves most of a close rival's speed")
+	_expect(purr.racers[1].parry == .8 and purr.racers[2].shield == 0 and purr.racers[2].stun == 0 and purr.racers[3].stun == 0, "Purrquake ignores timed parry; Bubble Shield and its 26-metre range still apply")
+	_expect(_has_event(purr, "purr_wave"), "Purrquake sends its expanding visual event")
+	var fan: RefCounted = _isolated()
+	fan.racers[0].distance = 200.0
+	fan.racers[0].item = "feather_fan"
+	fan._use_item(0)
+	_expect(fan.hazards.size() == 3 and fan.hazards.all(func(h: Dictionary) -> bool: return str(h.kind) == "feather"), "Feather Fan lays three separate feather hazards")
+	var feather_hazard: Dictionary = fan.hazards[1]
+	var feather_racer: Dictionary = fan.racers[1]
+	feather_racer.distance = float(feather_hazard.distance)
+	feather_racer.lane = float(feather_hazard.lane)
+	feather_racer.speed = 25.0
+	feather_racer.hop = .9
+	fan._check_hazards(feather_racer, 1)
+	_expect(feather_racer.stun == 0 and float(feather_hazard.life) > 0, "drift-hop clears a feather hazard")
+	feather_racer.hop = 0.0
+	fan._check_hazards(feather_racer, 1)
+	_expect(feather_racer.stun == .85 and float(feather_hazard.life) == 0, "ground contact consumes a feather and applies a short hit")
+	var treats: RefCounted = _isolated()
+	treats.racers[0].distance = 300.0
+	treats.racers[0].item = "treat_trail"
+	treats._use_item(0)
+	var treat: Dictionary = treats.hazards[0]
+	var treat_forward := fposmod(float(treat.distance) - 300.0, treats.track_length)
+	_expect(treat_forward >= 13.99 and treat_forward <= 14.01 and absf(float(treat.lane)) <= treats.road_half - 4.0, "fallback Treat Trail bait is visible ahead and kept inside a safe lane")
+	treat.owner = 1 # The player's rival dropped the bait.
+	var snacker: Dictionary = treats.racers[0]
+	snacker.distance = float(treat.distance)
+	snacker.lane = float(treat.lane)
+	snacker.speed = 30.0
+	snacker.hop = .9
+	treats._check_hazards(snacker, 0)
+	_expect(float(treat.life) > 0 and snacker.stun == 0, "a drift-hop clears the Treat Trail bait")
+	snacker.hop = 0.0
+	treats._check_hazards(snacker, 0)
+	_expect(snacker.stun == .65 and snacker.speed == 21.0 and snacker.turbo == 0, "Treat Trail distracts a rival instead of giving them a free boost")
+	_expect(float(treat.life) == 0 and treats.events.any(func(event: Dictionary) -> bool: return str(event.kind) == "hit" and str(event.text).contains("sniff")), "Treat Trail reports the funny sniff detour on contact")
+	var shielded_treat: Dictionary = treat.duplicate()
+	shielded_treat.life = 8.0
+	treats.hazards.append(shielded_treat)
+	snacker.shield = 2.0
+	treats._check_hazards(snacker, 0)
+	_expect(snacker.shield == 0 and snacker.stun == .65 and float(shielded_treat.life) == 0, "Bubble Shield blocks Treat Trail's distraction")
+	var aimed_treat: RefCounted = _isolated()
+	aimed_treat.racers[0].distance = 300.0
+	aimed_treat.racers[1].finish_time = -1.0
+	aimed_treat.racers[1].distance = 312.0
+	aimed_treat.racers[1].lane = 1.0
+	aimed_treat.racers[0].item = "treat_trail"
+	aimed_treat._use_item(0)
+	_expect(is_equal_approx(float(aimed_treat.hazards[0].distance), 326.0) and is_equal_approx(float(aimed_treat.hazards[0].lane), -1.35), "Treat Trail aims just off the nearby lead rival's line")
+	var lure: RefCounted = _new_sim()
+	var lured_rival: Dictionary = lure.racers[1]
+	lured_rival.distance = 100.0
+	lured_rival.lane = 0.0
+	lured_rival.speed = 30.0
+	lure.racers[0].distance = 120.0
+	lure.hazards.append({"id": 100, "kind": "treat", "distance": 115.0, "lane": 3.5, "owner": 0, "life": 8.0})
+	lure._ai_step(lured_rival, 1, STEP)
+	_expect(lured_rival.lane > 0.0, "AI rivals veer toward an off-line Treat Trail when unshielded")
 
 
 func _test_bumps_and_standings() -> void:

@@ -20,6 +20,7 @@ var pause_button: Button
 var _time := 0.0
 var cat_portraits: Array[Texture2D] = []
 var block_portraits: Array[Texture2D] = []
+var _world: Node3D
 
 func _ready() -> void:
 	for i in range(8):
@@ -46,6 +47,7 @@ func _layout_pause() -> void:
 
 func configure(race: RefCounted, world: Node3D, course_index: int, record: float) -> void:
 	sim = race
+	_world = world
 	course = course_index
 	best_time = record
 	var samples := PackedVector2Array()
@@ -114,6 +116,15 @@ func _draw() -> void:
 			var r: Dictionary = sim.racers[index]
 			var p3: Vector3 = r.position
 			_cat_icon(_map(Vector2(p3.x, p3.z)), 10 if index == 0 else 7, int(r.character), index == 0)
+		# Trap pins keep road items legible on the course map when a kart hides
+		# their small 3D model in a tight pack. Show nearby threats only.
+		for hazard in sim.hazards:
+			if float(hazard.get("life", 0.0)) <= 0: continue
+			var forward := fposmod(float(hazard.distance) - float(player.distance), float(sim.track_length))
+			var behind := fposmod(float(player.distance) - float(hazard.distance), float(sim.track_length))
+			if minf(forward, behind) > 150.0: continue
+			var hazard_position: Vector3 = _world.sample(float(hazard.distance), float(hazard.lane))
+			_draw_hazard_pin(_map(Vector2(hazard_position.x, hazard_position.z)), str(hazard.get("kind", "yarn")))
 	# Item wheel, made large enough to read at couch distance.
 	var center := Vector2(111, 770)
 	draw_circle(center + Vector2(3, 4), 82, Color(0.01, 0.012, 0.018, 0.40))
@@ -256,5 +267,59 @@ func _draw_item(center: Vector2, item: String) -> void:
 			draw_circle(center, 35, Color(.3, .85, 1, .4))
 			draw_arc(center, 34, 0, TAU, 48, Color("a9f9ff"), 4, true)
 			draw_arc(center + Vector2(-2, -2), 24, PI * 1.1, PI * 1.55, 18, Color.WHITE, 6, true)
+		"purrquake":
+			for radius in [17.0, 28.0, 39.0]:
+				draw_arc(center, radius, -.28, TAU + .28, 48, Color("ff82cf"), 4, true)
+			draw_circle(center, 10, Color("fff0d9"))
+			draw_circle(center + Vector2(-15, -18), 6, Color("fff0d9"))
+			draw_circle(center + Vector2(0, -23), 6, Color("fff0d9"))
+			draw_circle(center + Vector2(15, -18), 6, Color("fff0d9"))
+		"feather_fan":
+			for i in range(3):
+				var offset := Vector2(float(i - 1) * 22, 0)
+				draw_line(center + offset + Vector2(-11, 15), center + offset + Vector2(12, -15), Color("fff0d9"), 4, true)
+				draw_arc(center + offset + Vector2(7, -7), 13, -.25, PI * 1.25, 22, [Color("ffd36b"), Color("f69ac4"), Color("b4e8e5")][i], 8, true)
+		"treat_trail":
+			draw_circle(center, 32, Color("e8a55f"))
+			draw_arc(center, 31, 0, TAU, 48, Color("fff0c6"), 4, true)
+			for spot in [Vector2(-10, -9), Vector2(0, -15), Vector2(10, -9)]:
+				draw_circle(center + spot, 4, Color("fff0c6"))
+			draw_circle(center + Vector2(0, 3), 10, Color("fff0c6"))
+		"paw_parry":
+			draw_circle(center, 35, Color("d79b36"))
+			draw_arc(center, 38, 0, TAU, 48, Color("fff0a8"), 5, true)
+			draw_circle(center + Vector2(0, 8), 11, Color("fff8df"))
+			for toe in [Vector2(-18, -7), Vector2(-7, -20), Vector2(8, -20), Vector2(19, -7)]:
+				draw_circle(center + toe, 6, Color("fff8df"))
+			draw_arc(center, 47, -.72, .72, 24, Color("fff0a8"), 4, true)
 		_:
 			_center_text(center + Vector2(0, 19), "?", 63, Color("b4d4dd"), 2)
+
+func _draw_hazard_pin(center: Vector2, kind: String) -> void:
+	var color := Color("f480b5") if kind == "yarn" else Color("79e6ee") if kind == "feather" else Color("ffc45d")
+	draw_circle(center + Vector2(1, 2), 10, Color("10131d"))
+	draw_circle(center, 9, color)
+	draw_arc(center, 8, 0, TAU, 32, Color("fff7e4"), 1.7, true)
+	if kind == "treat":
+		draw_circle(center + Vector2(0, 1.5), 2.5, Color("4b3421"))
+		for toe in [Vector2(-3.5, -2.2), Vector2(-1.1, -4.2), Vector2(1.1, -4.2), Vector2(3.5, -2.2)]:
+			draw_circle(center + toe, 1.25, Color("4b3421"))
+	elif kind == "feather":
+		draw_line(center + Vector2(-4, 4), center + Vector2(4, -4), Color("12333e"), 1.6, true)
+		for barb in range(3):
+			var along := float(barb) * 2.0 - 1.0
+			draw_line(center + Vector2(along, -along) + Vector2(-2.2, 1.4), center + Vector2(along, -along), Color("12333e"), 1.2, true)
+	else:
+		draw_arc(center, 4, -.7, 2.1, 16, Color("542346"), 1.4, true)
+		draw_arc(center + Vector2(-1.5, 0), 3, 1.8, 4.8, 16, Color("542346"), 1.2, true)
+
+func visible_hazard_marker_count() -> int:
+	if sim == null or sim.racers.is_empty(): return 0
+	var player: Dictionary = sim.racers[0]
+	var count := 0
+	for hazard in sim.hazards:
+		if float(hazard.get("life", 0.0)) <= 0: continue
+		var forward := fposmod(float(hazard.distance) - float(player.distance), float(sim.track_length))
+		var behind := fposmod(float(player.distance) - float(hazard.distance), float(sim.track_length))
+		if minf(forward, behind) <= 150.0: count += 1
+	return count

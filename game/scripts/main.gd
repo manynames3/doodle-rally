@@ -38,7 +38,7 @@ var _graphics_window_size := Vector2i.ZERO
 var startup_splash: CanvasLayer
 
 func _ready() -> void:
-	get_window().title = "Doodle Rally — Cat Racers · 1.3.8"
+	get_window().title = "Doodle Rally — Cat Racers · 1.4.0"
 	_qa = "--qa" in OS.get_cmdline_user_args()
 	preferences.enabled = not _qa
 	preferences.load_data()
@@ -230,6 +230,10 @@ func _physics_process(dt: float) -> void:
 		for event in sim.drain_events():
 			var kind := str(event.kind)
 			if kind == "projectile": objects.launch_fish(int(event.from), int(event.to))
+			if kind == "purr_wave": objects.launch_purr_wave(int(event.from))
+			if kind == "yarn_toss": objects.launch_yarn_toss(int(event.from), bool(preferences.values.reduced_motion))
+			if kind == "feather_fan": objects.launch_feather_fan(int(event.from), bool(preferences.values.reduced_motion))
+			if kind == "treat_toss": objects.launch_treat_toss(int(event.from), bool(preferences.values.reduced_motion))
 			if event.has("text") and kind != "finish": hud.announce(str(event.text))
 			sound.event(kind)
 			if controller >= 0 and not bool(preferences.values.reduced_motion) and kind in ["hit", "wall", "boost", "drift"] and not _qa:
@@ -527,12 +531,49 @@ func _qa_run() -> void:
 			r.speed = 35.0
 			r.turbo = 1.2 if i == 0 else 0.0
 		sim.race_time = 48.27
-		sim.racers[0].item = "fish"
+		var qa_item := _arg("--qa-item")
+		sim.racers[0].item = qa_item if not qa_item.is_empty() else "fish"
 		sim._update_transforms()
 		sim.snap_interpolation()
 		_update_karts(.016)
 		_update_camera(1, true)
 		_qa_driver = true
+		if not qa_item.is_empty():
+			sim._use_item(0)
+			for item_event in sim.drain_events():
+				var kind := str(item_event.kind)
+				if kind == "purr_wave": objects.launch_purr_wave(int(item_event.from))
+				if kind == "yarn_toss": objects.launch_yarn_toss(int(item_event.from), bool(preferences.values.reduced_motion))
+				if kind == "feather_fan": objects.launch_feather_fan(int(item_event.from), bool(preferences.values.reduced_motion))
+				if kind == "treat_toss": objects.launch_treat_toss(int(item_event.from), bool(preferences.values.reduced_motion))
+				if item_event.has("text"): hud.announce(str(item_event.text))
+				sound.event(kind)
+			# Freeze item QA captures after the new throws have landed, so the
+			# release screenshots prove both the projectile arc and final hazard.
+			var item_capture_time := .22
+			if qa_item in ["feather_fan", "treat_trail"]: item_capture_time = .84
+			elif qa_item == "purrquake": item_capture_time = .72
+			objects.update_visuals(item_capture_time, bool(preferences.values.reduced_motion))
+			objects.update_visuals(.016, bool(preferences.values.reduced_motion))
+			print("QA_ITEM item=", qa_item, " hazards=", sim.hazards.size(), " waves=", objects.waves.size())
+			for hazard_index in range(sim.hazards.size()):
+				var marker_node: Node3D = objects.hazard_nodes[hazard_index]
+				var hazard_id := int(sim.hazards[hazard_index].get("id", -1))
+				for toss in objects.tossed_items:
+					if int(toss.id) == hazard_id: marker_node = toss.visual
+				print("QA_ITEM_MARK index=", hazard_index, " kind=", sim.hazards[hazard_index].get("kind", "yarn"), " visible=", marker_node.visible, " screen=", camera.unproject_position(marker_node.global_position))
+				var item_kind := str(sim.hazards[hazard_index].get("kind", "yarn"))
+				var variant_node := objects.hazard_parts[hazard_index][item_kind] as Node3D
+				var visible_meshes := 0
+				for child in variant_node.get_children():
+					if child is GeometryInstance3D and child.visible: visible_meshes += 1
+				print("QA_ITEM_PART index=", hazard_index, " kind=", item_kind, " visible=", variant_node.visible, " meshes=", visible_meshes, " screen=", camera.unproject_position(variant_node.global_position))
+			print("QA_ITEM_MAP markers=", hud.visible_hazard_marker_count())
+			if qa_item == "paw_parry" and not objects.parries.is_empty():
+				print("QA_ITEM_PARRY visible=", objects.parries[0].visible, " screen=", camera.unproject_position(objects.parries[0].global_position))
+			if qa_item == "purrquake" and not objects.waves.is_empty():
+				var purr_ring: MeshInstance3D = objects.waves[0].rings[0].mesh
+				print("QA_ITEM_WAVE visible=", purr_ring.visible, " screen=", camera.unproject_position(purr_ring.global_position))
 		if screen == "pause": _pause()
 		if screen == "results":
 			sim.racers[0].finish_time = 108.42

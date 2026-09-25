@@ -6,7 +6,7 @@ import shutil
 import subprocess
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "1.3.8"
+VERSION = "1.4.0"
 parser = argparse.ArgumentParser()
 parser.add_argument("--godot", default=shutil.which("godot"), help="Path to standard Godot executable")
 parser.add_argument("--template", help="Optional path to matching macos.zip export template")

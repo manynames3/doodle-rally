@@ -70,7 +70,7 @@ func _go() -> void:
 	await process_frame
 	await process_frame
 	await _key(KEY_ENTER)
-	_check(ui.screen == "characters" and ui.selected_mode == "cats", "focused title Start Game accepts keyboard Enter")
+	_check(ui.screen == "characters" and ui.selected_mode == "cats", "focused title Cat Racers accepts keyboard Enter")
 	ui.show_title()
 	_press_title("Minecraft Racing")
 	_check(ui.screen == "characters" and ui.selected_mode == "minecraft", "Minecraft title route selects voxel roster")
@@ -108,7 +108,7 @@ func _go() -> void:
 	for child in ui.get_node("MenuStage").get_children():
 		if child is Button and child.name.begins_with("Menu_"):
 			title_routes.append(str(child.name))
-	_check(title_routes == ["Menu_Start_Game","Menu_Garage","Menu_Minecraft_Racing","Menu_Options"],"title menu contains modes, garage and options without duplicate character/track routes")
+	_check(title_routes == ["Menu_Cat_Racers","Menu_Minecraft_Racing","Menu_Garage","Menu_Options"],"title menu orders the two race modes before Garage and Options")
 	for route in ["Garage","Options"]:
 		ui.show_title()
 		_press_title(route)
@@ -160,12 +160,11 @@ func _go() -> void:
 	await process_frame
 	await process_frame
 	await _joy(JOY_BUTTON_DPAD_DOWN)
-	await _joy(JOY_BUTTON_DPAD_DOWN)
 	await _joy(JOY_BUTTON_A)
 	_check(ui.screen == "characters" and ui.selected_mode == "minecraft","title native focus navigates and confirms with gamepad")
 	ui.show_title()
-	_press_title("Start Game")
-	_check(ui.selected_mode == "cats","Start Game returns to cat roster")
+	_press_title("Cat Racers")
+	_check(ui.selected_mode == "cats","Cat Racers opens the cat roster")
 	_check(ui.get_node("MenuStage").size.x * ui.get_node("MenuStage").scale.x <= ui.size.x + 1.0,"960x600 layout fits viewport")
 	root.content_scale_size = Vector2i(1600,900)
 	root.size = Vector2i(1280,720)

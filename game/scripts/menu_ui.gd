@@ -304,9 +304,9 @@ func show_title() -> void:
 	_label(subtitle,"SMALL CATS\nBIG ADVENTURES",Rect2(8,4,343,78),27,CREAM,true)
 	# Character and track choice happen inside each racing mode, so keep the
 	# title menu focused on starting a mode and the shared garage/settings.
-	var start := _wood_button("Start Game",Rect2(48,337,422,73),_start_cats,"flag",true)
-	_wood_button("Garage",Rect2(48,426,352,66),_show_garage,"wrench")
-	_wood_button("Minecraft Racing",Rect2(48,515,408,66),_start_blocks,"cube")
+	var start := _wood_button("Cat Racers",Rect2(48,337,422,73),_start_cats,"flag",true)
+	_wood_button("Minecraft Racing",Rect2(48,426,422,66),_start_blocks,"cube")
+	_wood_button("Garage",Rect2(48,515,352,66),_show_garage,"wrench")
 	_wood_button("Options",Rect2(48,604,352,66),show_settings,"gear")
 	_label(_stage,"Ready, Set, Meow!",Rect2(59,778,433,55),32,CREAM)
 	_paw(_stage,Rect2(368,787,40,40),CREAM)
@@ -644,7 +644,7 @@ func _show_controls() -> void:
 		_label(_stage,actions[i],Rect2(199,y,368,39),24)
 		_label(_stage,keyboard[i],Rect2(626,y,277,39),23,GOLD)
 		_label(_stage,controller[i],Rect2(938,y,296,39),22)
-	_label(_stage,"Charge your drift, then release for a burst of speed. Collect crates for items.",Rect2(179,664,1080,48),23,Color("cadbcf"),true)
+	_label(_stage,"Release a charged drift for mini-turbo. Purrquake pulses nearby rivals.\nHop Feather Fan, bait with Treat Trail, or time Pawfect Parry to reflect a thrown attack.",Rect2(179,649,1080,78),19,Color("cadbcf"),true)
 	_button(_stage,"LET'S RACE!   →",Rect2(1085,797,317,73),show_characters,true)
 	_button(_stage,"B / Esc   Back",Rect2(37,810,218,56),show_title)
 	_label(_stage,"Need a gentler start? Try auto-accelerate in Settings.",Rect2(273,817,769,42),21,CREAM,true)
