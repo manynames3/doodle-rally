@@ -2,7 +2,7 @@
 
 **Doodle Rally** is a standalone single player 3D kart racer for macOS. Pick a cat, choose a course, and race seven rivals through a paper craft studio, an alpine quarry, or a neon block world. The game keeps the playful hand painted feel of the supplied Cat Racers references while using a real time 3D chase camera, physics based kart contact, items, drifting, boosts, and a second blocky Block Racers roster.
 
-The current source and Universal Mac build are version **1.5.0**. In the gallery below, the menu and cup screens are 1.5.0 captures from a software renderer; the race captures are native 1.4.1 captures and predate the fur and dust changes in the [1.5.0 notes](docs/releases/1.5.0.md). The original Doodle Rumble project is separate and is not modified.
+The current source and Universal Mac build are version **1.5.0**. The gallery below is from 1.5.0, rendered with the game's own Forward+ renderer on a software GPU; see the [1.5.0 notes](docs/releases/1.5.0.md). The original Doodle Rumble project is separate and is not modified.
 
 ## Screenshots
 
@@ -15,17 +15,17 @@ The visual review gallery is in [docs/SCREENSHOTS.md](docs/SCREENSHOTS.md). All 
     <td><img src="screenshots/1.5.0/track_select.png" alt="Track Select with Easy, Medium, Hard and the three-race Cup" width="320"></td>
   </tr>
   <tr>
-    <td><img src="screenshots/1.4.1/quarry_race.png" alt="Block Quarry race" width="320"></td>
-    <td><img src="screenshots/1.4.1/desktop_race.png" alt="Desktop Dojo race with the revised studio world" width="320"></td>
-    <td><img src="screenshots/1.4.1/glitch_race.png" alt="Glitch Core race with neon city vista" width="320"></td>
+    <td><img src="screenshots/1.5.0/quarry_race.png" alt="Block Quarry race" width="320"></td>
+    <td><img src="screenshots/1.5.0/desktop_race.png" alt="Desktop Dojo race on the graph-paper desk" width="320"></td>
+    <td><img src="screenshots/1.5.0/glitch_race.png" alt="Glitch Core race with neon city vista" width="320"></td>
   </tr>
   <tr>
-    <td><img src="screenshots/1.4.1/purrquake_race.png" alt="Purrquake expanding close-range shockwave" width="320"></td>
-    <td><img src="screenshots/1.4.1/pawfect_parry_race.png" alt="Pawfect Parry timing window around the kart" width="320"></td>
-    <td><img src="screenshots/1.4.1/feather_fan_race.png" alt="Feather Fan leaves three hop-over hazards" width="320"></td>
+    <td><img src="screenshots/1.5.0/purrquake_race.png" alt="Purrquake expanding close-range shockwave" width="320"></td>
+    <td><img src="screenshots/1.5.0/pawfect_parry_race.png" alt="Pawfect Parry timing window around the kart" width="320"></td>
+    <td><img src="screenshots/1.5.0/feather_fan_race.png" alt="Feather Fan leaves three hop-over hazards" width="320"></td>
   </tr>
   <tr>
-    <td><img src="screenshots/1.4.1/treat_trail_race.png" alt="Treat Trail bait snack lures rivals into a slowdown" width="320"></td>
+    <td><img src="screenshots/1.5.0/treat_trail_race.png" alt="Treat Trail bait snack lures rivals into a slowdown" width="320"></td>
     <td><img src="screenshots/1.5.0/settings.png" alt="Options with separate master, music, and sound effects controls" width="320"></td>
   </tr>
   <tr>

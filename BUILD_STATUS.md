@@ -8,7 +8,7 @@ Triangles in the standard QA race frame fell from 1.98 M to 1.12 M on Desktop Do
 
 All **949 counted functional checks** passed across the seven source suites, with three temporal collision replays and zero violations. GitHub Actions now runs these on every push and builds the Universal Mac app.
 
-Not yet done for 1.5.0: the native release cases in `tools/test_release.py`, fresh native captures, a frame-rate measurement on a physical Mac, and notarization. See `docs/releases/1.5.0.md`.
+The 1.5.0 gallery in `screenshots/1.5.0/` was rendered with the Forward+ renderer on a software GPU. Not yet done for 1.5.0: the native release cases in `tools/test_release.py`, native Metal captures, a frame-rate measurement on a physical Mac, and notarization. See `docs/releases/1.5.0.md`.
 
 ## Doodle Rally — Cat Racers 1.4.1
 
