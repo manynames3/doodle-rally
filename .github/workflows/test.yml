@@ -1,0 +1,20 @@
+name: Tests
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download Godot 4.7.2
+        run: |
+          curl -sSL -o godot.zip https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip
+          unzip -q godot.zip -d "$RUNNER_TEMP"
+      - name: Import assets
+        run: |
+          "$RUNNER_TEMP/Godot_v4.7.2-stable_linux.x86_64" --headless --path game --import
+      - name: Run suites
+        run: python3 tools/test.py --godot "$RUNNER_TEMP/Godot_v4.7.2-stable_linux.x86_64"

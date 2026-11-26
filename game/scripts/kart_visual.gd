@@ -495,10 +495,10 @@ static func _stamp_polygon(surface: SurfaceTool, polygon: PackedVector2Array, fr
 
 
 func _voxel_crest(parent: Node3D, point: Vector3, size: float, mat: StandardMaterial3D) -> void:
-	for x: float in [-0.25, 0.25]:
-		_box(parent, point + Vector3(x * size, size * 0.23, 0), Vector3(size * 0.24, size * 0.24, 0.02), mat)
-	_box(parent, point + Vector3(0, -size * 0.1, 0), Vector3(size * 0.22, size * 0.36, 0.02), mat)
-	_box(parent, point + Vector3(0, -size * 0.3, 0), Vector3(size * 0.56, size * 0.19, 0.02), mat)
+	# Four tiles in a square: a plain building-block badge.
+	for x: float in [-0.19, 0.19]:
+		for y: float in [-0.19, 0.19]:
+			_box(parent, point + Vector3(x * size, y * size, 0), Vector3(size * 0.3, size * 0.3, 0.02), mat)
 
 
 static func _material(color: Color, roughness: float = 0.7, metallic: float = 0.0, emission: float = 0.0) -> StandardMaterial3D:

@@ -49,6 +49,8 @@ Each release keeps earlier screenshots and verification evidence in the versione
 
 ## Play the Mac build
 
+**Download:** get the latest Mac ZIP from the [Releases page](https://github.com/manynames3/doodle-rally/releases/latest). Releases are built automatically when a version tag is pushed.
+
 Unzip **Doodle_Rally_1.4.1_Mac.zip** and open **Doodle Rally 1.4.1.app**, or open the app inside `builds/Doodle Rally 1.4.1.app`. Godot is not required to play. The bundle contains Apple Silicon and Intel executables. It is signed locally and is not Apple notarized, so macOS may ask you to choose **Open Anyway** in **System Settings → Privacy & Security** when the ZIP came from another Mac.
 
 The title menu orders its choices as **Cat Racers**, **Block Racers**, **Garage**, and **Options**. Each mode opens its racer selection, followed by course selection and **Easy**, **Medium**, or **Hard** difficulty. Garage is a secondary animated racer showroom with stats and a shortcut to course choice; the mode flows remain the full racer-selection route. Easy keeps the previous default rival pace; Medium and Hard raise the competition. The BenJam Games logo appears briefly when the app launches and can be skipped with any key, click, or controller button.

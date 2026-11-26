@@ -728,8 +728,8 @@ func _voxel_mob(p: Vector3, basis: Basis) -> void:
 	for side in [-1.0, 1.0]:
 		_stamp("box", p + basis.x * float(side) * 2.1 + Vector3.UP * 1.4, Vector3(2.4, 2.8, 4.0), green_dark, basis)
 		_stamp("box", p + basis * Vector3(float(side) * 1.4, 10.7, 2.96), Vector3(1.3, 1.3, 0.2), black, basis)
-		_stamp("box", p + basis * Vector3(float(side) * 0.9, 8.1, 2.96), Vector3(0.7, 1.3, 0.2), black, basis)
-	_stamp("box", p + basis * Vector3(0, 9.0, 2.96), Vector3(2.5, 1.6, 0.2), black, basis)
+		_stamp("box", p + basis * Vector3(float(side) * 1.7, 9.0, 2.96), Vector3(0.6, 0.6, 0.2), black, basis)
+	_stamp("box", p + basis * Vector3(0, 8.5, 2.96), Vector3(2.8, 0.6, 0.2), black, basis)
 
 
 func _watchtower(d: float, lane: float, wood: StandardMaterial3D, trim: StandardMaterial3D) -> void:
