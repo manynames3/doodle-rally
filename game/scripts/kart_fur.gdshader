@@ -9,7 +9,6 @@ uniform vec4 cream_color : source_color = vec4(0.92, 0.89, 0.84, 1.0);
 uniform int coat_pattern = 0;
 uniform sampler2D fur_texture : filter_linear_mipmap, repeat_enable;
 uniform bool use_fur_texture = false;
-uniform bool groom_geometry = false;
 varying vec3 fur_position;
 
 float hash31(vec3 p) {
@@ -132,7 +131,7 @@ void fragment() {
 		fur = mix(fur,cream_color.rgb,pads);
 	}
 	float fur_value = 0.5;
-	if (use_fur_texture && !groom_geometry) {
+	if (use_fur_texture) {
 		vec2 texuv = UV * vec2(5.0,3.0);
 		fur_value = texture(fur_texture,texuv).r;
 		float texel = 0.0008;
@@ -142,8 +141,14 @@ void fragment() {
 		NORMAL_MAP = mix(vec3(0.5, 0.5, 1.0), micro_normal, visible_detail);
 	}
 	ALBEDO = fur * (0.84 + soft * 0.07 + grain * 0.008 + fur_value * 0.23 + (fibre - 0.5) * 0.035);
-	ROUGHNESS = groom_geometry ? 0.96 : 0.82 + grain * 0.12;
-	SPECULAR = groom_geometry ? 0.07 : 0.15;
-	RIM = groom_geometry ? 0.10 : 0.18;
+	// Plush sheen: a soft pale edge and a little sky fill give dark coats a
+	// readable rounded form from the chase camera instead of a flat silhouette.
+	float edge = pow(1.0 - clamp(dot(normalize(NORMAL), normalize(VIEW)), 0.0, 1.0), 2.0);
+	float sky = clamp((INV_VIEW_MATRIX * vec4(normalize(NORMAL), 0.0)).y, 0.0, 1.0);
+	vec3 sheen = mix(fur, vec3(0.78, 0.82, 0.92), 0.42);
+	ALBEDO = mix(ALBEDO, sheen, edge * 0.62) + vec3(0.040, 0.045, 0.058) * sky;
+	ROUGHNESS = 0.82 + grain * 0.12;
+	SPECULAR = 0.15;
+	RIM = 0.18;
 	RIM_TINT = 0.65;
 }

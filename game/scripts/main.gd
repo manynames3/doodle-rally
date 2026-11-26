@@ -586,6 +586,7 @@ func _qa_run() -> void:
 				_qa_frame_times.sort()
 				print("QA_FRAME_TIMES samples=", _qa_frame_times.size(), " median_ms=", _qa_frame_times[_qa_frame_times.size() / 2], " p95_ms=", _qa_frame_times[int(_qa_frame_times.size() * .95)])
 	for i in range(18): await get_tree().process_frame
+	print("QA_RENDER draws=", Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME), " objects=", Performance.get_monitor(Performance.RENDER_TOTAL_OBJECTS_IN_FRAME), " triangles=", Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME))
 	if screen == "characters" and not _arg("--qa-spin-phase").is_empty():
 		# Set the requested phase after the wait so a frame-15 capture cannot
 		# advance across the six-second wrap before the screenshot is taken.

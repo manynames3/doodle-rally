@@ -7,7 +7,6 @@ const COATS: Array[Color] = [Color("24252b"), Color("9296a4"), Color("ddd7d0"), 
 const IRIS: Array[Color] = [Color("bdc45f"), Color("9edd83"), Color("63c9ed"), Color("b8d75f"), Color("67bff9"), Color("92db76"), Color("9d9e60"), Color("9edb76")]
 const VOXEL_DRIVER = preload("res://scripts/kart_voxel_driver.gd")
 const FUR_SHADER = preload("res://scripts/kart_fur.gdshader")
-const GROOM_SHADER = preload("res://scripts/kart_groom.gdshader")
 const CAT_SCULPT = preload("res://scripts/kart_cat_sculpt.gd")
 const IRIS_SHADER = preload("res://scripts/kart_iris.gdshader")
 static var _materials: Dictionary = {}
@@ -342,13 +341,6 @@ func _build_cat() -> void:
 	# One connected surface contains the brow, sockets, nose bridge, cheeks,
 	# paired muzzle and tapered jaw; markings follow this continuous sculpture.
 	_instance(_head,CAT_SCULPT.head(character_index == 6),Vector3.ZERO,Vector3.ONE,coat)
-	var groom: MeshInstance3D = _instance(_head,CAT_SCULPT.groom(character_index == 6),Vector3.ZERO,Vector3.ONE,_fur_material(base,pattern,true))
-	groom.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	# Subpixel hair drops out beyond30m; the solid sculpt, eyes, ears and
-	# halo remain opaque and visible. Hysteresis avoids boundary flicker.
-	groom.visibility_range_end = 30.0
-	groom.visibility_range_end_margin = 3.0
-	groom.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED
 	for side: float in [-1.0,1.0]:
 		var ear_coat: Material = _fur_material(Color("24201e")) if character_index == 6 else points
 		var outer_ear: MeshInstance3D = _instance(_head,CAT_SCULPT.ear(side,false),Vector3.ZERO,Vector3.ONE,ear_coat)
@@ -520,18 +512,17 @@ static func _material(color: Color, roughness: float = 0.7, metallic: float = 0.
 	return mat
 
 
-static func _fur_material(color: Color, pattern: int = 0, groomed: bool = false) -> ShaderMaterial:
-	var key: String = "fur_%s_%d_%s" % [color.to_html(), pattern, groomed]
+static func _fur_material(color: Color, pattern: int = 0) -> ShaderMaterial:
+	var key: String = "fur_%s_%d" % [color.to_html(), pattern]
 	if _materials.has(key):
 		return _materials[key]
 	var mat: ShaderMaterial = ShaderMaterial.new()
-	mat.shader = GROOM_SHADER if groomed else FUR_SHADER
+	mat.shader = FUR_SHADER
 	mat.set_shader_parameter("coat_color", color)
 	mat.set_shader_parameter("coat_pattern", pattern)
-	mat.set_shader_parameter("groom_geometry", groomed)
 	mat.set_shader_parameter("dark_color", Color("59474b") if pattern == 3 else color.darkened(0.58))
 	mat.set_shader_parameter("cream_color", Color("d9d3c7"))
-	if not groomed and ResourceLoader.exists("res://assets/characters/fur_microdetail.png"):
+	if ResourceLoader.exists("res://assets/characters/fur_microdetail.png"):
 		mat.set_shader_parameter("fur_texture",load("res://assets/characters/fur_microdetail.png"))
 		mat.set_shader_parameter("use_fur_texture",true)
 	_materials[key] = mat
@@ -575,8 +566,8 @@ static func _fur_sphere(parent: Node3D, point: Vector3, dimensions: Vector3, mat
 		var base: SphereMesh = SphereMesh.new()
 		base.radius = 0.5
 		base.height = 1.0
-		base.radial_segments = 48
-		base.rings = 28
+		base.radial_segments = 32
+		base.rings = 18
 		var arrays: Array = base.get_mesh_arrays()
 		var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
 		for i: int in range(vertices.size()):
@@ -661,9 +652,9 @@ static func _rounded_box(parent: Node3D, point: Vector3, dimensions: Vector3, ma
 	var key: String = "rounded_box_%.3f" % bevel
 	if not _meshes.has(key):
 		var base: BoxMesh = BoxMesh.new()
-		base.subdivide_width = 8
-		base.subdivide_height = 8
-		base.subdivide_depth = 8
+		base.subdivide_width = 5
+		base.subdivide_height = 5
+		base.subdivide_depth = 5
 		var arrays: Array = base.get_mesh_arrays()
 		var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
 		var normals: PackedVector3Array = arrays[Mesh.ARRAY_NORMAL]
@@ -694,7 +685,7 @@ static func _cylinder(parent: Node3D, point: Vector3, radius: float, length: flo
 		mesh.top_radius = 1.0
 		mesh.bottom_radius = 1.0
 		mesh.height = 1.0
-		mesh.radial_segments = 20
+		mesh.radial_segments = 16
 		_meshes["cylinder"] = mesh
 	return _instance(parent, _meshes["cylinder"], point, Vector3(radius, length, radius), mat)
 
@@ -724,8 +715,8 @@ static func _torus(parent: Node3D, point: Vector3, inner: float, outer: float, m
 		var mesh: TorusMesh = TorusMesh.new()
 		mesh.inner_radius = inner
 		mesh.outer_radius = outer
-		mesh.rings = 36
-		mesh.ring_segments = 18
+		mesh.rings = 24
+		mesh.ring_segments = 12
 		_meshes[key] = mesh
 	return _instance(parent, _meshes[key], point, Vector3.ONE, mat)
 
@@ -770,8 +761,8 @@ static func _merge_static(parent: Node3D) -> void:
 	for child: Node in parent.get_children():
 		if child is MeshInstance3D and child.mesh != null:
 			var part: MeshInstance3D = child
-			# Groom retains its own distance hysteresis. Everything else batches,
-			# including small trim with shadow casting disabled.
+			# Parts with their own distance range stay separate. Everything else
+			# batches, including small trim with shadow casting disabled.
 			if part.visibility_range_end > 0.0 or part.visibility_range_begin > 0.0:
 				continue
 			var mat: Material = part.material_override
