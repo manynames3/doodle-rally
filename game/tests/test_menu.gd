@@ -72,7 +72,7 @@ func _go() -> void:
 	await _key(KEY_ENTER)
 	_check(ui.screen == "characters" and ui.selected_mode == "cats", "focused title Cat Racers accepts keyboard Enter")
 	ui.show_title()
-	_press_title("Minecraft Racing")
+	_press_title("Block Racers")
 	_check(ui.screen == "characters" and ui.selected_mode == "minecraft", "Minecraft title route selects voxel roster")
 	await _key(KEY_RIGHT)
 	_check(ui.selected_character == 6, "keyboard selects the next visible character beside the centered Zizi")
@@ -108,7 +108,7 @@ func _go() -> void:
 	for child in ui.get_node("MenuStage").get_children():
 		if child is Button and child.name.begins_with("Menu_"):
 			title_routes.append(str(child.name))
-	_check(title_routes == ["Menu_Cat_Racers","Menu_Minecraft_Racing","Menu_Garage","Menu_Options"],"title menu orders the two race modes before Garage and Options")
+	_check(title_routes == ["Menu_Cat_Racers","Menu_Block_Racers","Menu_Garage","Menu_Options"],"title menu orders the two race modes before Garage and Options")
 	for route in ["Garage","Options"]:
 		ui.show_title()
 		_press_title(route)

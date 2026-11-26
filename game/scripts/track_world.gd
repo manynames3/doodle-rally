@@ -1108,7 +1108,7 @@ func _start_gate() -> void:
 		_stamp("sphere", sample(d, float(side) * 12.5) + Vector3.UP * 19.1, Vector3(1.9, 1.7, 1.9), _mat("gate_cap", Color("e6bb70")))
 	for row in range(3):
 		_stamp("box", p + Vector3.UP * (16.2 + row * 1.6), Vector3(30.0 + (1.3 if row == 1 else 0.0), 1.55, 1.05), _mat("gate_sign", sign_color), basis * Basis.from_euler(Vector3(0, 0, 0.01 * (row - 1))))
-	_label("MINECRAFT RACING" if _mode == "minecraft" else "DOODLE RALLY", p + Vector3.UP * 18.0 + basis.z * 0.66, basis, 0.031 if _mode == "minecraft" else 0.039, Color("30241d") if _course != 2 else Color("7cebf6"), 23.3)
+	_label("BLOCK RACERS" if _mode == "minecraft" else "DOODLE RALLY", p + Vector3.UP * 18.0 + basis.z * 0.66, basis, 0.031 if _mode == "minecraft" else 0.039, Color("30241d") if _course != 2 else Color("7cebf6"), 23.3)
 	_stamp("box", p + Vector3.UP * 13.5, Vector3(21, 2.8, 0.8), wood, basis)
 	_label("BUILD. RACE. REPEAT." if _mode == "minecraft" else "SMALL CATS. BIG ADVENTURES.", p + Vector3.UP * 13.5 + basis.z * 0.53, basis, 0.013, Color("fff0d0"), 19.0)
 	for side in [-1.0, 1.0]:

@@ -429,7 +429,7 @@ func _clear_overlay() -> void:
 	overlay = null
 
 func _show_loading() -> void:
-	_overlay_box("WARMING UP THE KARTS…", "%s  ·  %s" % [Data.COURSES[course], "Minecraft Racing" if racer_mode == "minecraft" else "Cat Racers"], 630)
+	_overlay_box("WARMING UP THE KARTS…", "%s  ·  %s" % [Data.COURSES[course], "Block Racers" if racer_mode == "minecraft" else "Cat Racers"], 630)
 
 func _overlay_box(title_text: String, subtitle: String, width: float = 660) -> VBoxContainer:
 	_clear_overlay()

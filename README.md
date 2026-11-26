@@ -1,6 +1,6 @@
 # Doodle Rally — Cat Racers
 
-**Doodle Rally** is a standalone single player 3D kart racer for macOS. Pick a cat, choose a course, and race seven rivals through a paper craft studio, an alpine quarry, or a neon block world. The game keeps the playful hand painted feel of the supplied Cat Racers references while using a real time 3D chase camera, physics based kart contact, items, drifting, boosts, and a second Minecraft Racing roster.
+**Doodle Rally** is a standalone single player 3D kart racer for macOS. Pick a cat, choose a course, and race seven rivals through a paper craft studio, an alpine quarry, or a neon block world. The game keeps the playful hand painted feel of the supplied Cat Racers references while using a real time 3D chase camera, physics based kart contact, items, drifting, boosts, and a second blocky Block Racers roster.
 
 The current source and Universal Mac build are version **1.4.1**. The original Doodle Rumble project is separate and is not modified.
 
@@ -10,7 +10,7 @@ The visual review gallery is in [docs/SCREENSHOTS.md](docs/SCREENSHOTS.md). Thes
 
 <table>
   <tr>
-    <td><img src="screenshots/1.4.1/intro.png" alt="Title menu with Cat Racers and Minecraft Racing as the first two choices" width="320"></td>
+    <td><img src="screenshots/1.4.1/intro.png" alt="Title menu with Cat Racers and Block Racers as the first two choices" width="320"></td>
     <td><img src="screenshots/1.4.1/character_select.png" alt="Character Select with the selected 16-view Zizi artwork" width="320"></td>
     <td><img src="screenshots/1.4.1/track_select.png" alt="Track Select with Easy, Medium and Hard" width="320"></td>
   </tr>
@@ -51,13 +51,13 @@ Each release keeps earlier screenshots and verification evidence in the versione
 
 Unzip **Doodle_Rally_1.4.1_Mac.zip** and open **Doodle Rally 1.4.1.app**, or open the app inside `builds/Doodle Rally 1.4.1.app`. Godot is not required to play. The bundle contains Apple Silicon and Intel executables. It is signed locally and is not Apple notarized, so macOS may ask you to choose **Open Anyway** in **System Settings → Privacy & Security** when the ZIP came from another Mac.
 
-The title menu orders its choices as **Cat Racers**, **Minecraft Racing**, **Garage**, and **Options**. Each mode opens its racer selection, followed by course selection and **Easy**, **Medium**, or **Hard** difficulty. Garage is a secondary animated racer showroom with stats and a shortcut to course choice; the mode flows remain the full racer-selection route. Easy keeps the previous default rival pace; Medium and Hard raise the competition. The BenJam Games logo appears briefly when the app launches and can be skipped with any key, click, or controller button.
+The title menu orders its choices as **Cat Racers**, **Block Racers**, **Garage**, and **Options**. Each mode opens its racer selection, followed by course selection and **Easy**, **Medium**, or **Hard** difficulty. Garage is a secondary animated racer showroom with stats and a shortcut to course choice; the mode flows remain the full racer-selection route. Easy keeps the previous default rival pace; Medium and Hard raise the competition. The BenJam Games logo appears briefly when the app launches and can be skipped with any key, click, or controller button.
 
 ## What is in the game
 
 - Eight distinct cats: **Zizi** (the tuxedo hero with a white chin, chest, and paws), Luna, Milo, Biscuit, **Mochi**, Pumpkin, **Mak-Doong** (the calico with a golden halo), and Nori. Zizi and Mak-Doong sit together in the middle of Character Select. Their names, colors, patterns, portraits, rear views, Garage previews, standings, and results stay consistent.
-- Eight Minecraft style drivers: Steve, Alex, Creeper, Enderman, Zombie, Skeleton, Pig, and Villager. Their block geometry and pixel faces are original procedural game assets.
-- Three courses: **Desktop Dojo**, **Block Quarry**, and **Glitch Core**. Each has its own surface, scenery, lighting, panorama, props, and soundtrack. Minecraft Racing swaps in block scenery and drivers on every course.
+- Eight blocky Block Racers drivers: Cubby, Pixel, Mossy, Shade, Grumble, Rattle, Oink, and Barter. Their block geometry and pixel faces are original procedural game assets.
+- Three courses: **Desktop Dojo**, **Block Quarry**, and **Glitch Core**. Each has its own surface, scenery, lighting, panorama, props, and soundtrack. Block Racers swaps in block scenery and drivers on every course.
 - Three lap races with seven AI rivals, selectable **Easy**, **Medium**, and **Hard** rival pacing, acceleration, braking, steering, drift hops, charged mini turbos, refillable boost, track boost pads, item boxes, barriers, minimap, speedometer, results, restart, and a Garage preview.
 - The supplied Cat Racers core pack provides transparent selection sprites, portraits, animation frames, and separate effects for all eight cats. The Garage cycles each racer’s idle, drive, boost, and brake frames with dust, flame, and smoke on separate layers. Racing remains full 3D.
 - Character Select uses one cat-and-kart image per racer. The focused racer swaps through 16 supplied 1024×1024 transparent views in order, completing one stepped 2D turntable loop every six seconds. It does not compress, crossfade, or overlay frames; Reduced Motion holds the front view. Source frames are in `game/assets/characters/turntable/`.

@@ -8,7 +8,7 @@ const TAGLINES := ["Draw. Race. Repeat.", "Climb higher. Go further.", "Warp. Dr
 const TOP_SPEED := [38.0, 37.2, 40.0, 38.8, 37.6, 38.2, 37.8, 38.4]
 const ACCEL := [15.0, 15.5, 17.2, 13.0, 15.0, 17.0, 16.0, 15.4]
 const HANDLING := [1.0, 1.08, 0.94, 0.88, 1.22, 1.0, 1.18, 1.15]
-const BLOCK_NAMES := ["Steve", "Alex", "Creeper", "Enderman", "Zombie", "Skeleton", "Pig", "Villager"]
+const BLOCK_NAMES := ["Cubby", "Pixel", "Mossy", "Shade", "Grumble", "Rattle", "Oink", "Barter"]
 
 static func time_string(seconds: float) -> String:
 	if seconds < 0: return "—:—.—"

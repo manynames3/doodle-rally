@@ -185,7 +185,7 @@ func _draw() -> void:
 		_panel(Rect2(380, 837, 501, 41), Color(0.02, .03, .05, .62), 11)
 		var prompt := "RT  Gas   •   Stick  Steer   •   LB  Drift" if using_controller else "W / ↑  Gas    A D / ← →  Steer    Space  Drift"
 		_center_text(Vector2(630, 865), prompt, 18, Color("fff4d9"), 1)
-	_race_text(Vector2(290, 35), "MINECRAFT RACING" if str(sim.mode) == "minecraft" else "CAT RACERS", 22, Color("ffedb2"), 2)
+	_race_text(Vector2(290, 35), "BLOCK RACERS" if str(sim.mode) == "minecraft" else "CAT RACERS", 22, Color("ffedb2"), 2)
 	_text(Vector2(40, 455), str(Data.COURSES[course]).to_upper(), 16, Color("fff0c8"), 2)
 
 func _map(point: Vector2) -> Vector2:

@@ -214,7 +214,7 @@ func _logo(parent: Control, rect: Rect2, compact: bool = false) -> void:
 	subtitle.size = Vector2(rect.size.x*0.62, 49 if compact else 65)
 	subtitle.rotation = -0.035
 	parent.add_child(subtitle)
-	_label(subtitle, "MINECRAFT RACING" if selected_mode == "minecraft" else "CAT RACERS", Rect2(4,0,subtitle.size.x-8,subtitle.size.y), (20 if compact else 27) if selected_mode == "minecraft" else (25 if compact else 33), CREAM, true)
+	_label(subtitle, "BLOCK RACERS" if selected_mode == "minecraft" else "CAT RACERS", Rect2(4,0,subtitle.size.x-8,subtitle.size.y), (20 if compact else 27) if selected_mode == "minecraft" else (25 if compact else 33), CREAM, true)
 
 func _header(title: String, subtitle: String) -> void:
 	_logo(_stage, Rect2(34,33,396,84), true)
@@ -305,7 +305,7 @@ func show_title() -> void:
 	# Character and track choice happen inside each racing mode, so keep the
 	# title menu focused on starting a mode and the shared garage/settings.
 	var start := _wood_button("Cat Racers",Rect2(48,337,422,73),_start_cats,"flag",true)
-	_wood_button("Minecraft Racing",Rect2(48,426,422,66),_start_blocks,"cube")
+	_wood_button("Block Racers",Rect2(48,426,422,66),_start_blocks,"cube")
 	_wood_button("Garage",Rect2(48,515,352,66),_show_garage,"wrench")
 	_wood_button("Options",Rect2(48,604,352,66),show_settings,"gear")
 	_label(_stage,"Ready, Set, Meow!",Rect2(59,778,433,55),32,CREAM)
@@ -319,7 +319,7 @@ func show_title() -> void:
 
 func show_characters() -> void:
 	_reset("characters")
-	_header("Character Select", "Minecraft Racing • Blocky friends. Big adventures." if selected_mode == "minecraft" else "Different cats. Different styles. Same fun!")
+	_header("Character Select", "Block Racers • Blocky friends. Big adventures." if selected_mode == "minecraft" else "Different cats. Different styles. Same fun!")
 	_character_workbench()
 	for slot in range(8):
 		var character: int = DISPLAY_ORDER[slot]
@@ -431,7 +431,7 @@ func _choose_character(character: int) -> void:
 
 func show_tracks() -> void:
 	_reset("tracks")
-	_header("Choose your track", "Minecraft Racing • Same tracks. Blocky racers." if selected_mode == "minecraft" else "Same cats. New adventures.")
+	_header("Choose your track", "Block Racers • Same tracks. Blocky racers." if selected_mode == "minecraft" else "Same cats. New adventures.")
 	var filenames := ["course_dojo.png", "course_quarry.png", "course_glitch.png"]
 	var colors := [Color("54d5ff"), Color("ffdc5f"), Color("e476ff")]
 	for course in range(3):
@@ -519,7 +519,7 @@ func _show_garage() -> void:
 	preview.active = true
 	_label(_stage,_name_for(selected_character),Rect2(812,268,425,67),51,GOLD)
 	_label(_stage,Data.STYLES[selected_character],Rect2(816,339,417,46),30,Data.COLORS[selected_character])
-	var identity := "Minecraft Racing" if selected_mode == "minecraft" else "Cat Racers"
+	var identity := "Block Racers" if selected_mode == "minecraft" else "Cat Racers"
 	if selected_mode == "cats":
 		if selected_character == 0: identity = "Tuxedo · White bib & paws"
 		elif selected_character == 6: identity = "Calico · Golden halo"
