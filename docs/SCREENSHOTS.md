@@ -1,6 +1,6 @@
 # Doodle Rally visual gallery
 
-Version 1.5.0 has no native capture set yet. Its changes to the race view (no fur speckle, Block Racers drivers, graph-paper desk, smaller dust, cup results) are described in [the release notes](releases/1.5.0.md); the captures below are from 1.4.1 and earlier.
+Version 1.5.0 has menu captures from a software renderer in `screenshots/1.5.0/`: the [title menu](../screenshots/1.5.0/intro.png), [Block Racers lineup](../screenshots/1.5.0/block_racers_characters.png), [Track Select with the Cup](../screenshots/1.5.0/track_select.png) and [cup results](../screenshots/1.5.0/cup_results.png). It has no native race capture set yet. Its changes to the race view (no fur speckle, Block Racers drivers, graph-paper desk, smaller dust, cup results) are described in [the release notes](releases/1.5.0.md); the captures below are from 1.4.1 and earlier.
 
 Version 1.4.1 gives each course its own evolving soundtrack and adds distinct synthesized race cues, a speed-responsive engine loop, course-change fades, and independent sound-effects volume. See the fresh [Options screen](../screenshots/1.4.1/settings.png); captures of the title, racer lineup, courses, race effects, and driving screens are in [screenshots/1.4.1](../screenshots/1.4.1/).
 

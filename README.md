@@ -2,7 +2,7 @@
 
 **Doodle Rally** is a standalone single player 3D kart racer for macOS. Pick a cat, choose a course, and race seven rivals through a paper craft studio, an alpine quarry, or a neon block world. The game keeps the playful hand painted feel of the supplied Cat Racers references while using a real time 3D chase camera, physics based kart contact, items, drifting, boosts, and a second blocky Block Racers roster.
 
-The current source and Universal Mac build are version **1.5.0**. The gallery below was captured in 1.4.1; see the [1.5.0 notes](docs/releases/1.5.0.md) for what has changed since. The original Doodle Rumble project is separate and is not modified.
+The current source and Universal Mac build are version **1.5.0**. In the gallery below, the menu and cup screens are 1.5.0 captures from a software renderer; the race captures are native 1.4.1 captures and predate the fur and dust changes in the [1.5.0 notes](docs/releases/1.5.0.md). The original Doodle Rumble project is separate and is not modified.
 
 ## Screenshots
 
@@ -10,9 +10,9 @@ The visual review gallery is in [docs/SCREENSHOTS.md](docs/SCREENSHOTS.md). Thes
 
 <table>
   <tr>
-    <td><img src="screenshots/1.4.1/intro.png" alt="Title menu with Cat Racers and Block Racers as the first two choices" width="320"></td>
-    <td><img src="screenshots/1.4.1/character_select.png" alt="Character Select with the selected 16-view Zizi artwork" width="320"></td>
-    <td><img src="screenshots/1.4.1/track_select.png" alt="Track Select with Easy, Medium and Hard" width="320"></td>
+    <td><img src="screenshots/1.5.0/intro.png" alt="Title menu with Cat Racers and Block Racers as the first two choices" width="320"></td>
+    <td><img src="screenshots/1.5.0/character_select.png" alt="Character Select with the selected 16-view Zizi artwork" width="320"></td>
+    <td><img src="screenshots/1.5.0/track_select.png" alt="Track Select with Easy, Medium, Hard and the three-race Cup" width="320"></td>
   </tr>
   <tr>
     <td><img src="screenshots/1.4.1/quarry_race.png" alt="Block Quarry race" width="320"></td>
@@ -26,7 +26,11 @@ The visual review gallery is in [docs/SCREENSHOTS.md](docs/SCREENSHOTS.md). Thes
   </tr>
   <tr>
     <td><img src="screenshots/1.4.1/treat_trail_race.png" alt="Treat Trail bait snack lures rivals into a slowdown" width="320"></td>
-    <td><img src="screenshots/1.4.1/settings.png" alt="Options with separate master, music, and sound effects controls" width="320"></td>
+    <td><img src="screenshots/1.5.0/settings.png" alt="Options with separate master, music, and sound effects controls" width="320"></td>
+  </tr>
+  <tr>
+    <td><img src="screenshots/1.5.0/block_racers_characters.png" alt="Block Racers character select with the eight original blocky drivers" width="320"></td>
+    <td><img src="screenshots/1.5.0/cup_results.png" alt="Cup results after race one with the points table and next race" width="320"></td>
   </tr>
 </table>
 
