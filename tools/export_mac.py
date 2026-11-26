@@ -15,6 +15,7 @@ if not args.godot:
     parser.error("Pass --godot /path/to/Godot.app/Contents/MacOS/Godot")
 preset = ROOT / "game/export_presets.cfg"
 original = preset.read_text()
+(ROOT / "builds").mkdir(exist_ok=True)  # absent on a fresh clone; Godot will not create it
 try:
     if args.template:
         template = str(Path(args.template).resolve())
