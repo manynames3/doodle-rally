@@ -1333,12 +1333,19 @@ func _mesh(shape: String) -> Mesh:
 			sphere.radial_segments = 16
 			sphere.rings = 8
 			mesh = sphere
+		"sphere_small":
+			var pebble := SphereMesh.new()
+			pebble.radius = 0.5
+			pebble.height = 1.0
+			pebble.radial_segments = 8
+			pebble.rings = 4
+			mesh = pebble
 		_:
 			var cylinder := CylinderMesh.new()
 			cylinder.top_radius = 0.0 if shape in ["pine", "mountain"] else (0.43 if shape == "rock" else 0.5)
 			cylinder.bottom_radius = 0.5
 			cylinder.height = 1.0
-			cylinder.radial_segments = 6 if shape in ["hex", "mountain"] else (8 if shape in ["pine", "rock"] else 12)
+			cylinder.radial_segments = 5 if shape == "twig" else 6 if shape in ["hex", "mountain"] else (8 if shape in ["pine", "rock"] else 12)
 			cylinder.rings = 1
 			mesh = cylinder
 	_meshes[shape] = mesh
@@ -1351,6 +1358,12 @@ func _stamp(shape: String, p: Vector3, size: Vector3, material: StandardMaterial
 		var organic_shape: String = "cliff" if size.y > maxf(size.x, size.z) * 0.72 else "boulder"
 		actual_shape = "box" if _mode == "minecraft" else organic_shape + str(posmod(int(p.x * 0.7 + p.z * 0.3), 3))
 		material.vertex_color_use_as_albedo = true
+	# Pebble-sized spheres and twig-thin cylinders are a few pixels on screen;
+	# they use coarse meshes so thousands of them stay cheap.
+	if shape == "sphere" and maxf(size.x, maxf(size.y, size.z)) < 1.5:
+		actual_shape = "sphere_small"
+	elif shape == "cylinder" and minf(size.x, size.z) < 0.3:
+		actual_shape = "twig"
 	var key: String = "%s:%s" % [actual_shape, material.get_instance_id()]
 	# Cull repeated near-field props by spatial tile; distant cliff meshes stay
 	# grouped to avoid hundreds of one-rock draw calls and long launch times.

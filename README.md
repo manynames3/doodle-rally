@@ -2,7 +2,7 @@
 
 **Doodle Rally** is a standalone single player 3D kart racer for macOS. Pick a cat, choose a course, and race seven rivals through a paper craft studio, an alpine quarry, or a neon block world. The game keeps the playful hand painted feel of the supplied Cat Racers references while using a real time 3D chase camera, physics based kart contact, items, drifting, boosts, and a second blocky Block Racers roster.
 
-The current source and Universal Mac build are version **1.4.1**. The original Doodle Rumble project is separate and is not modified.
+The current source and Universal Mac build are version **1.5.0**. The gallery below was captured in 1.4.1; see the [1.5.0 notes](docs/releases/1.5.0.md) for what has changed since. The original Doodle Rumble project is separate and is not modified.
 
 ## Screenshots
 
@@ -44,6 +44,7 @@ The visual review gallery is in [docs/SCREENSHOTS.md](docs/SCREENSHOTS.md). Thes
 | **1.3.8 · A simpler start** | Removed duplicate Character Select and Track Select shortcuts from the title menu. Choose Cat Racers or Minecraft Racing first, then pick a racer and course in that mode's flow. |
 | **1.4.0 · A clearer start, smarter items** | Put Cat Racers and Minecraft Racing first, followed by Garage and Options. Added Purrquake, the forward-spreading Feather Fan, Treat Trail's AI-baiting sniff trap, and the timing-based Pawfect Parry for more tactical choices and counterplay. |
 | **1.4.1 · A livelier soundscape** | Replaced the shared music recipe with three course-specific 64-bar arrangements, rebuilt race cues with distinct synthesized timbres, added a responsive layered kart engine, crossfaded course changes, and separated the sound-effects slider from music volume. |
+| **1.5.0 · Cup and a cleaner race view** | Added a three-race cup with points and a champion screen. Removed the fur strands that rendered as speckle, added a soft fur sheen, renamed the blocky mode to Block Racers with original drivers, cut scene triangles by about a third to a half, restored Desktop Dojo's graph paper as a texture, shrank dust, and automated tests and Mac builds. |
 
 Each release keeps earlier screenshots and verification evidence in the versioned folders under [`screenshots/`](screenshots/) and [`docs/test-results/`](docs/test-results/). The current build record is [BUILD_STATUS.md](BUILD_STATUS.md); release notes are in [`docs/releases/`](docs/releases/).
 
@@ -51,7 +52,7 @@ Each release keeps earlier screenshots and verification evidence in the versione
 
 **Download:** get the latest Mac ZIP from the [Releases page](https://github.com/manynames3/doodle-rally/releases/latest). Releases are built automatically when a version tag is pushed.
 
-Unzip **Doodle_Rally_1.4.1_Mac.zip** and open **Doodle Rally 1.4.1.app**, or open the app inside `builds/Doodle Rally 1.4.1.app`. Godot is not required to play. The bundle contains Apple Silicon and Intel executables. It is signed locally and is not Apple notarized, so macOS may ask you to choose **Open Anyway** in **System Settings → Privacy & Security** when the ZIP came from another Mac.
+Unzip **Doodle_Rally_1.5.0_Mac.zip** and open **Doodle Rally 1.5.0.app**, or open the app inside `builds/Doodle Rally 1.5.0.app`. Godot is not required to play. The bundle contains Apple Silicon and Intel executables. It is signed locally and is not Apple notarized, so macOS may ask you to choose **Open Anyway** in **System Settings → Privacy & Security** when the ZIP came from another Mac.
 
 The title menu orders its choices as **Cat Racers**, **Block Racers**, **Garage**, and **Options**. Each mode opens its racer selection, followed by course selection and **Easy**, **Medium**, or **Hard** difficulty. Garage is a secondary animated racer showroom with stats and a shortcut to course choice; the mode flows remain the full racer-selection route. Easy keeps the previous default rival pace; Medium and Hard raise the competition. The BenJam Games logo appears briefly when the app launches and can be skipped with any key, click, or controller button.
 
@@ -60,6 +61,7 @@ The title menu orders its choices as **Cat Racers**, **Block Racers**, **Garage*
 - Eight distinct cats: **Zizi** (the tuxedo hero with a white chin, chest, and paws), Luna, Milo, Biscuit, **Mochi**, Pumpkin, **Mak-Doong** (the calico with a golden halo), and Nori. Zizi and Mak-Doong sit together in the middle of Character Select. Their names, colors, patterns, portraits, rear views, Garage previews, standings, and results stay consistent.
 - Eight blocky Block Racers drivers: Cubby, Pixel, Mossy, Shade, Grumble, Rattle, Oink, and Barter. Their block geometry and pixel faces are original procedural game assets.
 - Three courses: **Desktop Dojo**, **Block Quarry**, and **Glitch Core**. Each has its own surface, scenery, lighting, panorama, props, and soundtrack. Block Racers swaps in block scenery and drivers on every course.
+- A three-race **Cup** from Track Select: one race on each course, points for every finishing place, a points table between races and a champion screen.
 - Three lap races with seven AI rivals, selectable **Easy**, **Medium**, and **Hard** rival pacing, acceleration, braking, steering, drift hops, charged mini turbos, refillable boost, track boost pads, item boxes, barriers, minimap, speedometer, results, restart, and a Garage preview.
 - The supplied Cat Racers core pack provides transparent selection sprites, portraits, animation frames, and separate effects for all eight cats. The Garage cycles each racer’s idle, drive, boost, and brake frames with dust, flame, and smoke on separate layers. Racing remains full 3D.
 - Character Select uses one cat-and-kart image per racer. The focused racer swaps through 16 supplied 1024×1024 transparent views in order, completing one stepped 2D turntable loop every six seconds. It does not compress, crossfade, or overlay frames; Reduced Motion holds the front view. Source frames are in `game/assets/characters/turntable/`.
@@ -68,7 +70,7 @@ The title menu orders its choices as **Cat Racers**, **Block Racers**, **Garage*
 - Three course-specific soundtracks now use distinct musical palettes: playful wooden percussion and mallets for Desktop Dojo, orchestral woodwind and brass colors for Block Quarry, and a driving neon synth pulse for Glitch Core. Each arrangement evolves over roughly two minutes, matches average loudness across courses, and rejoins its opening with a checked loop seam. Course changes fade between tracks, and race events briefly duck the music so pickups, hits, and item plays read clearly.
 - Race sound effects use distinct layered cues for pickups, boosts, drift, impacts, laps, items, and each special ability. A textured engine loop rises with kart speed. Options has separate Master, Music, and Sound Effects levels so players can balance the mix.
 - **Smooth motion** is the default graphics mode. It keeps the interface at full resolution while scaling the 3D race scene, reducing shadow work and grouping nearby scenery for culling. **Balanced** and **Full detail** are available in Options if you prefer a sharper scene over frame rate.
-- Desktop Dojo keeps the paper tabletop above the wooden deck by a small fixed gap. The surfaces previously shared the same top plane and could z-fight as the chase camera moved; the paper-grid strips that shimmered at shallow angles remain removed.
+- Desktop Dojo keeps the paper tabletop above the wooden deck by a small fixed gap. The surfaces previously shared the same top plane and could z-fight as the chase camera moved; the thin paper-grid strips that shimmered at shallow angles are replaced by a mipmapped graph-paper texture.
 
 ## Controls
 

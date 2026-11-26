@@ -1,4 +1,14 @@
-# Build status — September 24, 2026
+# Build status — November 26, 2026
+
+## Doodle Rally — Cat Racers 1.5.0
+
+Adds a three-race cup with points and a champion screen, removes the fur strands that rendered as speckle in the chase view, adds a soft fur sheen, renames the blocky mode to Block Racers with original drivers, restores Desktop Dojo's graph paper as a mipmapped texture, shrinks dust, and caps Full detail at a 2560×1440 pixel budget.
+
+Triangles in the standard QA race frame fell from 1.98 M to 1.12 M on Desktop Dojo, 4.97 M to 3.22 M on Block Quarry and 1.95 M to 1.08 M on Glitch Core.
+
+All **949 counted functional checks** passed across the seven source suites, with three temporal collision replays and zero violations. GitHub Actions now runs these on every push and builds the Universal Mac app.
+
+Not yet done for 1.5.0: the native release cases in `tools/test_release.py`, fresh native captures, a frame-rate measurement on a physical Mac, and notarization. See `docs/releases/1.5.0.md`.
 
 ## Doodle Rally — Cat Racers 1.4.1
 
