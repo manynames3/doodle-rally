@@ -795,13 +795,12 @@ func _desktop() -> void:
 	# Keep the deck and paper top faces apart. They used to share y=3 exactly,
 	# which made the depth buffer flicker across the tabletop as the chase camera moved.
 	_stamp("box", Vector3(0, DESKTOP_DECK_TOP - 10.0, -15), Vector3(980, 20, 1080), wood)
-	var paper := _noise_mat("sheet", Color("d5cbb2"), Color("f4ead2"), 0.065)
+	var paper := _graph_paper_mat()
 	paper.roughness = 0.94
 	_add_surface_bump(paper, 0.18, 0.7, 0.12)
-	# The old graph-paper grid was made from hundreds of razor-thin boxes.
-	# Those strips alias at the shallow chase-camera angle and produced a
-	# shimmering checkerboard outside the road as the kart moved.  Keep the
-	# sheet itself textured and reserve drawn markings for the actual road.
+	# The old graph-paper grid was made from hundreds of razor-thin boxes that
+	# shimmered at the shallow chase-camera angle. The grid is now a mipmapped
+	# texture, so distant lines blend into the paper instead of aliasing.
 	_stamp("box", Vector3(0, DESKTOP_SHEET_TOP - 0.5, 0), Vector3(900, 1, 950), paper)
 	var rail_dark := _mat("desk_barrier_dark", Color("945c38"))
 	var rail_light := _mat("desk_barrier_light", Color("d8a65b"))
@@ -1254,6 +1253,31 @@ func _noise_mat(key: String, low: Color, high: Color, frequency: float) -> Stand
 	texture.color_ramp = gradient
 	mat.albedo_texture = texture
 	mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	return mat
+
+
+func _graph_paper_mat() -> StandardMaterial3D:
+	if _materials.has("sheet"):
+		return _materials["sheet"] as StandardMaterial3D
+	var mat: StandardMaterial3D = _mat("sheet", Color.WHITE)
+	var size := 512
+	var image := Image.create(size, size, true, Image.FORMAT_RGB8)
+	image.fill(Color("cdbb90"))
+	var minor := Color("93a9a8")
+	var major := Color("6f8f9c")
+	for cell in range(4):
+		var start: int = cell * size / 4
+		var width: int = 22 if cell == 0 else 11
+		var ink: Color = major if cell == 0 else minor
+		image.fill_rect(Rect2i(start, 0, width, size), ink)
+		image.fill_rect(Rect2i(0, start, size, width), ink)
+	image.generate_mipmaps()
+	mat.albedo_texture = ImageTexture.create_from_image(image)
+	mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
+	# World-space projection: one bold square every 12 m, four fine cells inside.
+	mat.uv1_triplanar = true
+	mat.uv1_world_triplanar = true
+	mat.uv1_scale = Vector3.ONE / 12.0
 	return mat
 
 
