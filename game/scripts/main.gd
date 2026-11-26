@@ -206,6 +206,7 @@ func _start_race(chosen_character: int, chosen_course: int) -> void:
 	_update_camera(1, true)
 	hud = Hud.new()
 	ui_layer.add_child(hud)
+	hud.cup_tag = "  ·  CUP %d/3" % (cup_race + 1) if cup_race >= 0 else ""
 	hud.configure(sim, world, course, preferences.best(course, int(preferences.values.difficulty), racer_mode))
 	hud.pause_requested.connect(_pause)
 	hud.using_controller = controller >= 0
@@ -570,6 +571,7 @@ func _qa_run() -> void:
 	menu.selected_mode = _arg("--qa-mode", "cats")
 	menu.selected_course = int(_arg("--qa-course", "1"))
 	menu.selected_character = clampi(int(_arg("--qa-character", "0")), 0, 7)
+	if screen in ["race", "drive"] and not _arg("--qa-cup").is_empty(): cup_race = clampi(int(_arg("--qa-cup")), 0, 2)
 	preferences.values.difficulty = clampi(int(_arg("--qa-difficulty", "2")),2,4)
 	menu.preferences.difficulty = preferences.values.difficulty
 	if screen == "splash":

@@ -45,6 +45,9 @@ func _layout_pause() -> void:
 	if pause_button:
 		pause_button.position = Vector2(size.x * 0.5 - 25, 14)
 
+# Set by the game during a cup, e.g. "  ·  CUP 2/3"; empty for single races.
+var cup_tag := ""
+
 func configure(race: RefCounted, world: Node3D, course_index: int, record: float) -> void:
 	sim = race
 	_world = world
@@ -186,7 +189,7 @@ func _draw() -> void:
 		var prompt := "RT  Gas   •   Stick  Steer   •   LB  Drift" if using_controller else "W / ↑  Gas    A D / ← →  Steer    Space  Drift"
 		_center_text(Vector2(630, 865), prompt, 18, Color("fff4d9"), 1)
 	_race_text(Vector2(290, 35), "BLOCK RACERS" if str(sim.mode) == "minecraft" else "CAT RACERS", 22, Color("ffedb2"), 2)
-	_text(Vector2(40, 455), str(Data.COURSES[course]).to_upper(), 16, Color("fff0c8"), 2)
+	_text(Vector2(40, 455), str(Data.COURSES[course]).to_upper() + cup_tag, 16, Color("fff0c8"), 2)
 
 func _map(point: Vector2) -> Vector2:
 	return Vector2(1200, 215) + (point - map_min) / map_span * 186
