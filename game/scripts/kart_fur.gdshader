@@ -143,10 +143,17 @@ void fragment() {
 	ALBEDO = fur * (0.84 + soft * 0.07 + grain * 0.008 + fur_value * 0.23 + (fibre - 0.5) * 0.035);
 	// Plush sheen: a soft pale edge and a little sky fill give dark coats a
 	// readable rounded form from the chase camera instead of a flat silhouette.
+	// Broad brushed streaks and a centre parting on the back of the head follow
+	// the supplied rear-view artwork; they are low frequency, so they never
+	// break into speckle.
+	float flow = soft_noise(vec3(p.x * 10.0, p.y * 2.4, p.z * 10.0));
+	float back = smoothstep(-0.05, 0.25, p.z) * head;
+	float parting = mix(1.0, 0.80 + 0.20 * smoothstep(0.0, 0.11, abs(p.x)), back);
 	float edge = pow(1.0 - clamp(dot(normalize(NORMAL), normalize(VIEW)), 0.0, 1.0), 2.0);
 	float sky = clamp((INV_VIEW_MATRIX * vec4(normalize(NORMAL), 0.0)).y, 0.0, 1.0);
-	vec3 sheen = mix(fur, vec3(0.78, 0.82, 0.92), 0.42);
-	ALBEDO = mix(ALBEDO, sheen, edge * 0.62) + vec3(0.040, 0.045, 0.058) * sky;
+	vec3 sheen = mix(fur, vec3(0.80, 0.80, 0.86), 0.42);
+	ALBEDO *= (0.86 + 0.28 * flow) * parting;
+	ALBEDO = mix(ALBEDO, sheen, edge * 0.62 * (0.65 + 0.7 * flow)) + vec3(0.050, 0.046, 0.050) * sky * (0.6 + 0.8 * flow);
 	ROUGHNESS = 0.82 + grain * 0.12;
 	SPECULAR = 0.15;
 	RIM = 0.18;

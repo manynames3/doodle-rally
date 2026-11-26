@@ -3,7 +3,7 @@ extends Node3D
 ## Every visible part is geometry; all eight drivers can be viewed from any angle.
 
 const PALETTE: Array[Color] = [Color("e52f37"), Color("168ff0"), Color("f159b0"), Color("ff921d"), Color("9446e8"), Color("48b73d"), Color("ffd044"), Color("efbf3c")]
-const COATS: Array[Color] = [Color("24252b"), Color("9296a4"), Color("ddd7d0"), Color("e99136"), Color("e6d2b3"), Color("c97931"), Color("29211e"), Color("85818b")]
+const COATS: Array[Color] = [Color("2b2624"), Color("9296a4"), Color("ddd7d0"), Color("e99136"), Color("e6d2b3"), Color("c97931"), Color("29211e"), Color("85818b")]
 const IRIS: Array[Color] = [Color("bdc45f"), Color("9edd83"), Color("63c9ed"), Color("b8d75f"), Color("67bff9"), Color("92db76"), Color("9d9e60"), Color("9edb76")]
 const VOXEL_DRIVER = preload("res://scripts/kart_voxel_driver.gd")
 const SMALL_TRIM_RANGE := 70.0
