@@ -43,7 +43,7 @@ var cup_race := -1
 var startup_splash: CanvasLayer
 
 func _ready() -> void:
-	get_window().title = "Doodle Rally — Cat Racers · 1.4.1"
+	get_window().title = "Doodle Rally — Cat Racers · 1.5.0"
 	_qa = "--qa" in OS.get_cmdline_user_args()
 	preferences.enabled = not _qa
 	preferences.load_data()

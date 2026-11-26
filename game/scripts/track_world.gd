@@ -1274,10 +1274,10 @@ func _graph_paper_mat() -> StandardMaterial3D:
 	image.generate_mipmaps()
 	mat.albedo_texture = ImageTexture.create_from_image(image)
 	mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
-	# World-space projection: one bold square every 12 m, four fine cells inside.
-	mat.uv1_triplanar = true
-	mat.uv1_world_triplanar = true
-	mat.uv1_scale = Vector3.ONE / 12.0
+	# One bold square every 12 m with four fine cells inside. A box mesh packs
+	# its faces into a 3×2 UV atlas, so the 900×950 m top face repeats by
+	# 3×900/12 and 2×950/12. Plain UVs keep this on the simplest shader path.
+	mat.uv1_scale = Vector3(225.0, 158.333, 1.0)
 	return mat
 
 
