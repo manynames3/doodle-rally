@@ -226,8 +226,8 @@ COLOR=pow(COLOR,vec3(2.0))*1.15;
 	sun.rotation_degrees = Vector3(-41.0, -34.0, 0.0)
 	sun.light_color = Color("e3dcff") if _course == 2 else Color("ffe4b3")
 	sun.light_energy = 0.72 if _course == 2 else 1.12
-	sun.light_angular_distance = 1.2
-	sun.shadow_blur = 1.2
+	sun.light_angular_distance = 0.0
+	sun.shadow_blur = 0.6
 	sun.shadow_enabled = true
 	sun.directional_shadow_max_distance = 170.0
 	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS
