@@ -6,7 +6,7 @@ The current source and Universal Mac build are version **1.5.0**. In the gallery
 
 ## Screenshots
 
-The visual review gallery is in [docs/SCREENSHOTS.md](docs/SCREENSHOTS.md). These captures come from the native QA build at 1280×800.
+The visual review gallery is in [docs/SCREENSHOTS.md](docs/SCREENSHOTS.md). All captures are 1280×800.
 
 <table>
   <tr>
