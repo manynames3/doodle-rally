@@ -6,6 +6,7 @@ const PALETTE: Array[Color] = [Color("e52f37"), Color("168ff0"), Color("f159b0")
 const COATS: Array[Color] = [Color("24252b"), Color("9296a4"), Color("ddd7d0"), Color("e99136"), Color("e6d2b3"), Color("c97931"), Color("29211e"), Color("85818b")]
 const IRIS: Array[Color] = [Color("bdc45f"), Color("9edd83"), Color("63c9ed"), Color("b8d75f"), Color("67bff9"), Color("92db76"), Color("9d9e60"), Color("9edb76")]
 const VOXEL_DRIVER = preload("res://scripts/kart_voxel_driver.gd")
+const SMALL_TRIM_RANGE := 70.0
 const FUR_SHADER = preload("res://scripts/kart_fur.gdshader")
 const CAT_SCULPT = preload("res://scripts/kart_cat_sculpt.gd")
 const IRIS_SHADER = preload("res://scripts/kart_iris.gdshader")
@@ -784,6 +785,11 @@ static func _merge_static(parent: Node3D) -> void:
 		visible_mesh.material_override = group.material
 		visible_mesh.cast_shadow = group.shadow
 		visible_mesh.extra_cull_margin = 0.15
+		if group.shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_OFF:
+			# Small trim is a few pixels at this range; distant rivals keep only
+			# their large shapes. Hysteresis avoids boundary flicker.
+			visible_mesh.visibility_range_end = SMALL_TRIM_RANGE
+			visible_mesh.visibility_range_end_margin = 6.0
 		parent.add_child(visible_mesh)
 	for old: MeshInstance3D in originals:
 		parent.remove_child(old)

@@ -1,6 +1,7 @@
 extends Control
 ## Responsive, fully interactive clubhouse menus. Every label and button is native UI.
 signal start_race(character_index: int, course_index: int)
+signal start_cup(character_index: int)
 signal quit_requested
 signal settings_changed(values: Dictionary)
 
@@ -477,6 +478,11 @@ func show_tracks() -> void:
 		button.add_theme_font_size_override("font_size",22)
 		_difficulty_buttons.append(button)
 	_choose_difficulty(int(preferences.difficulty),false)
+	var cup := _button(_stage,"CUP ×3",Rect2(962,810,113,56),_launch_cup)
+	cup.name = "Cup"
+	cup.focus_mode = Control.FOCUS_NONE
+	cup.tooltip_text = "Race all three tracks for points"
+	cup.add_theme_font_size_override("font_size",22)
 	_button(_stage,"LET'S RACE!   →",Rect2(1085,797,317,73),_launch,true)
 
 func _choose_course(course: int) -> void:
@@ -510,6 +516,12 @@ func _launch() -> void:
 		return
 	screen = "loading"
 	start_race.emit(selected_character, selected_course)
+
+func _launch_cup() -> void:
+	if screen != "tracks":
+		return
+	screen = "loading"
+	start_cup.emit(selected_character)
 
 func _show_garage() -> void:
 	_reset("garage")

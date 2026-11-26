@@ -34,7 +34,12 @@ var _qa_drive_elapsed := 0.0
 var _qa_frame_times: Array[float] = []
 var _last_camera := Vector3.ZERO
 var _last_camera_aim := Vector3.ZERO
+const FULL_DETAIL_PIXEL_BUDGET := 2560.0 * 1440.0
 var _graphics_window_size := Vector2i.ZERO
+# Cup: one race on each track, points per finish. Keyed by character so a
+# rival keeps its total across races. Empty when racing a single track.
+var cup_points: Dictionary = {}
+var cup_race := -1
 var startup_splash: CanvasLayer
 
 func _ready() -> void:
@@ -58,7 +63,8 @@ func _ready() -> void:
 	menu.selected_character = preferences.selected_character
 	menu.selected_course = preferences.selected_course
 	menu.selected_mode = preferences.selected_mode
-	menu.start_race.connect(_start_race)
+	menu.start_race.connect(_start_single_race)
+	menu.start_cup.connect(_start_cup)
 	menu.quit_requested.connect(func(): get_tree().quit())
 	menu.settings_changed.connect(_settings_changed)
 	if _qa and _arg("--qa-screen") not in ["splash", "startup"]:
@@ -137,6 +143,25 @@ func _settings_changed(values: Dictionary) -> void:
 	sound.set_mix(float(preferences.values.master_volume), float(preferences.values.music_volume), float(preferences.values.effects_volume))
 	preferences.save_data()
 
+func _start_single_race(chosen_character: int, chosen_course: int) -> void:
+	cup_race = -1
+	cup_points.clear()
+	_start_race(chosen_character, chosen_course)
+
+func _start_cup(chosen_character: int) -> void:
+	cup_race = 0
+	cup_points.clear()
+	_start_race(chosen_character, 0)
+
+func _cup_standings() -> Array:
+	var order: Array = cup_points.keys()
+	# Ties go to the player, then to roster order, so the table is stable.
+	order.sort_custom(func(a: int, b: int) -> bool:
+		if int(cup_points[a]) != int(cup_points[b]): return int(cup_points[a]) > int(cup_points[b])
+		if a == character or b == character: return a == character
+		return a < b)
+	return order
+
 func _start_race(chosen_character: int, chosen_course: int) -> void:
 	if state == "loading": return
 	state = "loading"
@@ -198,8 +223,12 @@ func _apply_race_graphics() -> void:
 	var viewport := get_viewport()
 	_graphics_window_size = get_window().size
 	if quality == 2:
-		viewport.scaling_3d_mode = Viewport.SCALING_3D_MODE_BILINEAR
-		viewport.scaling_3d_scale = 1.0
+		# Full detail is native up to a 1440p pixel budget. Beyond that (4K and
+		# Retina-scaled windows) it upscales, since native 4K costs four times
+		# the shading for little visible gain at race speed.
+		var full_scale := minf(1.0, sqrt(FULL_DETAIL_PIXEL_BUDGET / maxf(1.0, float(_graphics_window_size.x) * float(_graphics_window_size.y))))
+		viewport.scaling_3d_mode = Viewport.SCALING_3D_MODE_BILINEAR if full_scale >= 1.0 else Viewport.SCALING_3D_MODE_FSR
+		viewport.scaling_3d_scale = full_scale
 	else:
 		viewport.scaling_3d_mode = Viewport.SCALING_3D_MODE_FSR
 		viewport.scaling_3d_scale = _race_render_scale(float(_graphics_window_size.x), quality)
@@ -365,6 +394,16 @@ func _show_results() -> void:
 	var title_text := "PAWS ON THE PODIUM!" if rank <= 3 else "WHAT A RIDE!"
 	if racer_mode == "minecraft": title_text = "A BLOCKBUSTER FINISH!" if rank <= 3 else "NICE RACING, BUILDER!"
 	var subtitle := "%s  ·  %s  ·  %s" % [Data.COURSES[course], Data.ordinal(rank).to_upper(), Data.time_string(seconds)]
+	var in_cup := cup_race >= 0
+	var cup_done := in_cup and cup_race >= 2
+	if in_cup:
+		for i in range(8):
+			var racer_character := int(sim.racers[sim.standings()[i]].character)
+			cup_points[racer_character] = int(cup_points.get(racer_character, 0)) + Data.CUP_POINTS[i]
+		var cup_place: int = _cup_standings().find(character) + 1
+		subtitle = "CUP RACE %d OF 3  ·  %s" % [cup_race + 1, subtitle]
+		if cup_done:
+			title_text = "CUP CHAMPION!" if cup_place == 1 else "CUP COMPLETE · %s PLACE" % Data.ordinal(cup_place).to_upper()
 	var box := _overlay_box(title_text, subtitle, 760)
 	if record: _add_label(box, "NEW PERSONAL BEST", 28, Color("ffdc64"))
 	var results := GridContainer.new()
@@ -382,11 +421,31 @@ func _show_results() -> void:
 		if id == 0: name_text = "You · " + name_text
 		_add_label(results, name_text, 22, color)
 		_add_label(results, Data.time_string(float(r.finish_time)) if float(r.finish_time) >= 0 else "On track", 22, color)
-	_add_button(box, "Race again", func(): _start_race(character, course), true)
+	if in_cup:
+		var table: Array = _cup_standings()
+		var lines: PackedStringArray = []
+		for i in range(mini(4, table.size())):
+			var who: int = table[i]
+			var who_name: String = Data.BLOCK_NAMES[who] if racer_mode == "minecraft" else Data.NAMES[who]
+			lines.append("%d. %s%s  %d" % [i + 1, "You · " if who == character else "", who_name, int(cup_points[who])])
+		var your_place: int = table.find(character)
+		if your_place >= 4: lines.append("%d. You  %d" % [your_place + 1, int(cup_points[character])])
+		_add_label(box, ("FINAL CUP POINTS    " if cup_done else "CUP POINTS    ") + "    ".join(lines), 20, Color("ffdc64"))
+		if cup_done:
+			_add_button(box, "New cup", func(): _start_cup(character), true)
+		else:
+			_add_button(box, "Next race · %s" % Data.COURSES[course + 1], _next_cup_race, true)
+	else:
+		_add_button(box, "Race again", func(): _start_race(character, course), true)
 	_add_button(box, "Choose track", _back_to_tracks)
 	_add_button(box, "Intro menu", _back_to_title)
 
+func _next_cup_race() -> void:
+	cup_race += 1
+	await _start_race(character, cup_race)
+
 func _back_to_tracks() -> void:
+	cup_race = -1
 	_clear_overlay()
 	_clear_race()
 	state = "menu"
@@ -395,6 +454,7 @@ func _back_to_tracks() -> void:
 	sound.play_theme(1)
 
 func _back_to_title() -> void:
+	cup_race = -1
 	_clear_overlay()
 	_clear_race()
 	state = "menu"
@@ -578,6 +638,7 @@ func _qa_run() -> void:
 		if screen == "results":
 			sim.racers[0].finish_time = 108.42
 			sim.racers[0].distance = float(world.length) * 3
+			if not _arg("--qa-cup").is_empty(): cup_race = clampi(int(_arg("--qa-cup")), 0, 2)
 			_show_results()
 		if screen == "drive":
 			for i in range(720): await get_tree().physics_frame

@@ -161,6 +161,30 @@ func run() -> void:
 	check(main.state == "countdown" and main.character == 4 and main.course == 1, "Rematch/restart builds a fresh race")
 	check(main.sim.race_time == 0 and main.sim.racers[0].item == "", "Restart clears race clock and items")
 	main._back_to_title()
+	# Cup: three races, points carried by character, champion screen at the end.
+	main.menu._start_cats()
+	main.menu.show_tracks()
+	check(main.menu._stage.get_node_or_null("Cup") != null, "Track Select offers the three-race cup")
+	main.menu._launch_cup()
+	for i in range(30):
+		if main.state == "countdown": break
+		await frame()
+	check(main.cup_race == 0 and main.course == 0, "Cup starts on the first track")
+	for race in range(3):
+		for id in range(8):
+			main.sim.racers[id].finish_time = 100.0 + id
+		main.sim.finished = true
+		main._show_results()
+		check(main.state == "results" and int(main.cup_points[main.character]) == 10 * (race + 1), "Cup race %d awards the winner ten points" % (race + 1))
+		if race < 2:
+			await main._next_cup_race()
+			check(main.course == race + 1 and main.state == "countdown", "Cup advances to track %d" % (race + 2))
+	var cup_total := 0
+	for points in main.cup_points.values(): cup_total += int(points)
+	check(cup_total == 39 * 3 and main._cup_standings()[0] == main.character, "Cup totals every finishing place and ranks the champion first")
+	main._back_to_tracks()
+	check(main.cup_race == -1, "Leaving the cup returns to single races")
+	main._back_to_title()
 	main.queue_free()
 	await frame(3)
 	print("INTEGRATION_TESTS ", checks, " checks; ", failures.size(), " failures")

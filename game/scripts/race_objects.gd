@@ -289,18 +289,19 @@ func update_visuals(dt: float, reduced: bool = false) -> void:
 			var right: Vector3 = _world.frame(float(r.distance)).x * 1.2
 			for side in [-1, 1]:
 				var spark: bool = bool(r.drifting) and float(r.drift) > .5
-				var color := Color("ffd05b") if spark and float(r.drift) >= 1.6 else Color("59cfff") if spark else Color("dfc7a3")
-				_spawn_particle(r.position + behind + right * side + Vector3.UP * .5, color, spark)
+				var color := Color("ffd05b") if spark and float(r.drift) >= 1.6 else Color("59cfff") if spark else (Color("9fb4ff") if _world.get("_course") == 2 else Color("dfc7a3"))
+				_spawn_particle(r.position + behind + right * side + Vector3.UP * .3, color, spark)
 	for i in range(particles.size()):
 		var p := particles[i]
 		if float(p.life) <= 0: continue
 		p.life = maxf(0, float(p.life) - dt)
 		p.position += p.velocity * dt
 		var amount := float(p.life)
-		var scale3 := (.22 if bool(p.spark) else 1.7 - amount * .9) * minf(1, amount * 5)
+		# Small wheel-height wisps: large puffs used to hide the karts.
+		var scale3 := (.22 if bool(p.spark) else .95 - amount * .5) * minf(1, amount * 5)
 		particle_mesh.multimesh.set_instance_transform(i, Transform3D(Basis.IDENTITY.scaled(Vector3.ONE * maxf(.0001, scale3)), p.position))
 		var c: Color = p.color
-		c.a = amount * .45
+		c.a = amount * (.45 if bool(p.spark) else .30)
 		particle_mesh.multimesh.set_instance_color(i, c)
 	for p in projectiles:
 		p.time = float(p.time) + dt
