@@ -4,11 +4,11 @@
 
 Adds a three-race cup with points and a champion screen, removes the fur strands that rendered as speckle in the chase view, adds a soft fur sheen, renames the blocky mode to Block Racers with original drivers, restores Desktop Dojo's graph paper as a mipmapped texture, shrinks dust, and caps Full detail at a 2560×1440 pixel budget.
 
-Triangles in the standard QA race frame fell from 1.98 M to 0.87 M on Desktop Dojo, 4.97 M to 2.98 M on Block Quarry and 1.95 M to 0.83 M on Glitch Core.
+Triangles in the standard QA race frame fell from 1.98 M to 0.87 M on Desktop Dojo, 4.97 M to 2.81 M on Block Quarry and 1.95 M to 0.83 M on Glitch Core.
 
 All **949 counted functional checks** passed across the seven source suites, with three temporal collision replays and zero violations. GitHub Actions now runs these on every push and builds the Universal Mac app.
 
-The 1.5.0 gallery in `screenshots/1.5.0/` was rendered with the Forward+ renderer on a software GPU. Not yet done for 1.5.0: the native release cases in `tools/test_release.py`, native Metal captures, a frame-rate measurement on a physical Mac, and notarization. See `docs/releases/1.5.0.md`.
+All 38 release cases also pass from source under the Forward+ renderer with `tools/test_render.py` on a software Vulkan driver. The 1.5.0 gallery in `screenshots/1.5.0/` was rendered with the Forward+ renderer on a software GPU. Not yet done for 1.5.0: the native release cases in `tools/test_release.py`, native Metal captures, a frame-rate measurement on a physical Mac, and notarization. See `docs/releases/1.5.0.md`.
 
 ## Doodle Rally — Cat Racers 1.4.1
 

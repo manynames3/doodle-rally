@@ -1402,6 +1402,11 @@ func _flush_batches() -> void:
 			instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		elif data["shape"] == "foliage_shadow":
 			instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_SHADOWS_ONLY
+		if data["shape"] == "needle_cluster":
+			# Needle tufts are fine detail on top of the branch cards, which stay.
+			# Tiles are 120 m wide, so a tile drops its tufts about two tiles away.
+			instance.visibility_range_end = 190.0
+			instance.visibility_range_end_margin = 15.0
 		add_child(instance)
 	_batches.clear()
 
