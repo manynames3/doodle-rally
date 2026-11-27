@@ -6,7 +6,7 @@ Adds a three-race cup with points and a champion screen, removes the fur strands
 
 Triangles in the standard QA race frame fell from 1.98 M to 0.87 M on Desktop Dojo, 4.97 M to 2.81 M on Block Quarry and 1.95 M to 0.83 M on Glitch Core.
 
-All **955 counted functional checks** passed across the seven source suites, with three temporal collision replays and zero violations. Smooth motion and Balanced now adapt their 3D scale to the machine during a race. GitHub Actions now runs these on every push and builds the Universal Mac app.
+All **955 counted functional checks** passed across the seven source suites, with three temporal collision replays and zero violations. Smooth motion and Balanced now adapt their 3D scale to the machine during a race. GitHub Actions now runs these on every push and builds the Universal Mac app, a Windows build and a Linux build; the Linux build passes the render smoke test and the Windows build launches and races on a hosted Windows machine under Direct3D 12.
 
 All 38 release cases also pass from source under the Forward+ renderer with `tools/test_render.py` on a software Vulkan driver. The 1.5.0 gallery in `screenshots/1.5.0/` was rendered with the Forward+ renderer on a software GPU. Not yet done for 1.5.0: the native release cases in `tools/test_release.py`, native Metal captures, a frame-rate measurement on a physical Mac, and notarization. See `docs/releases/1.5.0.md`.
 

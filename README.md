@@ -54,7 +54,7 @@ Each release keeps earlier screenshots and verification evidence in the versione
 
 ## Play the Mac build
 
-**Download:** get the latest Mac ZIP from the [Releases page](https://github.com/manynames3/doodle-rally/releases/latest). Releases are built automatically when a version tag is pushed. See [docs/RELEASING.md](docs/RELEASING.md) for the release and notarization steps.
+**Download:** get the latest Mac, Windows or Linux build from the [Releases page](https://github.com/manynames3/doodle-rally/releases/latest). Releases are built automatically when a version tag is pushed. On Windows, unzip and run `DoodleRally.exe`; on Linux, unpack the archive and run `DoodleRally.x86_64`. Both need a Direct3D 12 or Vulkan capable graphics card. See [docs/RELEASING.md](docs/RELEASING.md) for the release and notarization steps.
 
 Unzip **Doodle_Rally_1.5.0_Mac.zip** and open **Doodle Rally 1.5.0.app**, or open the app inside `builds/Doodle Rally 1.5.0.app`. Godot is not required to play. The bundle contains Apple Silicon and Intel executables. It is signed locally and is not Apple notarized, so macOS may ask you to choose **Open Anyway** in **System Settings → Privacy & Security** when the ZIP came from another Mac.
 
@@ -104,7 +104,7 @@ The title menu orders its choices as **Cat Racers**, **Block Racers**, **Garage*
 | Interface | Godot `Control`, `CanvasLayer`, `TextureRect`, 1024px transparent PNG turntable frames, `Label3D`, custom Kalam and Barlow fonts |
 | Audio | Godot `AudioStreamPlayer`, original Python/NumPy synthesized WAV music, engine, and 20 effects; independent master/music/effects levels; no external audio plugin |
 | Verification | Godot headless QA, Python 3 test/export helpers, native Mac smoke captures |
-| Distribution | Godot macOS export preset, locally signed `.app`, ZIP package |
+| Distribution | Godot export presets for macOS (Universal `.app`), Windows and Linux, built and smoke tested by GitHub Actions |
 
 No add ons, game account, network service, or .NET runtime is needed to run the game. The visual assets combine procedural geometry, supplied reference renderings, supplied individual core-pack sprites, retained rear-view cutouts, and generated menu art. Source and license notes are in [docs/ASSET_PROVENANCE.md](docs/ASSET_PROVENANCE.md).
 

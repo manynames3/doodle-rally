@@ -4,7 +4,7 @@
 
 1. Merge to `main` with the version already set in `game/project.godot`, `game/export_presets.cfg`, `game/scripts/main.gd`, `tools/export_mac.py` and `tools/test_release.py`.
 2. Push a tag such as `v1.5.0`.
-3. The **Mac build** workflow exports the Universal app, zips it and creates a GitHub Release with the ZIP attached.
+3. The **Mac build** workflow exports the Universal app and attaches its ZIP to the GitHub Release. The **Linux and Windows builds** workflow exports both, smoke tests them and attaches a `.tar.gz` and a `.zip` to the same release.
 
 Every push also runs the **Tests** workflow: the seven functional suites, the collision replays, and a Forward+ render smoke test on a software Vulkan driver.
 
