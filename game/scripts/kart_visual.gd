@@ -3,11 +3,11 @@ extends Node3D
 ## Every visible part is geometry; all eight drivers can be viewed from any angle.
 
 const PALETTE: Array[Color] = [Color("e52f37"), Color("168ff0"), Color("f159b0"), Color("ff921d"), Color("9446e8"), Color("48b73d"), Color("ffd044"), Color("efbf3c")]
-const COATS: Array[Color] = [Color("24252b"), Color("9296a4"), Color("ddd7d0"), Color("e99136"), Color("e6d2b3"), Color("c97931"), Color("29211e"), Color("85818b")]
+const COATS: Array[Color] = [Color("2b2624"), Color("9296a4"), Color("ddd7d0"), Color("e99136"), Color("e6d2b3"), Color("c97931"), Color("29211e"), Color("85818b")]
 const IRIS: Array[Color] = [Color("bdc45f"), Color("9edd83"), Color("63c9ed"), Color("b8d75f"), Color("67bff9"), Color("92db76"), Color("9d9e60"), Color("9edb76")]
 const VOXEL_DRIVER = preload("res://scripts/kart_voxel_driver.gd")
+const SMALL_TRIM_RANGE := 70.0
 const FUR_SHADER = preload("res://scripts/kart_fur.gdshader")
-const GROOM_SHADER = preload("res://scripts/kart_groom.gdshader")
 const CAT_SCULPT = preload("res://scripts/kart_cat_sculpt.gd")
 const IRIS_SHADER = preload("res://scripts/kart_iris.gdshader")
 static var _materials: Dictionary = {}
@@ -342,13 +342,6 @@ func _build_cat() -> void:
 	# One connected surface contains the brow, sockets, nose bridge, cheeks,
 	# paired muzzle and tapered jaw; markings follow this continuous sculpture.
 	_instance(_head,CAT_SCULPT.head(character_index == 6),Vector3.ZERO,Vector3.ONE,coat)
-	var groom: MeshInstance3D = _instance(_head,CAT_SCULPT.groom(character_index == 6),Vector3.ZERO,Vector3.ONE,_fur_material(base,pattern,true))
-	groom.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	# Subpixel hair drops out beyond30m; the solid sculpt, eyes, ears and
-	# halo remain opaque and visible. Hysteresis avoids boundary flicker.
-	groom.visibility_range_end = 30.0
-	groom.visibility_range_end_margin = 3.0
-	groom.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED
 	for side: float in [-1.0,1.0]:
 		var ear_coat: Material = _fur_material(Color("24201e")) if character_index == 6 else points
 		var outer_ear: MeshInstance3D = _instance(_head,CAT_SCULPT.ear(side,false),Vector3.ZERO,Vector3.ONE,ear_coat)
@@ -495,10 +488,10 @@ static func _stamp_polygon(surface: SurfaceTool, polygon: PackedVector2Array, fr
 
 
 func _voxel_crest(parent: Node3D, point: Vector3, size: float, mat: StandardMaterial3D) -> void:
-	for x: float in [-0.25, 0.25]:
-		_box(parent, point + Vector3(x * size, size * 0.23, 0), Vector3(size * 0.24, size * 0.24, 0.02), mat)
-	_box(parent, point + Vector3(0, -size * 0.1, 0), Vector3(size * 0.22, size * 0.36, 0.02), mat)
-	_box(parent, point + Vector3(0, -size * 0.3, 0), Vector3(size * 0.56, size * 0.19, 0.02), mat)
+	# Four tiles in a square: a plain building-block badge.
+	for x: float in [-0.19, 0.19]:
+		for y: float in [-0.19, 0.19]:
+			_box(parent, point + Vector3(x * size, y * size, 0), Vector3(size * 0.3, size * 0.3, 0.02), mat)
 
 
 static func _material(color: Color, roughness: float = 0.7, metallic: float = 0.0, emission: float = 0.0) -> StandardMaterial3D:
@@ -520,18 +513,17 @@ static func _material(color: Color, roughness: float = 0.7, metallic: float = 0.
 	return mat
 
 
-static func _fur_material(color: Color, pattern: int = 0, groomed: bool = false) -> ShaderMaterial:
-	var key: String = "fur_%s_%d_%s" % [color.to_html(), pattern, groomed]
+static func _fur_material(color: Color, pattern: int = 0) -> ShaderMaterial:
+	var key: String = "fur_%s_%d" % [color.to_html(), pattern]
 	if _materials.has(key):
 		return _materials[key]
 	var mat: ShaderMaterial = ShaderMaterial.new()
-	mat.shader = GROOM_SHADER if groomed else FUR_SHADER
+	mat.shader = FUR_SHADER
 	mat.set_shader_parameter("coat_color", color)
 	mat.set_shader_parameter("coat_pattern", pattern)
-	mat.set_shader_parameter("groom_geometry", groomed)
 	mat.set_shader_parameter("dark_color", Color("59474b") if pattern == 3 else color.darkened(0.58))
 	mat.set_shader_parameter("cream_color", Color("d9d3c7"))
-	if not groomed and ResourceLoader.exists("res://assets/characters/fur_microdetail.png"):
+	if ResourceLoader.exists("res://assets/characters/fur_microdetail.png"):
 		mat.set_shader_parameter("fur_texture",load("res://assets/characters/fur_microdetail.png"))
 		mat.set_shader_parameter("use_fur_texture",true)
 	_materials[key] = mat
@@ -556,7 +548,32 @@ static func _instance(parent: Node3D, mesh: Mesh, point: Vector3, dimensions: Ve
 	var physical_size: Vector3 = mesh.get_aabb().size * dimensions.abs()
 	if physical_size.x * physical_size.y * physical_size.z < 0.08 or mat is ShaderMaterial and mat.shader == IRIS_SHADER:
 		result.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		# Each kart has about eighty rivet- and lamp-sized spheres and sixty
+		# thin rods. At that size a coarse mesh is indistinguishable.
+		if mesh == _meshes.get("sphere"):
+			result.mesh = _small_mesh("sphere_small")
+		elif mesh == _meshes.get("cylinder"):
+			result.mesh = _small_mesh("cylinder_small")
 	return result
+
+
+static func _small_mesh(key: String) -> Mesh:
+	if not _meshes.has(key):
+		if key == "sphere_small":
+			var sphere: SphereMesh = SphereMesh.new()
+			sphere.radius = 0.5
+			sphere.height = 1.0
+			sphere.radial_segments = 12
+			sphere.rings = 6
+			_meshes[key] = sphere
+		else:
+			var rod: CylinderMesh = CylinderMesh.new()
+			rod.top_radius = 1.0
+			rod.bottom_radius = 1.0
+			rod.height = 1.0
+			rod.radial_segments = 8
+			_meshes[key] = rod
+	return _meshes[key]
 
 
 static func _sphere(parent: Node3D, point: Vector3, dimensions: Vector3, mat: Material) -> MeshInstance3D:
@@ -575,8 +592,8 @@ static func _fur_sphere(parent: Node3D, point: Vector3, dimensions: Vector3, mat
 		var base: SphereMesh = SphereMesh.new()
 		base.radius = 0.5
 		base.height = 1.0
-		base.radial_segments = 48
-		base.rings = 28
+		base.radial_segments = 32
+		base.rings = 18
 		var arrays: Array = base.get_mesh_arrays()
 		var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
 		for i: int in range(vertices.size()):
@@ -661,9 +678,9 @@ static func _rounded_box(parent: Node3D, point: Vector3, dimensions: Vector3, ma
 	var key: String = "rounded_box_%.3f" % bevel
 	if not _meshes.has(key):
 		var base: BoxMesh = BoxMesh.new()
-		base.subdivide_width = 8
-		base.subdivide_height = 8
-		base.subdivide_depth = 8
+		base.subdivide_width = 5
+		base.subdivide_height = 5
+		base.subdivide_depth = 5
 		var arrays: Array = base.get_mesh_arrays()
 		var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
 		var normals: PackedVector3Array = arrays[Mesh.ARRAY_NORMAL]
@@ -694,7 +711,7 @@ static func _cylinder(parent: Node3D, point: Vector3, radius: float, length: flo
 		mesh.top_radius = 1.0
 		mesh.bottom_radius = 1.0
 		mesh.height = 1.0
-		mesh.radial_segments = 20
+		mesh.radial_segments = 16
 		_meshes["cylinder"] = mesh
 	return _instance(parent, _meshes["cylinder"], point, Vector3(radius, length, radius), mat)
 
@@ -724,8 +741,8 @@ static func _torus(parent: Node3D, point: Vector3, inner: float, outer: float, m
 		var mesh: TorusMesh = TorusMesh.new()
 		mesh.inner_radius = inner
 		mesh.outer_radius = outer
-		mesh.rings = 36
-		mesh.ring_segments = 18
+		mesh.rings = 24
+		mesh.ring_segments = 12
 		_meshes[key] = mesh
 	return _instance(parent, _meshes[key], point, Vector3.ONE, mat)
 
@@ -770,8 +787,8 @@ static func _merge_static(parent: Node3D) -> void:
 	for child: Node in parent.get_children():
 		if child is MeshInstance3D and child.mesh != null:
 			var part: MeshInstance3D = child
-			# Groom retains its own distance hysteresis. Everything else batches,
-			# including small trim with shadow casting disabled.
+			# Parts with their own distance range stay separate. Everything else
+			# batches, including small trim with shadow casting disabled.
 			if part.visibility_range_end > 0.0 or part.visibility_range_begin > 0.0:
 				continue
 			var mat: Material = part.material_override
@@ -793,6 +810,11 @@ static func _merge_static(parent: Node3D) -> void:
 		visible_mesh.material_override = group.material
 		visible_mesh.cast_shadow = group.shadow
 		visible_mesh.extra_cull_margin = 0.15
+		if group.shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_OFF:
+			# Small trim is a few pixels at this range; distant rivals keep only
+			# their large shapes. Hysteresis avoids boundary flicker.
+			visible_mesh.visibility_range_end = SMALL_TRIM_RANGE
+			visible_mesh.visibility_range_end_margin = 6.0
 		parent.add_child(visible_mesh)
 	for old: MeshInstance3D in originals:
 		parent.remove_child(old)

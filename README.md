@@ -1,32 +1,36 @@
 # Doodle Rally — Cat Racers
 
-**Doodle Rally** is a standalone single player 3D kart racer for macOS. Pick a cat, choose a course, and race seven rivals through a paper craft studio, an alpine quarry, or a neon block world. The game keeps the playful hand painted feel of the supplied Cat Racers references while using a real time 3D chase camera, physics based kart contact, items, drifting, boosts, and a second Minecraft Racing roster.
+**Doodle Rally** is a standalone single player 3D kart racer for macOS. Pick a cat, choose a course, and race seven rivals through a paper craft studio, an alpine quarry, or a neon block world. The game keeps the playful hand painted feel of the supplied Cat Racers references while using a real time 3D chase camera, physics based kart contact, items, drifting, boosts, and a second blocky Block Racers roster.
 
-The current source and Universal Mac build are version **1.4.1**. The original Doodle Rumble project is separate and is not modified.
+The current source and Universal Mac build are version **1.5.0**. The gallery below is from 1.5.0, rendered with the game's own Forward+ renderer on a software GPU; see the [1.5.0 notes](docs/releases/1.5.0.md). The original Doodle Rumble project is separate and is not modified.
 
 ## Screenshots
 
-The visual review gallery is in [docs/SCREENSHOTS.md](docs/SCREENSHOTS.md). These captures come from the native QA build at 1280×800.
+The visual review gallery is in [docs/SCREENSHOTS.md](docs/SCREENSHOTS.md). All captures are 1280×800.
 
 <table>
   <tr>
-    <td><img src="screenshots/1.4.1/intro.png" alt="Title menu with Cat Racers and Minecraft Racing as the first two choices" width="320"></td>
-    <td><img src="screenshots/1.4.1/character_select.png" alt="Character Select with the selected 16-view Zizi artwork" width="320"></td>
-    <td><img src="screenshots/1.4.1/track_select.png" alt="Track Select with Easy, Medium and Hard" width="320"></td>
+    <td><img src="screenshots/1.5.0/intro.png" alt="Title menu with Cat Racers and Block Racers as the first two choices" width="320"></td>
+    <td><img src="screenshots/1.5.0/character_select.png" alt="Character Select with the selected 16-view Zizi artwork" width="320"></td>
+    <td><img src="screenshots/1.5.0/track_select.png" alt="Track Select with Easy, Medium, Hard and the three-race Cup" width="320"></td>
   </tr>
   <tr>
-    <td><img src="screenshots/1.4.1/quarry_race.png" alt="Block Quarry race" width="320"></td>
-    <td><img src="screenshots/1.4.1/desktop_race.png" alt="Desktop Dojo race with the revised studio world" width="320"></td>
-    <td><img src="screenshots/1.4.1/glitch_race.png" alt="Glitch Core race with neon city vista" width="320"></td>
+    <td><img src="screenshots/1.5.0/quarry_race.png" alt="Block Quarry race" width="320"></td>
+    <td><img src="screenshots/1.5.0/desktop_race.png" alt="Desktop Dojo race on the graph-paper desk" width="320"></td>
+    <td><img src="screenshots/1.5.0/glitch_race.png" alt="Glitch Core race with neon city vista" width="320"></td>
   </tr>
   <tr>
-    <td><img src="screenshots/1.4.1/purrquake_race.png" alt="Purrquake expanding close-range shockwave" width="320"></td>
-    <td><img src="screenshots/1.4.1/pawfect_parry_race.png" alt="Pawfect Parry timing window around the kart" width="320"></td>
-    <td><img src="screenshots/1.4.1/feather_fan_race.png" alt="Feather Fan leaves three hop-over hazards" width="320"></td>
+    <td><img src="screenshots/1.5.0/purrquake_race.png" alt="Purrquake expanding close-range shockwave" width="320"></td>
+    <td><img src="screenshots/1.5.0/pawfect_parry_race.png" alt="Pawfect Parry timing window around the kart" width="320"></td>
+    <td><img src="screenshots/1.5.0/feather_fan_race.png" alt="Feather Fan leaves three hop-over hazards" width="320"></td>
   </tr>
   <tr>
-    <td><img src="screenshots/1.4.1/treat_trail_race.png" alt="Treat Trail bait snack lures rivals into a slowdown" width="320"></td>
-    <td><img src="screenshots/1.4.1/settings.png" alt="Options with separate master, music, and sound effects controls" width="320"></td>
+    <td><img src="screenshots/1.5.0/treat_trail_race.png" alt="Treat Trail bait snack lures rivals into a slowdown" width="320"></td>
+    <td><img src="screenshots/1.5.0/settings.png" alt="Options with separate master, music, and sound effects controls" width="320"></td>
+  </tr>
+  <tr>
+    <td><img src="screenshots/1.5.0/block_racers_characters.png" alt="Block Racers character select with the eight original blocky drivers" width="320"></td>
+    <td><img src="screenshots/1.5.0/cup_results.png" alt="Cup results after race one with the points table and next race" width="320"></td>
   </tr>
 </table>
 
@@ -44,20 +48,24 @@ The visual review gallery is in [docs/SCREENSHOTS.md](docs/SCREENSHOTS.md). Thes
 | **1.3.8 · A simpler start** | Removed duplicate Character Select and Track Select shortcuts from the title menu. Choose Cat Racers or Minecraft Racing first, then pick a racer and course in that mode's flow. |
 | **1.4.0 · A clearer start, smarter items** | Put Cat Racers and Minecraft Racing first, followed by Garage and Options. Added Purrquake, the forward-spreading Feather Fan, Treat Trail's AI-baiting sniff trap, and the timing-based Pawfect Parry for more tactical choices and counterplay. |
 | **1.4.1 · A livelier soundscape** | Replaced the shared music recipe with three course-specific 64-bar arrangements, rebuilt race cues with distinct synthesized timbres, added a responsive layered kart engine, crossfaded course changes, and separated the sound-effects slider from music volume. |
+| **1.5.0 · Cup and a cleaner race view** | Added a three-race cup with points and a champion screen. Removed the fur strands that rendered as speckle, added a soft fur sheen, renamed the blocky mode to Block Racers with original drivers, cut scene triangles by 43 to 57 percent, restored Desktop Dojo's graph paper as a texture, shrank dust, and automated tests and Mac builds. |
 
 Each release keeps earlier screenshots and verification evidence in the versioned folders under [`screenshots/`](screenshots/) and [`docs/test-results/`](docs/test-results/). The current build record is [BUILD_STATUS.md](BUILD_STATUS.md); release notes are in [`docs/releases/`](docs/releases/).
 
 ## Play the Mac build
 
-Unzip **Doodle_Rally_1.4.1_Mac.zip** and open **Doodle Rally 1.4.1.app**, or open the app inside `builds/Doodle Rally 1.4.1.app`. Godot is not required to play. The bundle contains Apple Silicon and Intel executables. It is signed locally and is not Apple notarized, so macOS may ask you to choose **Open Anyway** in **System Settings → Privacy & Security** when the ZIP came from another Mac.
+**Download:** get the latest Mac, Windows or Linux build from the [Releases page](https://github.com/manynames3/doodle-rally/releases/latest). Releases are built automatically when a version tag is pushed. On Windows, unzip and run `DoodleRally.exe`; on Linux, unpack the archive and run `DoodleRally.x86_64`. Both need a Direct3D 12 or Vulkan capable graphics card. See [docs/RELEASING.md](docs/RELEASING.md) for the release and notarization steps.
 
-The title menu orders its choices as **Cat Racers**, **Minecraft Racing**, **Garage**, and **Options**. Each mode opens its racer selection, followed by course selection and **Easy**, **Medium**, or **Hard** difficulty. Garage is a secondary animated racer showroom with stats and a shortcut to course choice; the mode flows remain the full racer-selection route. Easy keeps the previous default rival pace; Medium and Hard raise the competition. The BenJam Games logo appears briefly when the app launches and can be skipped with any key, click, or controller button.
+Unzip **Doodle_Rally_1.5.0_Mac.zip** and open **Doodle Rally 1.5.0.app**, or open the app inside `builds/Doodle Rally 1.5.0.app`. Godot is not required to play. The bundle contains Apple Silicon and Intel executables. It is signed locally and is not Apple notarized, so macOS may ask you to choose **Open Anyway** in **System Settings → Privacy & Security** when the ZIP came from another Mac.
+
+The title menu orders its choices as **Cat Racers**, **Block Racers**, **Garage**, and **Options**. Each mode opens its racer selection, followed by course selection and **Easy**, **Medium**, or **Hard** difficulty. Garage is a secondary animated racer showroom with stats and a shortcut to course choice; the mode flows remain the full racer-selection route. Easy keeps the previous default rival pace; Medium and Hard raise the competition. The BenJam Games logo appears briefly when the app launches and can be skipped with any key, click, or controller button.
 
 ## What is in the game
 
 - Eight distinct cats: **Zizi** (the tuxedo hero with a white chin, chest, and paws), Luna, Milo, Biscuit, **Mochi**, Pumpkin, **Mak-Doong** (the calico with a golden halo), and Nori. Zizi and Mak-Doong sit together in the middle of Character Select. Their names, colors, patterns, portraits, rear views, Garage previews, standings, and results stay consistent.
-- Eight Minecraft style drivers: Steve, Alex, Creeper, Enderman, Zombie, Skeleton, Pig, and Villager. Their block geometry and pixel faces are original procedural game assets.
-- Three courses: **Desktop Dojo**, **Block Quarry**, and **Glitch Core**. Each has its own surface, scenery, lighting, panorama, props, and soundtrack. Minecraft Racing swaps in block scenery and drivers on every course.
+- Eight blocky Block Racers drivers: Cubby, Pixel, Mossy, Shade, Grumble, Rattle, Oink, and Barter. Their block geometry and pixel faces are original procedural game assets.
+- Three courses: **Desktop Dojo**, **Block Quarry**, and **Glitch Core**. Each has its own surface, scenery, lighting, panorama, props, and soundtrack. Block Racers swaps in block scenery and drivers on every course.
+- A three-race **Cup** from Track Select: one race on each course, points for every finishing place, a points table between races and a champion screen.
 - Three lap races with seven AI rivals, selectable **Easy**, **Medium**, and **Hard** rival pacing, acceleration, braking, steering, drift hops, charged mini turbos, refillable boost, track boost pads, item boxes, barriers, minimap, speedometer, results, restart, and a Garage preview.
 - The supplied Cat Racers core pack provides transparent selection sprites, portraits, animation frames, and separate effects for all eight cats. The Garage cycles each racer’s idle, drive, boost, and brake frames with dust, flame, and smoke on separate layers. Racing remains full 3D.
 - Character Select uses one cat-and-kart image per racer. The focused racer swaps through 16 supplied 1024×1024 transparent views in order, completing one stepped 2D turntable loop every six seconds. It does not compress, crossfade, or overlay frames; Reduced Motion holds the front view. Source frames are in `game/assets/characters/turntable/`.
@@ -65,8 +73,8 @@ The title menu orders its choices as **Cat Racers**, **Minecraft Racing**, **Gar
 - Eight tactical items reward different decisions: Flying Fish tags the nearest rival ahead; Yarn Ball is a hop-over road trap tossed to the side; Catnip Turbo gives a direct burst; Bubble Shield absorbs the next hit; Purrquake sends two expanding road-level pulses that lightly slow nearby rivals within 26 metres; Feather Fan launches three drifting hop-over feathers in a forward spread; Treat Trail drops a paw-shaped lure that draws unshielded AI rivals off-line and slows them while sniffing; and Pawfect Parry opens a brief timing window that reflects Flying Fish and Yarn Ball back at the attacker. Hop beats the road traps, Bubble Shield is the dependable defense, and Pawfect Parry rewards a well-timed counter. Each item has its own HUD mark, 3D effect, sound cue, and nearby road traps also show a distinct minimap warning pin so traffic cannot hide them. The game saves preferences and personal bests by course, difficulty, and roster.
 - Three course-specific soundtracks now use distinct musical palettes: playful wooden percussion and mallets for Desktop Dojo, orchestral woodwind and brass colors for Block Quarry, and a driving neon synth pulse for Glitch Core. Each arrangement evolves over roughly two minutes, matches average loudness across courses, and rejoins its opening with a checked loop seam. Course changes fade between tracks, and race events briefly duck the music so pickups, hits, and item plays read clearly.
 - Race sound effects use distinct layered cues for pickups, boosts, drift, impacts, laps, items, and each special ability. A textured engine loop rises with kart speed. Options has separate Master, Music, and Sound Effects levels so players can balance the mix.
-- **Smooth motion** is the default graphics mode. It keeps the interface at full resolution while scaling the 3D race scene, reducing shadow work and grouping nearby scenery for culling. **Balanced** and **Full detail** are available in Options if you prefer a sharper scene over frame rate.
-- Desktop Dojo keeps the paper tabletop above the wooden deck by a small fixed gap. The surfaces previously shared the same top plane and could z-fight as the chase camera moved; the paper-grid strips that shimmered at shallow angles remain removed.
+- **Smooth motion** is the default graphics mode. It keeps the interface at full resolution while scaling the 3D race scene, reducing shadow work and grouping nearby scenery for culling. While racing, Smooth motion and Balanced adapt once a second: they sharpen toward native resolution when frames stay on budget and soften when frames run long, then settle. **Full detail** holds a fixed resolution with ambient shading and four shadow splits.
+- Desktop Dojo keeps the paper tabletop above the wooden deck by a small fixed gap. The surfaces previously shared the same top plane and could z-fight as the chase camera moved; the thin paper-grid strips that shimmered at shallow angles are replaced by a mipmapped graph-paper texture.
 
 ## Controls
 
@@ -96,7 +104,7 @@ The title menu orders its choices as **Cat Racers**, **Minecraft Racing**, **Gar
 | Interface | Godot `Control`, `CanvasLayer`, `TextureRect`, 1024px transparent PNG turntable frames, `Label3D`, custom Kalam and Barlow fonts |
 | Audio | Godot `AudioStreamPlayer`, original Python/NumPy synthesized WAV music, engine, and 20 effects; independent master/music/effects levels; no external audio plugin |
 | Verification | Godot headless QA, Python 3 test/export helpers, native Mac smoke captures |
-| Distribution | Godot macOS export preset, locally signed `.app`, ZIP package |
+| Distribution | Godot export presets for macOS (Universal `.app`), Windows and Linux, built and smoke tested by GitHub Actions |
 
 No add ons, game account, network service, or .NET runtime is needed to run the game. The visual assets combine procedural geometry, supplied reference renderings, supplied individual core-pack sprites, retained rear-view cutouts, and generated menu art. Source and license notes are in [docs/ASSET_PROVENANCE.md](docs/ASSET_PROVENANCE.md).
 
@@ -110,6 +118,6 @@ python3 tools/export_mac.py --godot /path/to/Godot.app/Contents/MacOS/Godot --te
 python3 tools/test_release.py
 ```
 
-`tools/test.py` runs simulation, menu, roster, integration, world, audio, and collision checks. `game/tests/benchmark_difficulty.gd` replays all three difficulty levels on each course. `tools/test_release.py` launches the packaged app through the title, every selected-cat preview, track, Garage, race items, drive, and results screens and records fresh screenshots. The current verification record is [BUILD_STATUS.md](BUILD_STATUS.md), with release notes in [docs/releases/1.4.1.md](docs/releases/1.4.1.md).
+`tools/test.py` runs simulation, menu, roster, integration, world, audio, and collision checks. `tools/test_render.py` runs the release case list from source under the Forward+ renderer on Linux, which works without a GPU using Mesa lavapipe. `game/tests/benchmark_difficulty.gd` replays all three difficulty levels on each course. `tools/test_release.py` launches the packaged app through the title, every selected-cat preview, track, Garage, race items, drive, and results screens and records fresh screenshots. The current verification record is [BUILD_STATUS.md](BUILD_STATUS.md), with release notes in [docs/releases/1.4.1.md](docs/releases/1.4.1.md).
 
 Preferences are stored in Godot's separate **Doodle Rally Cat Racers** application data folder as `rally_3d.cfg`. The app does not read or change the original game's settings. Generated app bundles and temporary telemetry are excluded from the source repository.

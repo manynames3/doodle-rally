@@ -6,7 +6,7 @@ import shutil
 import subprocess
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "1.4.1"
+VERSION = "1.5.0"
 parser = argparse.ArgumentParser()
 parser.add_argument("--godot", default=shutil.which("godot"), help="Path to standard Godot executable")
 parser.add_argument("--template", help="Optional path to matching macos.zip export template")
@@ -15,6 +15,7 @@ if not args.godot:
     parser.error("Pass --godot /path/to/Godot.app/Contents/MacOS/Godot")
 preset = ROOT / "game/export_presets.cfg"
 original = preset.read_text()
+(ROOT / "builds").mkdir(exist_ok=True)  # absent on a fresh clone; Godot will not create it
 try:
     if args.template:
         template = str(Path(args.template).resolve())

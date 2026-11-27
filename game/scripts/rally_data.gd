@@ -8,7 +8,9 @@ const TAGLINES := ["Draw. Race. Repeat.", "Climb higher. Go further.", "Warp. Dr
 const TOP_SPEED := [38.0, 37.2, 40.0, 38.8, 37.6, 38.2, 37.8, 38.4]
 const ACCEL := [15.0, 15.5, 17.2, 13.0, 15.0, 17.0, 16.0, 15.4]
 const HANDLING := [1.0, 1.08, 0.94, 0.88, 1.22, 1.0, 1.18, 1.15]
-const BLOCK_NAMES := ["Steve", "Alex", "Creeper", "Enderman", "Zombie", "Skeleton", "Pig", "Villager"]
+# Points for finishing 1st to 8th in each race of the three-track cup.
+const CUP_POINTS: Array[int] = [10, 8, 6, 5, 4, 3, 2, 1]
+const BLOCK_NAMES := ["Cubby", "Pixel", "Mossy", "Shade", "Grumble", "Rattle", "Oink", "Barter"]
 
 static func time_string(seconds: float) -> String:
 	if seconds < 0: return "—:—.—"

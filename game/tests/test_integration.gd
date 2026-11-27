@@ -84,6 +84,24 @@ func run() -> void:
 	check(main.state == "countdown" and main.racer_mode == "minecraft" and main.sim.difficulty == 4, "Minecraft launch carries selected Hard pace into simulation")
 	check(main.get_viewport().scaling_3d_mode == Viewport.SCALING_3D_MODE_FSR and main.get_viewport().scaling_3d_scale < 1.0, "Smooth graphics reduce only the 3D race resolution")
 	check(main._race_render_scale(1920.0, 0) < main._race_render_scale(1280.0, 0), "Smooth graphics scale down for a larger race window")
+	var adapt: Dictionary = main.adapt_start(0.85, 0.5)
+	for second in range(3): adapt = main.adapt_step(adapt, 16.7)
+	check(is_equal_approx(float(adapt.scale), 0.90), "Three calm seconds sharpen the 3D scale one step")
+	adapt = main.adapt_step(adapt, 21.0)
+	check(is_equal_approx(float(adapt.scale), 0.85) and is_equal_approx(float(adapt.ceiling), 0.85), "A sharper step that runs long is undone and becomes the ceiling")
+	for second in range(8): adapt = main.adapt_step(adapt, 16.7)
+	check(is_equal_approx(float(adapt.scale), 0.85), "The learned ceiling stops repeated probing")
+	adapt = main.adapt_start(0.85, 0.5)
+	adapt = main.adapt_step(adapt, 24.0)
+	adapt = main.adapt_step(adapt, 24.0)
+	check(is_equal_approx(float(adapt.scale), 0.85) and is_equal_approx(float(adapt.floor), 0.85), "Softening that does not shorten frames is undone and stops")
+	for second in range(6): adapt = main.adapt_step(adapt, 24.0)
+	check(is_equal_approx(float(adapt.scale), 0.85), "A processor-bound machine keeps its preset sharpness")
+	adapt = main.adapt_start(0.6, 0.5)
+	adapt = main.adapt_step(adapt, 30.0)
+	adapt = main.adapt_step(adapt, 22.0)
+	adapt = main.adapt_step(adapt, 20.0)
+	check(is_equal_approx(float(adapt.scale), 0.5), "Softening that helps continues, never below the preset minimum")
 	check(main.karts.size() == 8 and main.sim.racers.size() == 8, "Eight actual 3D karts and racers")
 	main.countdown = .04
 	await key(KEY_W, true)
@@ -160,6 +178,30 @@ func run() -> void:
 	await main._start_race(4, 1)
 	check(main.state == "countdown" and main.character == 4 and main.course == 1, "Rematch/restart builds a fresh race")
 	check(main.sim.race_time == 0 and main.sim.racers[0].item == "", "Restart clears race clock and items")
+	main._back_to_title()
+	# Cup: three races, points carried by character, champion screen at the end.
+	main.menu._start_cats()
+	main.menu.show_tracks()
+	check(main.menu._stage.get_node_or_null("Cup") != null, "Track Select offers the three-race cup")
+	main.menu._launch_cup()
+	for i in range(30):
+		if main.state == "countdown": break
+		await frame()
+	check(main.cup_race == 0 and main.course == 0, "Cup starts on the first track")
+	for race in range(3):
+		for id in range(8):
+			main.sim.racers[id].finish_time = 100.0 + id
+		main.sim.finished = true
+		main._show_results()
+		check(main.state == "results" and int(main.cup_points[main.character]) == 10 * (race + 1), "Cup race %d awards the winner ten points" % (race + 1))
+		if race < 2:
+			await main._next_cup_race()
+			check(main.course == race + 1 and main.state == "countdown", "Cup advances to track %d" % (race + 2))
+	var cup_total := 0
+	for points in main.cup_points.values(): cup_total += int(points)
+	check(cup_total == 39 * 3 and main._cup_standings()[0] == main.character, "Cup totals every finishing place and ranks the champion first")
+	main._back_to_tracks()
+	check(main.cup_race == -1, "Leaving the cup returns to single races")
 	main._back_to_title()
 	main.queue_free()
 	await frame(3)

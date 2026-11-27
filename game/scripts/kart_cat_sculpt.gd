@@ -1,5 +1,5 @@
 extends RefCounted
-## Continuous facial sculpture and groomed opaque microgeometry.
+## Continuous facial sculpture.
 static var _cache: Dictionary = {}
 
 static func face_point(normal: Vector3, longhair: bool = false) -> Vector3:
@@ -30,8 +30,8 @@ static func head(longhair: bool = false) -> ArrayMesh:
 	if _cache.has(key): return _cache[key]
 	var surface: SurfaceTool = SurfaceTool.new()
 	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
-	var latitude: int = 74
-	var longitude: int = 144
+	var latitude: int = 46
+	var longitude: int = 92
 	for j: int in range(latitude):
 		for i: int in range(longitude):
 			for index: int in [0, 2, 1, 1, 2, 3]:
@@ -52,11 +52,11 @@ static func lens() -> ArrayMesh:
 	if _cache.has("lens"): return _cache.lens
 	var surface: SurfaceTool = SurfaceTool.new()
 	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
-	for ring: int in range(18):
-		for i: int in range(80):
+	for ring: int in range(10):
+		for i: int in range(40):
 			for corner: int in [0, 2, 1, 1, 2, 3]:
-				var r: float = float(ring + corner / 2) / 18.0
-				var a: float = (i + corner % 2) * TAU / 80.0
+				var r: float = float(ring + corner / 2) / 10.0
+				var a: float = (i + corner % 2) * TAU / 40.0
 				var x: float = cos(a) * r
 				var y: float = sin(a) * r
 				# A shallow lens reads as a soft illustrated iris instead of a polished
@@ -77,7 +77,7 @@ static func ear(side: float, inner: bool = false) -> ArrayMesh:
 	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
 	# One cupped ear. The skin is a material region on the exact same surface,
 	# bounded by an integral thick furry rim; there is no separate inset plane.
-	var steps: int = 32
+	var steps: int = 20
 	for depth_side: int in [-1, 1]:
 		for j: int in range(steps):
 			for i: int in range(steps):
@@ -116,49 +116,6 @@ static func ear(side: float, inner: bool = false) -> ArrayMesh:
 	_cache[key] = surface.commit()
 	return _cache[key]
 
-static func groom(longhair: bool = false) -> ArrayMesh:
-	var key: String = "groom_%s" % longhair
-	if _cache.has(key): return _cache[key]
-	var surface: SurfaceTool = SurfaceTool.new()
-	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
-	var count: int = 2200 if longhair else 1600
-	var random: RandomNumberGenerator = RandomNumberGenerator.new()
-	random.seed = 5207
-	for i: int in range(count):
-		var ny: float = random.randf_range(-1.0,1.0)
-		var circle: float = sqrt(maxf(0.0, 1.0-ny*ny))
-		var a: float = random.randf_range(0.0,TAU)
-		var normal: Vector3 = Vector3(cos(a)*circle,ny,sin(a)*circle)
-		var start: Vector3 = face_point(normal,longhair)
-		# The eye/lip regions are groomed by the underlying short-fur texture.
-		var front: bool = normal.z < -0.40
-		if front and absf(start.x) < 0.64 and start.y > 2.35 and start.y < 2.98: continue
-		var desired_flow: Vector3 = Vector3(signf(normal.x)*0.55+random.randf_range(-0.25,0.25),-0.75,0.10+random.randf_range(-0.2,0.2))
-		var flow: Vector3 = (desired_flow - normal * desired_flow.dot(normal)).normalized()
-		if flow.length_squared() < 0.1: flow = Vector3.RIGHT
-		var length: float = (0.045 if longhair else 0.020) + random.randf()*(0.090 if longhair else 0.043)
-		if start.y > 3.11: length *= 0.55
-		var width: float = 0.0013 + random.randf()*0.0017
-		var cross: Vector3 = normal.cross(flow).normalized()
-		var path: Array[Vector3] = []
-		for j: int in range(4):
-			var t: float = float(j)/3.0
-			path.append(start + normal*(0.003 + sin(t*PI)*length*0.16) + flow*t*length)
-		for j: int in range(3):
-			for face: int in range(3):
-				for corner: int in [0,1,2,1,3,2]:
-					var segment: int = j + corner / 2
-					var t: float = float(segment)/3.0
-					var theta: float = (face + corner%2)*TAU/3.0
-					var r: float = width*(1.0-t)
-					var p: Vector3 = path[segment] + cross*cos(theta)*r + normal*sin(theta)*r
-					surface.set_uv(Vector2(float(face+corner%2)/3.0,t))
-					surface.add_vertex(p)
-	surface.index()
-	surface.generate_normals()
-	_cache[key] = surface.commit()
-	return _cache[key]
-
 static func curved_line(points: Array[Vector3], radius: float) -> ArrayMesh:
 	var path: Curve3D = Curve3D.new()
 	for i: int in range(points.size()):
@@ -187,7 +144,7 @@ static func tire() -> ArrayMesh:
 	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
 	var profile: Array[Vector2] = [Vector2(-0.267,0.33),Vector2(-0.261,0.37),Vector2(-0.248,0.421),Vector2(-0.222,0.464),Vector2(-0.18,0.489),Vector2(-0.105,0.502),Vector2(0.105,0.502),Vector2(0.18,0.489),Vector2(0.222,0.464),Vector2(0.248,0.421),Vector2(0.261,0.37),Vector2(0.267,0.33)]
 	for ring: int in range(profile.size()-1):
-		for segment: int in range(72):
+		for segment: int in range(44):
 			for corner: int in [0,2,1,1,2,3]:
 				var p: Vector2 = profile[ring+corner/2]
 				var a: float = (segment+corner%2)*TAU/72.0

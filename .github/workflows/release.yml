@@ -1,0 +1,79 @@
+name: Mac build
+# Builds the Universal Mac app. A tag such as v1.4.2 also publishes it as a
+# GitHub Release. The app is ad-hoc signed unless the Developer ID secrets in
+# docs/RELEASING.md are set, in which case it is signed, notarized and stapled.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+  pull_request:
+    paths: [".github/workflows/release.yml", "tools/export_mac.py", "game/export_presets.cfg"]
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: macos-latest
+    timeout-minutes: 45
+    env:
+      # True only when the Developer ID secrets in docs/RELEASING.md are set.
+      HAS_SIGNING: ${{ secrets.MACOS_CERT_P12 != '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download Godot 4.7.2 and export templates
+        run: |
+          base=https://github.com/godotengine/godot/releases/download/4.7.2-stable
+          curl -sSL -o godot.zip "$base/Godot_v4.7.2-stable_macos.universal.zip"
+          curl -sSL -o templates.tpz "$base/Godot_v4.7.2-stable_export_templates.tpz"
+          unzip -q godot.zip -d "$RUNNER_TEMP"
+          unzip -q -j templates.tpz templates/macos.zip -d "$RUNNER_TEMP"
+          rm godot.zip templates.tpz
+      - name: Export, sign and zip
+        run: |
+          python3 tools/export_mac.py --godot "$RUNNER_TEMP/Godot.app/Contents/MacOS/Godot" --template "$RUNNER_TEMP/macos.zip"
+          mv ../Doodle_Rally_*_Mac.zip .
+          ls -lh Doodle_Rally_*_Mac.zip
+      - name: Sign with Developer ID, notarize and staple
+        # Untested until the secrets exist: it has never run. If any step fails
+        # the job stops before anything is published.
+        if: env.HAS_SIGNING == 'true'
+        env:
+          MACOS_CERT_P12: ${{ secrets.MACOS_CERT_P12 }}
+          MACOS_CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
+          MACOS_SIGN_IDENTITY: ${{ secrets.MACOS_SIGN_IDENTITY }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+        run: |
+          set -euo pipefail
+          KEYCHAIN="$RUNNER_TEMP/signing.keychain-db"
+          KEYCHAIN_PASSWORD="$(uuidgen)"
+          echo "$MACOS_CERT_P12" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security set-keychain-settings -lut 3600 "$KEYCHAIN"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security import "$RUNNER_TEMP/cert.p12" -k "$KEYCHAIN" -P "$MACOS_CERT_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN" > /dev/null
+          security list-keychains -d user -s "$KEYCHAIN" $(security list-keychains -d user | tr -d '"')
+          rm "$RUNNER_TEMP/cert.p12"
+          APP="$(ls -d builds/*.app)"
+          ZIP="$(ls Doodle_Rally_*_Mac.zip)"
+          codesign --force --deep --options runtime --timestamp --preserve-metadata=entitlements --sign "$MACOS_SIGN_IDENTITY" "$APP"
+          codesign --verify --deep --strict "$APP"
+          ditto -c -k --sequesterRsrc --keepParent "$APP" "$RUNNER_TEMP/notarize.zip"
+          xcrun notarytool submit "$RUNNER_TEMP/notarize.zip" --apple-id "$APPLE_ID" --team-id "$APPLE_TEAM_ID" --password "$APPLE_APP_PASSWORD" --wait
+          xcrun stapler staple "$APP"
+          rm "$ZIP"
+          ditto -c -k --sequesterRsrc --keepParent "$APP" "$ZIP"
+          security delete-keychain "$KEYCHAIN"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: doodle-rally-mac
+          path: Doodle_Rally_*_Mac.zip
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # The Linux and Windows workflow may create the release first.
+          gh release create "$GITHUB_REF_NAME" --title "Doodle Rally $GITHUB_REF_NAME" --generate-notes || true
+          gh release upload "$GITHUB_REF_NAME" Doodle_Rally_*_Mac.zip --clobber

@@ -1,0 +1,48 @@
+name: Tests
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download Godot 4.7.2
+        run: |
+          curl -sSL -o godot.zip https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip
+          unzip -q godot.zip -d "$RUNNER_TEMP"
+      - name: Import assets
+        run: |
+          "$RUNNER_TEMP/Godot_v4.7.2-stable_linux.x86_64" --headless --path game --import
+      - name: Run suites
+        run: python3 tools/test.py --godot "$RUNNER_TEMP/Godot_v4.7.2-stable_linux.x86_64"
+  render:
+    # Forward+ smoke test on a software Vulkan driver: menus, one race per
+    # course and mode, and results. Screenshots are kept as an artifact.
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install xvfb and a software Vulkan driver
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends xvfb mesa-vulkan-drivers libvulkan1
+      - name: Download Godot 4.7.2
+        run: |
+          curl -sSL -o godot.zip https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip
+          unzip -q godot.zip -d "$RUNNER_TEMP"
+      - name: Import assets
+        run: |
+          "$RUNNER_TEMP/Godot_v4.7.2-stable_linux.x86_64" --headless --path game --import
+      - name: Render cases
+        run: >
+          python3 tools/test_render.py --godot "$RUNNER_TEMP/Godot_v4.7.2-stable_linux.x86_64" --out render --jobs 4
+          intro character_select minecraft_characters track_select
+          desktop_race quarry_race glitch_race minecraft_race results_zizi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: render-smoke
+          path: |
+            render/*.png
+            render/*.log

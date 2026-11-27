@@ -34,11 +34,28 @@ var _qa_drive_elapsed := 0.0
 var _qa_frame_times: Array[float] = []
 var _last_camera := Vector3.ZERO
 var _last_camera_aim := Vector3.ZERO
+const FULL_DETAIL_PIXEL_BUDGET := 2560.0 * 1440.0
+# Adaptive sharpness. Smooth motion and Balanced start at their preset 3D
+# scale. Each second the game sharpens one step if frames have stayed on
+# budget, and softens one step if they ran long. It learns a ceiling when a
+# sharper step proves too heavy, and a floor when softening does not help
+# (the processor, not the resolution, is the limit), so it settles.
+const ADAPT_STEP := 0.05
+const ADAPT_SLOW_FRAME_MS := 18.7  # 12% past the 60 Hz budget
+const ADAPT_CALM_FRAME_MS := 17.5
+const ADAPT_CALM_SECONDS := 3
+var _adapt := {}
+var _adapt_elapsed := 0.0
+var _adapt_window: Array[float] = []
 var _graphics_window_size := Vector2i.ZERO
+# Cup: one race on each track, points per finish. Keyed by character so a
+# rival keeps its total across races. Empty when racing a single track.
+var cup_points: Dictionary = {}
+var cup_race := -1
 var startup_splash: CanvasLayer
 
 func _ready() -> void:
-	get_window().title = "Doodle Rally — Cat Racers · 1.4.1"
+	get_window().title = "Doodle Rally — Cat Racers · 1.5.0"
 	_qa = "--qa" in OS.get_cmdline_user_args()
 	preferences.enabled = not _qa
 	preferences.load_data()
@@ -58,7 +75,8 @@ func _ready() -> void:
 	menu.selected_character = preferences.selected_character
 	menu.selected_course = preferences.selected_course
 	menu.selected_mode = preferences.selected_mode
-	menu.start_race.connect(_start_race)
+	menu.start_race.connect(_start_single_race)
+	menu.start_cup.connect(_start_cup)
 	menu.quit_requested.connect(func(): get_tree().quit())
 	menu.settings_changed.connect(_settings_changed)
 	if _qa and _arg("--qa-screen") not in ["splash", "startup"]:
@@ -137,6 +155,25 @@ func _settings_changed(values: Dictionary) -> void:
 	sound.set_mix(float(preferences.values.master_volume), float(preferences.values.music_volume), float(preferences.values.effects_volume))
 	preferences.save_data()
 
+func _start_single_race(chosen_character: int, chosen_course: int) -> void:
+	cup_race = -1
+	cup_points.clear()
+	_start_race(chosen_character, chosen_course)
+
+func _start_cup(chosen_character: int) -> void:
+	cup_race = 0
+	cup_points.clear()
+	_start_race(chosen_character, 0)
+
+func _cup_standings() -> Array:
+	var order: Array = cup_points.keys()
+	# Ties go to the player, then to roster order, so the table is stable.
+	order.sort_custom(func(a: int, b: int) -> bool:
+		if int(cup_points[a]) != int(cup_points[b]): return int(cup_points[a]) > int(cup_points[b])
+		if a == character or b == character: return a == character
+		return a < b)
+	return order
+
 func _start_race(chosen_character: int, chosen_course: int) -> void:
 	if state == "loading": return
 	state = "loading"
@@ -181,6 +218,7 @@ func _start_race(chosen_character: int, chosen_course: int) -> void:
 	_update_camera(1, true)
 	hud = Hud.new()
 	ui_layer.add_child(hud)
+	hud.cup_tag = "  ·  CUP %d/3" % (cup_race + 1) if cup_race >= 0 else ""
 	hud.configure(sim, world, course, preferences.best(course, int(preferences.values.difficulty), racer_mode))
 	hud.pause_requested.connect(_pause)
 	hud.using_controller = controller >= 0
@@ -197,12 +235,20 @@ func _apply_race_graphics() -> void:
 	var quality: int = clampi(int(preferences.values.graphics_quality), 0, 2)
 	var viewport := get_viewport()
 	_graphics_window_size = get_window().size
+	_adapt_elapsed = 0.0
+	_adapt_window.clear()
+	_adapt = {}
 	if quality == 2:
-		viewport.scaling_3d_mode = Viewport.SCALING_3D_MODE_BILINEAR
-		viewport.scaling_3d_scale = 1.0
+		# Full detail is native up to a 1440p pixel budget. Beyond that (4K and
+		# Retina-scaled windows) it upscales, since native 4K costs four times
+		# the shading for little visible gain at race speed.
+		var full_scale := minf(1.0, sqrt(FULL_DETAIL_PIXEL_BUDGET / maxf(1.0, float(_graphics_window_size.x) * float(_graphics_window_size.y))))
+		viewport.scaling_3d_mode = Viewport.SCALING_3D_MODE_BILINEAR if full_scale >= 1.0 else Viewport.SCALING_3D_MODE_FSR
+		viewport.scaling_3d_scale = full_scale
 	else:
 		viewport.scaling_3d_mode = Viewport.SCALING_3D_MODE_FSR
 		viewport.scaling_3d_scale = _race_render_scale(float(_graphics_window_size.x), quality)
+		_adapt = adapt_start(viewport.scaling_3d_scale, 0.50 if quality == 0 else 0.65)
 	for environment_node in world.find_children("*", "WorldEnvironment", true, false):
 		var scene_environment := environment_node as WorldEnvironment
 		scene_environment.environment.ssao_enabled = quality > 0
@@ -210,6 +256,48 @@ func _apply_race_graphics() -> void:
 		var light := light_node as DirectionalLight3D
 		if light.shadow_enabled:
 			light.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS if quality == 2 else DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS
+
+static func adapt_start(scale: float, minimum: float) -> Dictionary:
+	return {"scale": scale, "ceiling": 1.0, "floor": minimum, "calm": 0, "dropped": false, "last_ms": 0.0}
+
+## One decision per second of racing. Pure, so it is covered by tests.
+static func adapt_step(state: Dictionary, frame_ms: float) -> Dictionary:
+	var next := state.duplicate()
+	var scale := float(state.scale)
+	if frame_ms > ADAPT_SLOW_FRAME_MS:
+		next.calm = 0
+		if bool(state.dropped) and frame_ms > float(state.last_ms) * 0.97:
+			# The last softening bought nothing: undo it and stop softening.
+			next.scale = minf(1.0, scale + ADAPT_STEP)
+			next.floor = next.scale
+			next.dropped = false
+		elif scale - ADAPT_STEP >= float(state.floor) - 0.001:
+			next.scale = scale - ADAPT_STEP
+			next.ceiling = next.scale
+			next.dropped = true
+		else:
+			next.dropped = false
+	else:
+		next.dropped = false
+		next.calm = int(state.calm) + 1 if frame_ms <= ADAPT_CALM_FRAME_MS else 0
+		if int(next.calm) >= ADAPT_CALM_SECONDS and scale + ADAPT_STEP <= float(state.ceiling) + 0.001:
+			next.scale = scale + ADAPT_STEP
+			next.calm = 0
+	next.last_ms = frame_ms
+	return next
+
+func _adapt_resolution(dt: float) -> void:
+	if _adapt.is_empty(): return
+	_adapt_elapsed += dt
+	_adapt_window.append(dt * 1000.0)
+	if _adapt_elapsed < 1.0: return
+	# Judge the second by its 75th-percentile frame: a single hitch is ignored,
+	# but a quarter of frames running long counts as slow.
+	_adapt_window.sort()
+	_adapt = adapt_step(_adapt, _adapt_window[int(_adapt_window.size() * 0.75)])
+	get_viewport().scaling_3d_scale = float(_adapt.scale)
+	_adapt_elapsed = 0.0
+	_adapt_window.clear()
 
 func _race_render_scale(window_width: float, quality: int) -> float:
 	var base_scale := (0.75 if course == 1 else 0.85) if quality == 0 else 0.90
@@ -248,6 +336,8 @@ func _process(dt: float) -> void:
 	if state in ["racing", "countdown"]:
 		if get_window().size != _graphics_window_size:
 			_apply_race_graphics()
+		if state == "racing" and (not _qa or "--qa-adaptive" in OS.get_cmdline_user_args()):
+			_adapt_resolution(dt)
 		if _qa_driver:
 			_qa_drive_elapsed += dt
 			if _qa_drive_elapsed > 2.0: _qa_frame_times.append(dt * 1000.0)
@@ -365,6 +455,16 @@ func _show_results() -> void:
 	var title_text := "PAWS ON THE PODIUM!" if rank <= 3 else "WHAT A RIDE!"
 	if racer_mode == "minecraft": title_text = "A BLOCKBUSTER FINISH!" if rank <= 3 else "NICE RACING, BUILDER!"
 	var subtitle := "%s  ·  %s  ·  %s" % [Data.COURSES[course], Data.ordinal(rank).to_upper(), Data.time_string(seconds)]
+	var in_cup := cup_race >= 0
+	var cup_done := in_cup and cup_race >= 2
+	if in_cup:
+		for i in range(8):
+			var racer_character := int(sim.racers[sim.standings()[i]].character)
+			cup_points[racer_character] = int(cup_points.get(racer_character, 0)) + Data.CUP_POINTS[i]
+		var cup_place: int = _cup_standings().find(character) + 1
+		subtitle = "CUP RACE %d OF 3  ·  %s" % [cup_race + 1, subtitle]
+		if cup_done:
+			title_text = "CUP CHAMPION!" if cup_place == 1 else "CUP COMPLETE · %s PLACE" % Data.ordinal(cup_place).to_upper()
 	var box := _overlay_box(title_text, subtitle, 760)
 	if record: _add_label(box, "NEW PERSONAL BEST", 28, Color("ffdc64"))
 	var results := GridContainer.new()
@@ -382,11 +482,31 @@ func _show_results() -> void:
 		if id == 0: name_text = "You · " + name_text
 		_add_label(results, name_text, 22, color)
 		_add_label(results, Data.time_string(float(r.finish_time)) if float(r.finish_time) >= 0 else "On track", 22, color)
-	_add_button(box, "Race again", func(): _start_race(character, course), true)
+	if in_cup:
+		var table: Array = _cup_standings()
+		var lines: PackedStringArray = []
+		for i in range(mini(4, table.size())):
+			var who: int = table[i]
+			var who_name: String = Data.BLOCK_NAMES[who] if racer_mode == "minecraft" else Data.NAMES[who]
+			lines.append("%d. %s%s  %d" % [i + 1, "You · " if who == character else "", who_name, int(cup_points[who])])
+		var your_place: int = table.find(character)
+		if your_place >= 4: lines.append("%d. You  %d" % [your_place + 1, int(cup_points[character])])
+		_add_label(box, ("FINAL CUP POINTS    " if cup_done else "CUP POINTS    ") + "    ".join(lines), 20, Color("ffdc64"))
+		if cup_done:
+			_add_button(box, "New cup", func(): _start_cup(character), true)
+		else:
+			_add_button(box, "Next race · %s" % Data.COURSES[course + 1], _next_cup_race, true)
+	else:
+		_add_button(box, "Race again", func(): _start_race(character, course), true)
 	_add_button(box, "Choose track", _back_to_tracks)
 	_add_button(box, "Intro menu", _back_to_title)
 
+func _next_cup_race() -> void:
+	cup_race += 1
+	await _start_race(character, cup_race)
+
 func _back_to_tracks() -> void:
+	cup_race = -1
 	_clear_overlay()
 	_clear_race()
 	state = "menu"
@@ -395,6 +515,7 @@ func _back_to_tracks() -> void:
 	sound.play_theme(1)
 
 func _back_to_title() -> void:
+	cup_race = -1
 	_clear_overlay()
 	_clear_race()
 	state = "menu"
@@ -404,6 +525,7 @@ func _back_to_title() -> void:
 
 func _clear_race() -> void:
 	_graphics_window_size = Vector2i.ZERO
+	_adapt = {}
 	get_viewport().scaling_3d_scale = 1.0
 	get_viewport().scaling_3d_mode = Viewport.SCALING_3D_MODE_BILINEAR
 	sound.update_engine(0, false)
@@ -429,7 +551,7 @@ func _clear_overlay() -> void:
 	overlay = null
 
 func _show_loading() -> void:
-	_overlay_box("WARMING UP THE KARTS…", "%s  ·  %s" % [Data.COURSES[course], "Minecraft Racing" if racer_mode == "minecraft" else "Cat Racers"], 630)
+	_overlay_box("WARMING UP THE KARTS…", "%s  ·  %s" % [Data.COURSES[course], "Block Racers" if racer_mode == "minecraft" else "Cat Racers"], 630)
 
 func _overlay_box(title_text: String, subtitle: String, width: float = 660) -> VBoxContainer:
 	_clear_overlay()
@@ -510,6 +632,7 @@ func _qa_run() -> void:
 	menu.selected_mode = _arg("--qa-mode", "cats")
 	menu.selected_course = int(_arg("--qa-course", "1"))
 	menu.selected_character = clampi(int(_arg("--qa-character", "0")), 0, 7)
+	if screen in ["race", "drive"] and not _arg("--qa-cup").is_empty(): cup_race = clampi(int(_arg("--qa-cup")), 0, 2)
 	preferences.values.difficulty = clampi(int(_arg("--qa-difficulty", "2")),2,4)
 	menu.preferences.difficulty = preferences.values.difficulty
 	if screen == "splash":
@@ -578,14 +701,17 @@ func _qa_run() -> void:
 		if screen == "results":
 			sim.racers[0].finish_time = 108.42
 			sim.racers[0].distance = float(world.length) * 3
+			if not _arg("--qa-cup").is_empty(): cup_race = clampi(int(_arg("--qa-cup")), 0, 2)
 			_show_results()
 		if screen == "drive":
 			for i in range(720): await get_tree().physics_frame
 			print("QA_DRIVE distance=", sim.racers[0].distance, " speed=", sim.racers[0].speed, " fps=", Engine.get_frames_per_second())
+			print("QA_ADAPT ", _adapt)
 			if not _qa_frame_times.is_empty():
 				_qa_frame_times.sort()
 				print("QA_FRAME_TIMES samples=", _qa_frame_times.size(), " median_ms=", _qa_frame_times[_qa_frame_times.size() / 2], " p95_ms=", _qa_frame_times[int(_qa_frame_times.size() * .95)])
 	for i in range(18): await get_tree().process_frame
+	print("QA_RENDER draws=", Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME), " objects=", Performance.get_monitor(Performance.RENDER_TOTAL_OBJECTS_IN_FRAME), " triangles=", Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME))
 	if screen == "characters" and not _arg("--qa-spin-phase").is_empty():
 		# Set the requested phase after the wait so a frame-15 capture cannot
 		# advance across the six-second wrap before the screenshot is taken.

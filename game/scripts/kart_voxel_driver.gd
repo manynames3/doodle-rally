@@ -6,9 +6,9 @@ static var _materials: Dictionary = {}
 
 
 static func build(parent: Node3D, index: int) -> void:
-	var skins: Array[Color] = [Color("b88967"), Color("f1c6a0"), Color("66a63d"), Color("22232d"), Color("659b56"), Color("c5c3b3"), Color("efa5af"), Color("b48a6c")]
-	var shirts: Array[Color] = [Color("27a9b8"), Color("6b963e"), Color("5b9836"), Color("262330"), Color("2d9fa8"), Color("cfcdbe"), Color("ec9aa6"), Color("816051")]
-	var pants: Array[Color] = [Color("535290"), Color("655541"), Color("3c6a2a"), Color("202029"), Color("51467d"), Color("b4b3a9"), Color("ce7b8b"), Color("5f463f")]
+	var skins: Array[Color] = [Color("c98f6b"), Color("f1c6a0"), Color("66a63d"), Color("1e2a44"), Color("8fa3ad"), Color("c5c3b3"), Color("efa5af"), Color("b48a6c")]
+	var shirts: Array[Color] = [Color("e0503c"), Color("e8c23a"), Color("5b9836"), Color("24304d"), Color("d8782e"), Color("cfcdbe"), Color("ec9aa6"), Color("2f7f86")]
+	var pants: Array[Color] = [Color("3a3f4a"), Color("3d4c7a"), Color("3c6a2a"), Color("1a2238"), Color("5a4a3a"), Color("b4b3a9"), Color("ce7b8b"), Color("3c4a57")]
 	var skin: Color = skins[index]
 	var shirt: Color = shirts[index]
 	var trouser: Color = pants[index]
@@ -36,28 +36,27 @@ static func build(parent: Node3D, index: int) -> void:
 	var colors: Dictionary = {}
 	match index:
 		0:
-			colors = {"s": skin, "h": Color("4d3528"), "w": Color("ede9df"), "i": Color("647aab"), "n": Color("966647"), "b": Color("634435"), "m": Color("3d2925")}
-			face.assign(["hhhhhhhh", "hhhhhhhh", "hssssssh", "swissiws", "ssnnnnss", "ssbssbss", "ssbmmbss", "sssbbsss"])
-			_hair(parent, head, Color("4d3528"), false)
+			colors = {"s": skin, "h": Color("d9b44a"), "w": Color("ede9df"), "i": Color("3f6b4a"), "n": Color("a8714f"), "m": Color("5a2f28")}
+			face.assign(["hhhhhhhh", "hhsshhss", "ssssssss", "swissiws", "sssnnsss", "smssssms", "ssmmmmss", "ssssssss"])
+			_hair(parent, head, Color("d9b44a"), false)
 		1:
-			colors = {"s": skin, "h": Color("bf7434"), "w": Color("fff3e5"), "i": Color("668043"), "n": Color("d8a583"), "m": Color("b97660")}
-			face.assign(["hhhhhhhh", "hhhhhhhs", "hhssssss", "swissiws", "ssssssss", "sssnnsss", "sssmmsss", "ssssssss"])
-			_hair(parent, head, Color("bf7434"), true)
+			colors = {"s": skin, "h": Color("7a4fc2"), "w": Color("fff3e5"), "i": Color("3b6f9a"), "n": Color("d8a583"), "m": Color("b97660")}
+			face.assign(["hhhhhhhh", "shhhhhhs", "ssshhsss", "swissiws", "ssssssss", "sssnnsss", "ssmmmmss", "ssssssss"])
+			_hair(parent, head, Color("7a4fc2"), true)
 		2:
-			colors = {"g": skin, "G": Color("82bd53"), "b": Color("223020")}
-			face.assign(["ggGggGgg", "GggggggG", "gbbggbbg", "gbbggbbg", "gggbbggg", "ggbbbbgg", "ggbbbbgg", "ggbggbgg"])
+			colors = {"g": skin, "G": Color("82bd53"), "b": Color("223020"), "w": Color("f3f6e4")}
+			face.assign(["ggGggGgg", "GggggggG", "gwwggwwg", "gwbggbwg", "gggggggg", "gbggggbg", "ggbbbbgg", "gggggggg"])
 			_pixel_noise(parent, head, skin, Color("91c65c"))
 			for x: float in [-0.34, 0, 0.34]:
 				_box(parent, Vector3(x, 1.56, -0.058), Vector3(0.14, 0.32, 0.016), Color("87b759"))
 		3:
-			colors = {"s": skin, "p": Color("bf4fdb"), "q": Color("f7bdff")}
-			face.assign(["ssssssss", "ssssssss", "ssssssss", "pqqssqqp", "ssssssss", "ssssssss", "ssssssss", "ssssssss"])
-			for side: float in [-1.0, 1.0]:
-				_box(parent, head + Vector3(side * 0.27, 0, -0.552), Vector3(0.32, 0.10, 0.018), Color("d56bf5"), 0.8)
+			colors = {"s": skin, "p": Color("2fb9d6"), "q": Color("b9f3ff")}
+			face.assign(["ssssssss", "ssssssss", "spppppps", "spqqqqps", "ssssssss", "ssssssss", "sssppsss", "ssssssss"])
+			_box(parent, head + Vector3(0, 0.07, -0.552), Vector3(0.80, 0.24, 0.018), Color("59d9f2"), 0.8)
 		4:
-			colors = {"s": skin, "h": Color("496740"), "w": Color("1c3030"), "n": Color("527e45"), "b": Color("344b35"), "m": Color("354533")}
+			colors = {"s": skin, "h": Color("4b5f6b"), "w": Color("23323a"), "n": Color("768a94"), "b": Color("4b5f6b"), "m": Color("3a4850")}
 			face.assign(["hhhshhhh", "shssshss", "ssssssss", "swwsswws", "ssnnnnss", "ssssssss", "ssbmmbss", "ssbbbbss"])
-			_pixel_noise(parent, head, skin, Color("85af68"))
+			_pixel_noise(parent, head, skin, Color("a7bac3"))
 		5:
 			colors = {"s": skin, "w": Color("464741"), "b": Color("6a6b61"), "m": Color("898a7d")}
 			face.assign(["ssssssss", "ssssssss", "swwsswws", "swwsswws", "sssbbsss", "ssssssss", "smbmbmbs", "ssssssss"])
@@ -70,9 +69,7 @@ static func build(parent: Node3D, index: int) -> void:
 				_box(parent, head + Vector3(side * 0.38, 0.56, 0.01), Vector3(0.23, 0.2, 0.35), Color("db899a"))
 		7:
 			colors = {"s": skin, "b": Color("664b39"), "w": Color("e1d9bd"), "i": Color("547749"), "n": Color("9c735a"), "m": Color("6c5042")}
-			face.assign(["ssssssss", "ssssssss", "sbbbbbbs", "swissiws", "sssnnsss", "sssnnsss", "sssmmsss", "sssmmsss"])
-			_box(parent, head + Vector3(0, -0.06, -0.655), Vector3(0.24, 0.46, 0.25), Color("a67b5b"))
-			_box(parent, head + Vector3(0, -0.23, -0.79), Vector3(0.24, 0.12, 0.028), Color("91664e"))
+			face.assign(["ssssssss", "ssssssss", "sbbssbbs", "swissiws", "sssnnsss", "sbbbbbbs", "sbsmmsbs", "ssssssss"])
 			_box(parent, Vector3(0, 1.61, -0.059), Vector3(0.16, 0.96, 0.016), Color("ab8965"))
 	_paint_face(parent, head, face, colors)
 	# Pixel elbow patches and a belt add detail from the racing camera.

@@ -226,8 +226,8 @@ COLOR=pow(COLOR,vec3(2.0))*1.15;
 	sun.rotation_degrees = Vector3(-41.0, -34.0, 0.0)
 	sun.light_color = Color("e3dcff") if _course == 2 else Color("ffe4b3")
 	sun.light_energy = 0.72 if _course == 2 else 1.12
-	sun.light_angular_distance = 1.2
-	sun.shadow_blur = 1.2
+	sun.light_angular_distance = 0.0
+	sun.shadow_blur = 0.9
 	sun.shadow_enabled = true
 	sun.directional_shadow_max_distance = 170.0
 	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS
@@ -728,8 +728,8 @@ func _voxel_mob(p: Vector3, basis: Basis) -> void:
 	for side in [-1.0, 1.0]:
 		_stamp("box", p + basis.x * float(side) * 2.1 + Vector3.UP * 1.4, Vector3(2.4, 2.8, 4.0), green_dark, basis)
 		_stamp("box", p + basis * Vector3(float(side) * 1.4, 10.7, 2.96), Vector3(1.3, 1.3, 0.2), black, basis)
-		_stamp("box", p + basis * Vector3(float(side) * 0.9, 8.1, 2.96), Vector3(0.7, 1.3, 0.2), black, basis)
-	_stamp("box", p + basis * Vector3(0, 9.0, 2.96), Vector3(2.5, 1.6, 0.2), black, basis)
+		_stamp("box", p + basis * Vector3(float(side) * 1.7, 9.0, 2.96), Vector3(0.6, 0.6, 0.2), black, basis)
+	_stamp("box", p + basis * Vector3(0, 8.5, 2.96), Vector3(2.8, 0.6, 0.2), black, basis)
 
 
 func _watchtower(d: float, lane: float, wood: StandardMaterial3D, trim: StandardMaterial3D) -> void:
@@ -795,13 +795,12 @@ func _desktop() -> void:
 	# Keep the deck and paper top faces apart. They used to share y=3 exactly,
 	# which made the depth buffer flicker across the tabletop as the chase camera moved.
 	_stamp("box", Vector3(0, DESKTOP_DECK_TOP - 10.0, -15), Vector3(980, 20, 1080), wood)
-	var paper := _noise_mat("sheet", Color("d5cbb2"), Color("f4ead2"), 0.065)
+	var paper := _graph_paper_mat()
 	paper.roughness = 0.94
 	_add_surface_bump(paper, 0.18, 0.7, 0.12)
-	# The old graph-paper grid was made from hundreds of razor-thin boxes.
-	# Those strips alias at the shallow chase-camera angle and produced a
-	# shimmering checkerboard outside the road as the kart moved.  Keep the
-	# sheet itself textured and reserve drawn markings for the actual road.
+	# The old graph-paper grid was made from hundreds of razor-thin boxes that
+	# shimmered at the shallow chase-camera angle. The grid is now a mipmapped
+	# texture, so distant lines blend into the paper instead of aliasing.
 	_stamp("box", Vector3(0, DESKTOP_SHEET_TOP - 0.5, 0), Vector3(900, 1, 950), paper)
 	var rail_dark := _mat("desk_barrier_dark", Color("945c38"))
 	var rail_light := _mat("desk_barrier_light", Color("d8a65b"))
@@ -1108,7 +1107,7 @@ func _start_gate() -> void:
 		_stamp("sphere", sample(d, float(side) * 12.5) + Vector3.UP * 19.1, Vector3(1.9, 1.7, 1.9), _mat("gate_cap", Color("e6bb70")))
 	for row in range(3):
 		_stamp("box", p + Vector3.UP * (16.2 + row * 1.6), Vector3(30.0 + (1.3 if row == 1 else 0.0), 1.55, 1.05), _mat("gate_sign", sign_color), basis * Basis.from_euler(Vector3(0, 0, 0.01 * (row - 1))))
-	_label("MINECRAFT RACING" if _mode == "minecraft" else "DOODLE RALLY", p + Vector3.UP * 18.0 + basis.z * 0.66, basis, 0.031 if _mode == "minecraft" else 0.039, Color("30241d") if _course != 2 else Color("7cebf6"), 23.3)
+	_label("BLOCK RACERS" if _mode == "minecraft" else "DOODLE RALLY", p + Vector3.UP * 18.0 + basis.z * 0.66, basis, 0.031 if _mode == "minecraft" else 0.039, Color("30241d") if _course != 2 else Color("7cebf6"), 23.3)
 	_stamp("box", p + Vector3.UP * 13.5, Vector3(21, 2.8, 0.8), wood, basis)
 	_label("BUILD. RACE. REPEAT." if _mode == "minecraft" else "SMALL CATS. BIG ADVENTURES.", p + Vector3.UP * 13.5 + basis.z * 0.53, basis, 0.013, Color("fff0d0"), 19.0)
 	for side in [-1.0, 1.0]:
@@ -1257,6 +1256,31 @@ func _noise_mat(key: String, low: Color, high: Color, frequency: float) -> Stand
 	return mat
 
 
+func _graph_paper_mat() -> StandardMaterial3D:
+	if _materials.has("sheet"):
+		return _materials["sheet"] as StandardMaterial3D
+	var mat: StandardMaterial3D = _mat("sheet", Color.WHITE)
+	var size := 512
+	var image := Image.create(size, size, true, Image.FORMAT_RGB8)
+	image.fill(Color("cdbb90"))
+	var minor := Color("93a9a8")
+	var major := Color("6f8f9c")
+	for cell in range(4):
+		var start: int = cell * size / 4
+		var width: int = 22 if cell == 0 else 11
+		var ink: Color = major if cell == 0 else minor
+		image.fill_rect(Rect2i(start, 0, width, size), ink)
+		image.fill_rect(Rect2i(0, start, size, width), ink)
+	image.generate_mipmaps()
+	mat.albedo_texture = ImageTexture.create_from_image(image)
+	mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
+	# One bold square every 12 m with four fine cells inside. A box mesh packs
+	# its faces into a 3×2 UV atlas, so the 900×950 m top face repeats by
+	# 3×900/12 and 2×950/12. Plain UVs keep this on the simplest shader path.
+	mat.uv1_scale = Vector3(225.0, 158.333, 1.0)
+	return mat
+
+
 func _mesh(shape: String) -> Mesh:
 	if _meshes.has(shape):
 		return _meshes[shape] as Mesh
@@ -1309,12 +1333,19 @@ func _mesh(shape: String) -> Mesh:
 			sphere.radial_segments = 16
 			sphere.rings = 8
 			mesh = sphere
+		"sphere_small":
+			var pebble := SphereMesh.new()
+			pebble.radius = 0.5
+			pebble.height = 1.0
+			pebble.radial_segments = 8
+			pebble.rings = 4
+			mesh = pebble
 		_:
 			var cylinder := CylinderMesh.new()
 			cylinder.top_radius = 0.0 if shape in ["pine", "mountain"] else (0.43 if shape == "rock" else 0.5)
 			cylinder.bottom_radius = 0.5
 			cylinder.height = 1.0
-			cylinder.radial_segments = 6 if shape in ["hex", "mountain"] else (8 if shape in ["pine", "rock"] else 12)
+			cylinder.radial_segments = 5 if shape == "twig" else 6 if shape in ["hex", "mountain"] else (8 if shape in ["pine", "rock"] else 12)
 			cylinder.rings = 1
 			mesh = cylinder
 	_meshes[shape] = mesh
@@ -1327,6 +1358,12 @@ func _stamp(shape: String, p: Vector3, size: Vector3, material: StandardMaterial
 		var organic_shape: String = "cliff" if size.y > maxf(size.x, size.z) * 0.72 else "boulder"
 		actual_shape = "box" if _mode == "minecraft" else organic_shape + str(posmod(int(p.x * 0.7 + p.z * 0.3), 3))
 		material.vertex_color_use_as_albedo = true
+	# Pebble-sized spheres and twig-thin cylinders are a few pixels on screen;
+	# they use coarse meshes so thousands of them stay cheap.
+	if shape == "sphere" and maxf(size.x, maxf(size.y, size.z)) < 1.5:
+		actual_shape = "sphere_small"
+	elif shape == "cylinder" and minf(size.x, size.z) < 0.3:
+		actual_shape = "twig"
 	var key: String = "%s:%s" % [actual_shape, material.get_instance_id()]
 	# Cull repeated near-field props by spatial tile; distant cliff meshes stay
 	# grouped to avoid hundreds of one-rock draw calls and long launch times.
@@ -1365,6 +1402,11 @@ func _flush_batches() -> void:
 			instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		elif data["shape"] == "foliage_shadow":
 			instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_SHADOWS_ONLY
+		if data["shape"] == "needle_cluster":
+			# Needle tufts are fine detail on top of the branch cards, which stay.
+			# Tiles are 120 m wide, so a tile drops its tufts about two tiles away.
+			instance.visibility_range_end = 190.0
+			instance.visibility_range_end_margin = 15.0
 		add_child(instance)
 	_batches.clear()
 

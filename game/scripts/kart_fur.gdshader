@@ -9,7 +9,6 @@ uniform vec4 cream_color : source_color = vec4(0.92, 0.89, 0.84, 1.0);
 uniform int coat_pattern = 0;
 uniform sampler2D fur_texture : filter_linear_mipmap, repeat_enable;
 uniform bool use_fur_texture = false;
-uniform bool groom_geometry = false;
 varying vec3 fur_position;
 
 float hash31(vec3 p) {
@@ -132,7 +131,7 @@ void fragment() {
 		fur = mix(fur,cream_color.rgb,pads);
 	}
 	float fur_value = 0.5;
-	if (use_fur_texture && !groom_geometry) {
+	if (use_fur_texture) {
 		vec2 texuv = UV * vec2(5.0,3.0);
 		fur_value = texture(fur_texture,texuv).r;
 		float texel = 0.0008;
@@ -142,8 +141,21 @@ void fragment() {
 		NORMAL_MAP = mix(vec3(0.5, 0.5, 1.0), micro_normal, visible_detail);
 	}
 	ALBEDO = fur * (0.84 + soft * 0.07 + grain * 0.008 + fur_value * 0.23 + (fibre - 0.5) * 0.035);
-	ROUGHNESS = groom_geometry ? 0.96 : 0.82 + grain * 0.12;
-	SPECULAR = groom_geometry ? 0.07 : 0.15;
-	RIM = groom_geometry ? 0.10 : 0.18;
+	// Plush sheen: a soft pale edge and a little sky fill give dark coats a
+	// readable rounded form from the chase camera instead of a flat silhouette.
+	// Broad brushed streaks and a centre parting on the back of the head follow
+	// the supplied rear-view artwork; they are low frequency, so they never
+	// break into speckle.
+	float flow = soft_noise(vec3(p.x * 10.0, p.y * 2.4, p.z * 10.0));
+	float back = smoothstep(-0.05, 0.25, p.z) * head;
+	float parting = mix(1.0, 0.80 + 0.20 * smoothstep(0.0, 0.11, abs(p.x)), back);
+	float edge = pow(1.0 - clamp(dot(normalize(NORMAL), normalize(VIEW)), 0.0, 1.0), 2.0);
+	float sky = clamp((INV_VIEW_MATRIX * vec4(normalize(NORMAL), 0.0)).y, 0.0, 1.0);
+	vec3 sheen = mix(fur, vec3(0.80, 0.80, 0.86), 0.42);
+	ALBEDO *= (0.86 + 0.28 * flow) * parting;
+	ALBEDO = mix(ALBEDO, sheen, edge * 0.62 * (0.65 + 0.7 * flow)) + vec3(0.050, 0.046, 0.050) * sky * (0.6 + 0.8 * flow);
+	ROUGHNESS = 0.82 + grain * 0.12;
+	SPECULAR = 0.15;
+	RIM = 0.18;
 	RIM_TINT = 0.65;
 }
