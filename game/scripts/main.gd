@@ -35,6 +35,16 @@ var _qa_frame_times: Array[float] = []
 var _last_camera := Vector3.ZERO
 var _last_camera_aim := Vector3.ZERO
 const FULL_DETAIL_PIXEL_BUDGET := 2560.0 * 1440.0
+# Adaptive sharpness. Smooth motion and Balanced start at their preset 3D
+# scale, then sharpen while rendering has clear headroom and soften when
+# frames run long, one small step per second.
+const ADAPT_STEP := 0.05
+const ADAPT_SLOW_FRAME_MS := 18.7  # 12% past the 60 Hz budget
+const ADAPT_HEADROOM_MS := 9.5  # measured CPU + GPU render time
+var _adapt_elapsed := 0.0
+var _adapt_frames := 0
+var _adapt_render_ms := 0.0
+var _adapt_last_render_ms := 0.0
 var _graphics_window_size := Vector2i.ZERO
 # Cup: one race on each track, points per finish. Keyed by character so a
 # rival keeps its total across races. Empty when racing a single track.
@@ -223,6 +233,10 @@ func _apply_race_graphics() -> void:
 	var quality: int = clampi(int(preferences.values.graphics_quality), 0, 2)
 	var viewport := get_viewport()
 	_graphics_window_size = get_window().size
+	RenderingServer.viewport_set_measure_render_time(viewport.get_viewport_rid(), true)
+	_adapt_elapsed = 0.0
+	_adapt_frames = 0
+	_adapt_render_ms = 0.0
 	if quality == 2:
 		# Full detail is native up to a 1440p pixel budget. Beyond that (4K and
 		# Retina-scaled windows) it upscales, since native 4K costs four times
@@ -240,6 +254,30 @@ func _apply_race_graphics() -> void:
 		var light := light_node as DirectionalLight3D
 		if light.shadow_enabled:
 			light.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS if quality == 2 else DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS
+
+static func adapted_scale(scale: float, frame_ms: float, render_ms: float, minimum: float) -> float:
+	if frame_ms > ADAPT_SLOW_FRAME_MS:
+		return maxf(minimum, scale - ADAPT_STEP)
+	# Sharpen only on a real measurement; a renderer that reports no timing
+	# reads as zero and must not be mistaken for headroom.
+	if render_ms > 0.05 and render_ms < ADAPT_HEADROOM_MS:
+		return minf(1.0, scale + ADAPT_STEP)
+	return scale
+
+func _adapt_resolution(dt: float) -> void:
+	var quality: int = clampi(int(preferences.values.graphics_quality), 0, 2)
+	if quality == 2: return
+	var viewport_rid := get_viewport().get_viewport_rid()
+	_adapt_elapsed += dt
+	_adapt_frames += 1
+	_adapt_render_ms += RenderingServer.viewport_get_measured_render_time_cpu(viewport_rid) + RenderingServer.viewport_get_measured_render_time_gpu(viewport_rid)
+	if _adapt_elapsed < 1.0: return
+	_adapt_last_render_ms = _adapt_render_ms / _adapt_frames
+	var viewport := get_viewport()
+	viewport.scaling_3d_scale = adapted_scale(viewport.scaling_3d_scale, _adapt_elapsed / _adapt_frames * 1000.0, _adapt_last_render_ms, 0.50 if quality == 0 else 0.65)
+	_adapt_elapsed = 0.0
+	_adapt_frames = 0
+	_adapt_render_ms = 0.0
 
 func _race_render_scale(window_width: float, quality: int) -> float:
 	var base_scale := (0.75 if course == 1 else 0.85) if quality == 0 else 0.90
@@ -278,6 +316,8 @@ func _process(dt: float) -> void:
 	if state in ["racing", "countdown"]:
 		if get_window().size != _graphics_window_size:
 			_apply_race_graphics()
+		if state == "racing" and (not _qa or "--qa-adaptive" in OS.get_cmdline_user_args()):
+			_adapt_resolution(dt)
 		if _qa_driver:
 			_qa_drive_elapsed += dt
 			if _qa_drive_elapsed > 2.0: _qa_frame_times.append(dt * 1000.0)
@@ -465,6 +505,7 @@ func _back_to_title() -> void:
 
 func _clear_race() -> void:
 	_graphics_window_size = Vector2i.ZERO
+	RenderingServer.viewport_set_measure_render_time(get_viewport().get_viewport_rid(), false)
 	get_viewport().scaling_3d_scale = 1.0
 	get_viewport().scaling_3d_mode = Viewport.SCALING_3D_MODE_BILINEAR
 	sound.update_engine(0, false)
@@ -645,6 +686,7 @@ func _qa_run() -> void:
 		if screen == "drive":
 			for i in range(720): await get_tree().physics_frame
 			print("QA_DRIVE distance=", sim.racers[0].distance, " speed=", sim.racers[0].speed, " fps=", Engine.get_frames_per_second())
+			print("QA_ADAPT scale=", get_viewport().scaling_3d_scale, " render_ms=", _adapt_last_render_ms)
 			if not _qa_frame_times.is_empty():
 				_qa_frame_times.sort()
 				print("QA_FRAME_TIMES samples=", _qa_frame_times.size(), " median_ms=", _qa_frame_times[_qa_frame_times.size() / 2], " p95_ms=", _qa_frame_times[int(_qa_frame_times.size() * .95)])

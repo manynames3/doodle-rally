@@ -84,6 +84,9 @@ func run() -> void:
 	check(main.state == "countdown" and main.racer_mode == "minecraft" and main.sim.difficulty == 4, "Minecraft launch carries selected Hard pace into simulation")
 	check(main.get_viewport().scaling_3d_mode == Viewport.SCALING_3D_MODE_FSR and main.get_viewport().scaling_3d_scale < 1.0, "Smooth graphics reduce only the 3D race resolution")
 	check(main._race_render_scale(1920.0, 0) < main._race_render_scale(1280.0, 0), "Smooth graphics scale down for a larger race window")
+	check(is_equal_approx(main.adapted_scale(0.85, 25.0, 12.0, 0.5), 0.80) and is_equal_approx(main.adapted_scale(0.5, 25.0, 12.0, 0.5), 0.5), "Long frames soften the 3D scale one step, never below the preset minimum")
+	check(is_equal_approx(main.adapted_scale(0.85, 16.7, 6.0, 0.5), 0.90) and is_equal_approx(main.adapted_scale(1.0, 16.7, 6.0, 0.5), 1.0), "Measured headroom sharpens the 3D scale one step, up to native")
+	check(is_equal_approx(main.adapted_scale(0.85, 16.7, 0.0, 0.5), 0.85) and is_equal_approx(main.adapted_scale(0.85, 16.7, 12.0, 0.5), 0.85), "No timing or no headroom leaves the 3D scale alone")
 	check(main.karts.size() == 8 and main.sim.racers.size() == 8, "Eight actual 3D karts and racers")
 	main.countdown = .04
 	await key(KEY_W, true)
