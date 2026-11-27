@@ -4,7 +4,7 @@
 
 Adds a three-race cup with points and a champion screen, removes the fur strands that rendered as speckle in the chase view, adds a soft fur sheen, renames the blocky mode to Block Racers with original drivers, restores Desktop Dojo's graph paper as a mipmapped texture, shrinks dust, and caps Full detail at a 2560×1440 pixel budget.
 
-Triangles in the standard QA race frame fell from 1.98 M to 1.12 M on Desktop Dojo, 4.97 M to 3.22 M on Block Quarry and 1.95 M to 1.08 M on Glitch Core.
+Triangles in the standard QA race frame fell from 1.98 M to 0.87 M on Desktop Dojo, 4.97 M to 2.98 M on Block Quarry and 1.95 M to 0.83 M on Glitch Core.
 
 All **949 counted functional checks** passed across the seven source suites, with three temporal collision replays and zero violations. GitHub Actions now runs these on every push and builds the Universal Mac app.
 

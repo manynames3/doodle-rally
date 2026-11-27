@@ -52,11 +52,11 @@ static func lens() -> ArrayMesh:
 	if _cache.has("lens"): return _cache.lens
 	var surface: SurfaceTool = SurfaceTool.new()
 	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
-	for ring: int in range(18):
-		for i: int in range(80):
+	for ring: int in range(10):
+		for i: int in range(40):
 			for corner: int in [0, 2, 1, 1, 2, 3]:
-				var r: float = float(ring + corner / 2) / 18.0
-				var a: float = (i + corner % 2) * TAU / 80.0
+				var r: float = float(ring + corner / 2) / 10.0
+				var a: float = (i + corner % 2) * TAU / 40.0
 				var x: float = cos(a) * r
 				var y: float = sin(a) * r
 				# A shallow lens reads as a soft illustrated iris instead of a polished

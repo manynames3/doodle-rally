@@ -548,7 +548,32 @@ static func _instance(parent: Node3D, mesh: Mesh, point: Vector3, dimensions: Ve
 	var physical_size: Vector3 = mesh.get_aabb().size * dimensions.abs()
 	if physical_size.x * physical_size.y * physical_size.z < 0.08 or mat is ShaderMaterial and mat.shader == IRIS_SHADER:
 		result.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		# Each kart has about eighty rivet- and lamp-sized spheres and sixty
+		# thin rods. At that size a coarse mesh is indistinguishable.
+		if mesh == _meshes.get("sphere"):
+			result.mesh = _small_mesh("sphere_small")
+		elif mesh == _meshes.get("cylinder"):
+			result.mesh = _small_mesh("cylinder_small")
 	return result
+
+
+static func _small_mesh(key: String) -> Mesh:
+	if not _meshes.has(key):
+		if key == "sphere_small":
+			var sphere: SphereMesh = SphereMesh.new()
+			sphere.radius = 0.5
+			sphere.height = 1.0
+			sphere.radial_segments = 12
+			sphere.rings = 6
+			_meshes[key] = sphere
+		else:
+			var rod: CylinderMesh = CylinderMesh.new()
+			rod.top_radius = 1.0
+			rod.bottom_radius = 1.0
+			rod.height = 1.0
+			rod.radial_segments = 8
+			_meshes[key] = rod
+	return _meshes[key]
 
 
 static func _sphere(parent: Node3D, point: Vector3, dimensions: Vector3, mat: Material) -> MeshInstance3D:
