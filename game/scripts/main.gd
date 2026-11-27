@@ -46,7 +46,7 @@ const ADAPT_CALM_FRAME_MS := 17.5
 const ADAPT_CALM_SECONDS := 3
 var _adapt := {}
 var _adapt_elapsed := 0.0
-var _adapt_frames := 0
+var _adapt_window: Array[float] = []
 var _graphics_window_size := Vector2i.ZERO
 # Cup: one race on each track, points per finish. Keyed by character so a
 # rival keeps its total across races. Empty when racing a single track.
@@ -236,7 +236,7 @@ func _apply_race_graphics() -> void:
 	var viewport := get_viewport()
 	_graphics_window_size = get_window().size
 	_adapt_elapsed = 0.0
-	_adapt_frames = 0
+	_adapt_window.clear()
 	_adapt = {}
 	if quality == 2:
 		# Full detail is native up to a 1440p pixel budget. Beyond that (4K and
@@ -289,12 +289,15 @@ static func adapt_step(state: Dictionary, frame_ms: float) -> Dictionary:
 func _adapt_resolution(dt: float) -> void:
 	if _adapt.is_empty(): return
 	_adapt_elapsed += dt
-	_adapt_frames += 1
+	_adapt_window.append(dt * 1000.0)
 	if _adapt_elapsed < 1.0: return
-	_adapt = adapt_step(_adapt, _adapt_elapsed / _adapt_frames * 1000.0)
+	# Judge the second by its 75th-percentile frame: a single hitch is ignored,
+	# but a quarter of frames running long counts as slow.
+	_adapt_window.sort()
+	_adapt = adapt_step(_adapt, _adapt_window[int(_adapt_window.size() * 0.75)])
 	get_viewport().scaling_3d_scale = float(_adapt.scale)
 	_adapt_elapsed = 0.0
-	_adapt_frames = 0
+	_adapt_window.clear()
 
 func _race_render_scale(window_width: float, quality: int) -> float:
 	var base_scale := (0.75 if course == 1 else 0.85) if quality == 0 else 0.90
