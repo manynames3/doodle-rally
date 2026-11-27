@@ -36,15 +36,17 @@ var _last_camera := Vector3.ZERO
 var _last_camera_aim := Vector3.ZERO
 const FULL_DETAIL_PIXEL_BUDGET := 2560.0 * 1440.0
 # Adaptive sharpness. Smooth motion and Balanced start at their preset 3D
-# scale, then sharpen while rendering has clear headroom and soften when
-# frames run long, one small step per second.
+# scale. Each second the game sharpens one step if frames have stayed on
+# budget, and softens one step if they ran long. It learns a ceiling when a
+# sharper step proves too heavy, and a floor when softening does not help
+# (the processor, not the resolution, is the limit), so it settles.
 const ADAPT_STEP := 0.05
 const ADAPT_SLOW_FRAME_MS := 18.7  # 12% past the 60 Hz budget
-const ADAPT_HEADROOM_MS := 9.5  # measured CPU + GPU render time
+const ADAPT_CALM_FRAME_MS := 17.5
+const ADAPT_CALM_SECONDS := 3
+var _adapt := {}
 var _adapt_elapsed := 0.0
 var _adapt_frames := 0
-var _adapt_render_ms := 0.0
-var _adapt_last_render_ms := 0.0
 var _graphics_window_size := Vector2i.ZERO
 # Cup: one race on each track, points per finish. Keyed by character so a
 # rival keeps its total across races. Empty when racing a single track.
@@ -233,10 +235,9 @@ func _apply_race_graphics() -> void:
 	var quality: int = clampi(int(preferences.values.graphics_quality), 0, 2)
 	var viewport := get_viewport()
 	_graphics_window_size = get_window().size
-	RenderingServer.viewport_set_measure_render_time(viewport.get_viewport_rid(), true)
 	_adapt_elapsed = 0.0
 	_adapt_frames = 0
-	_adapt_render_ms = 0.0
+	_adapt = {}
 	if quality == 2:
 		# Full detail is native up to a 1440p pixel budget. Beyond that (4K and
 		# Retina-scaled windows) it upscales, since native 4K costs four times
@@ -247,6 +248,7 @@ func _apply_race_graphics() -> void:
 	else:
 		viewport.scaling_3d_mode = Viewport.SCALING_3D_MODE_FSR
 		viewport.scaling_3d_scale = _race_render_scale(float(_graphics_window_size.x), quality)
+		_adapt = adapt_start(viewport.scaling_3d_scale, 0.50 if quality == 0 else 0.65)
 	for environment_node in world.find_children("*", "WorldEnvironment", true, false):
 		var scene_environment := environment_node as WorldEnvironment
 		scene_environment.environment.ssao_enabled = quality > 0
@@ -255,29 +257,44 @@ func _apply_race_graphics() -> void:
 		if light.shadow_enabled:
 			light.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS if quality == 2 else DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS
 
-static func adapted_scale(scale: float, frame_ms: float, render_ms: float, minimum: float) -> float:
+static func adapt_start(scale: float, minimum: float) -> Dictionary:
+	return {"scale": scale, "ceiling": 1.0, "floor": minimum, "calm": 0, "dropped": false, "last_ms": 0.0}
+
+## One decision per second of racing. Pure, so it is covered by tests.
+static func adapt_step(state: Dictionary, frame_ms: float) -> Dictionary:
+	var next := state.duplicate()
+	var scale := float(state.scale)
 	if frame_ms > ADAPT_SLOW_FRAME_MS:
-		return maxf(minimum, scale - ADAPT_STEP)
-	# Sharpen only on a real measurement; a renderer that reports no timing
-	# reads as zero and must not be mistaken for headroom.
-	if render_ms > 0.05 and render_ms < ADAPT_HEADROOM_MS:
-		return minf(1.0, scale + ADAPT_STEP)
-	return scale
+		next.calm = 0
+		if bool(state.dropped) and frame_ms > float(state.last_ms) * 0.97:
+			# The last softening bought nothing: undo it and stop softening.
+			next.scale = minf(1.0, scale + ADAPT_STEP)
+			next.floor = next.scale
+			next.dropped = false
+		elif scale - ADAPT_STEP >= float(state.floor) - 0.001:
+			next.scale = scale - ADAPT_STEP
+			next.ceiling = next.scale
+			next.dropped = true
+		else:
+			next.dropped = false
+	else:
+		next.dropped = false
+		next.calm = int(state.calm) + 1 if frame_ms <= ADAPT_CALM_FRAME_MS else 0
+		if int(next.calm) >= ADAPT_CALM_SECONDS and scale + ADAPT_STEP <= float(state.ceiling) + 0.001:
+			next.scale = scale + ADAPT_STEP
+			next.calm = 0
+	next.last_ms = frame_ms
+	return next
 
 func _adapt_resolution(dt: float) -> void:
-	var quality: int = clampi(int(preferences.values.graphics_quality), 0, 2)
-	if quality == 2: return
-	var viewport_rid := get_viewport().get_viewport_rid()
+	if _adapt.is_empty(): return
 	_adapt_elapsed += dt
 	_adapt_frames += 1
-	_adapt_render_ms += RenderingServer.viewport_get_measured_render_time_cpu(viewport_rid) + RenderingServer.viewport_get_measured_render_time_gpu(viewport_rid)
 	if _adapt_elapsed < 1.0: return
-	_adapt_last_render_ms = _adapt_render_ms / _adapt_frames
-	var viewport := get_viewport()
-	viewport.scaling_3d_scale = adapted_scale(viewport.scaling_3d_scale, _adapt_elapsed / _adapt_frames * 1000.0, _adapt_last_render_ms, 0.50 if quality == 0 else 0.65)
+	_adapt = adapt_step(_adapt, _adapt_elapsed / _adapt_frames * 1000.0)
+	get_viewport().scaling_3d_scale = float(_adapt.scale)
 	_adapt_elapsed = 0.0
 	_adapt_frames = 0
-	_adapt_render_ms = 0.0
 
 func _race_render_scale(window_width: float, quality: int) -> float:
 	var base_scale := (0.75 if course == 1 else 0.85) if quality == 0 else 0.90
@@ -505,7 +522,7 @@ func _back_to_title() -> void:
 
 func _clear_race() -> void:
 	_graphics_window_size = Vector2i.ZERO
-	RenderingServer.viewport_set_measure_render_time(get_viewport().get_viewport_rid(), false)
+	_adapt = {}
 	get_viewport().scaling_3d_scale = 1.0
 	get_viewport().scaling_3d_mode = Viewport.SCALING_3D_MODE_BILINEAR
 	sound.update_engine(0, false)
@@ -686,7 +703,7 @@ func _qa_run() -> void:
 		if screen == "drive":
 			for i in range(720): await get_tree().physics_frame
 			print("QA_DRIVE distance=", sim.racers[0].distance, " speed=", sim.racers[0].speed, " fps=", Engine.get_frames_per_second())
-			print("QA_ADAPT scale=", get_viewport().scaling_3d_scale, " render_ms=", _adapt_last_render_ms)
+			print("QA_ADAPT ", _adapt)
 			if not _qa_frame_times.is_empty():
 				_qa_frame_times.sort()
 				print("QA_FRAME_TIMES samples=", _qa_frame_times.size(), " median_ms=", _qa_frame_times[_qa_frame_times.size() / 2], " p95_ms=", _qa_frame_times[int(_qa_frame_times.size() * .95)])
