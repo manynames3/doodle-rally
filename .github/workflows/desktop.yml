@@ -67,11 +67,11 @@ jobs:
             $shot = Join-Path $PWD "$name.png"
             $log = Join-Path $PWD "$name.log"
             $p = Start-Process -FilePath "game\DoodleRally.exe" -PassThru -ArgumentList @("--log-file", $log, "--audio-driver", "Dummy", "--resolution", "1280x800", "--", "--qa", "--qa-screen=$screen", "--qa-mode=cats", "--qa-course=0", "--qa-output=$shot", "--qa-quit")
-            if (-not $p.WaitForExit(420000)) { $p.Kill(); Write-Output "$name TIMEOUT"; $failed = $true }
+            if (-not $p.WaitForExit(420000)) { $p.Kill(); Write-Output "${name}: TIMEOUT"; $failed = $true }
             $text = if (Test-Path $log) { Get-Content $log -Raw } else { "" }
             ($text -split "`n") | Select-String -Pattern "Using Device|QA_STATE|QA_RENDER|ERROR" | Select-Object -First 12 | ForEach-Object { Write-Output $_.Line }
-            if (-not (Test-Path $shot)) { Write-Output "$name: no screenshot"; $failed = $true }
-            if ($text -notmatch "QA_STATE $state screen=$screen") { Write-Output "$name: expected state not reached"; $failed = $true }
+            if (-not (Test-Path $shot)) { Write-Output "${name}: no screenshot"; $failed = $true }
+            if ($text -notmatch "QA_STATE $state screen=$screen") { Write-Output "${name}: expected state not reached"; $failed = $true }
           }
           if ($failed) { exit 1 }
       - uses: actions/upload-artifact@v4
