@@ -54,7 +54,7 @@ Each release keeps earlier screenshots and verification evidence in the versione
 
 ## Play the Mac build
 
-**Download:** get the latest Mac ZIP from the [Releases page](https://github.com/manynames3/doodle-rally/releases/latest). Releases are built automatically when a version tag is pushed.
+**Download:** get the latest Mac ZIP from the [Releases page](https://github.com/manynames3/doodle-rally/releases/latest). Releases are built automatically when a version tag is pushed. See [docs/RELEASING.md](docs/RELEASING.md) for the release and notarization steps.
 
 Unzip **Doodle_Rally_1.5.0_Mac.zip** and open **Doodle Rally 1.5.0.app**, or open the app inside `builds/Doodle Rally 1.5.0.app`. Godot is not required to play. The bundle contains Apple Silicon and Intel executables. It is signed locally and is not Apple notarized, so macOS may ask you to choose **Open Anyway** in **System Settings → Privacy & Security** when the ZIP came from another Mac.
 
