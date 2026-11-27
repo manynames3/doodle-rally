@@ -18,7 +18,7 @@ args = parser.parse_args()
 G = args.godot
 src = open(ROOT + "/tools/test_release.py").read()
 CASES = ast.literal_eval(re.search(r"CASES = (\[.*?\n\])", src, re.S).group(1))
-OUT = args.out
+OUT = os.path.abspath(args.out)
 os.makedirs(OUT, exist_ok=True)
 sel = args.case
 def run(case):
