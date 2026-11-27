@@ -10,12 +10,15 @@ import argparse, ast, concurrent.futures, os, re, subprocess, tempfile
 from pathlib import Path
 ROOT = str(Path(__file__).resolve().parents[1])
 parser = argparse.ArgumentParser()
-parser.add_argument("--godot", required=True, help="Path to a Linux Godot 4.7.2 binary")
+parser.add_argument("--godot", help="Path to a Linux Godot 4.7.2 binary; runs the project from source")
+parser.add_argument("--app", help="Path to an exported Linux build to test in place of the source project")
 parser.add_argument("--out", default=tempfile.mkdtemp(prefix="doodle-render-"), help="Folder for screenshots and logs")
 parser.add_argument("--jobs", type=int, default=2)
 parser.add_argument("case", nargs="*", help="Case names to run; default all")
 args = parser.parse_args()
-G = args.godot
+if not args.godot and not args.app:
+    parser.error("Pass --godot or --app")
+LAUNCH = [os.path.abspath(args.app)] if args.app else [args.godot, "--path", ROOT + "/game"]
 src = open(ROOT + "/tools/test_release.py").read()
 CASES = ast.literal_eval(re.search(r"CASES = (\[.*?\n\])", src, re.S).group(1))
 OUT = os.path.abspath(args.out)
@@ -24,7 +27,7 @@ sel = args.case
 def run(case):
     name, screen, mode, course, character = case
     difficulty = 4 if name in ("track_hard", "quarry_hard") else 2
-    cmd = ["xvfb-run", "-a", "-s", "-screen 0 1280x800x24", G, "--path", ROOT + "/game", "--rendering-driver", "vulkan", "--audio-driver", "Dummy",
+    cmd = ["xvfb-run", "-a", "-s", "-screen 0 1280x800x24", *LAUNCH, "--rendering-driver", "vulkan", "--audio-driver", "Dummy",
            "--resolution", "1280x800", "--", "--qa", "--qa-screen=" + screen, "--qa-mode=" + mode, "--qa-course=%d" % course,
            "--qa-character=%d" % character, "--qa-difficulty=%d" % difficulty, "--qa-distance=65", "--qa-output=%s/%s.png" % (OUT, name), "--qa-quit"]
     if name == "mak_doong_garage_boost": cmd.append("--qa-garage-phase=3.2")

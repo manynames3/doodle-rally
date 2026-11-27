@@ -1,0 +1,99 @@
+name: Linux and Windows builds
+# Exports the Linux and Windows builds, smoke tests both, and attaches them to
+# the GitHub Release when a v* tag is pushed.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+  pull_request:
+    paths: [".github/workflows/desktop.yml", "game/export_presets.cfg", "tools/test_render.py"]
+permissions:
+  contents: write
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download Godot 4.7.2 and export templates
+        run: |
+          base=https://github.com/godotengine/godot/releases/download/4.7.2-stable
+          curl -sSL -o godot.zip "$base/Godot_v4.7.2-stable_linux.x86_64.zip"
+          curl -sSL -o templates.tpz "$base/Godot_v4.7.2-stable_export_templates.tpz"
+          unzip -q godot.zip -d "$RUNNER_TEMP"
+          mkdir -p ~/.local/share/godot/export_templates/4.7.2.stable
+          unzip -q -j templates.tpz templates/linux_release.x86_64 templates/windows_release_x86_64.exe templates/version.txt -d ~/.local/share/godot/export_templates/4.7.2.stable
+          rm godot.zip templates.tpz
+      - name: Export
+        run: |
+          G="$RUNNER_TEMP/Godot_v4.7.2-stable_linux.x86_64"
+          "$G" --headless --path game --import
+          mkdir -p builds/linux builds/windows
+          "$G" --headless --path game --export-release Linux
+          "$G" --headless --path game --export-release Windows
+          VERSION=$(sed -n 's/^config\/version="\(.*\)"/\1/p' game/project.godot)
+          cp -r docs/licenses builds/linux/Licenses
+          cp -r docs/licenses builds/windows/Licenses
+          tar -C builds/linux -czf "Doodle_Rally_${VERSION}_Linux.tar.gz" .
+          (cd builds/windows && zip -q -r "../../Doodle_Rally_${VERSION}_Windows.zip" .)
+          ls -lh Doodle_Rally_*
+      - name: Smoke test the Linux build
+        run: |
+          sudo apt-get update && sudo apt-get install -y --no-install-recommends xvfb mesa-vulkan-drivers libvulkan1
+          python3 tools/test_render.py --app builds/linux/DoodleRally.x86_64 --out render --jobs 4 intro character_select track_select desktop_race quarry_race glitch_race minecraft_race results_zizi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: doodle-rally-linux
+          path: Doodle_Rally_*_Linux.tar.gz
+      - uses: actions/upload-artifact@v4
+        with:
+          name: doodle-rally-windows
+          path: Doodle_Rally_*_Windows.zip
+  windows-smoke:
+    needs: export
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: doodle-rally-windows
+      - name: Launch the title screen and one race
+        shell: pwsh
+        run: |
+          Expand-Archive -Path (Get-ChildItem Doodle_Rally_*_Windows.zip).FullName -DestinationPath game
+          $failed = $false
+          foreach ($case in @(@("intro", "title", "menu"), @("desktop_race", "race", "racing"))) {
+            $name, $screen, $state = $case
+            $shot = Join-Path $PWD "$name.png"
+            $log = Join-Path $PWD "$name.log"
+            $p = Start-Process -FilePath "game\DoodleRally.exe" -PassThru -ArgumentList @("--log-file", $log, "--audio-driver", "Dummy", "--resolution", "1280x800", "--", "--qa", "--qa-screen=$screen", "--qa-mode=cats", "--qa-course=0", "--qa-output=$shot", "--qa-quit")
+            if (-not $p.WaitForExit(420000)) { $p.Kill(); Write-Output "$name TIMEOUT"; $failed = $true }
+            $text = if (Test-Path $log) { Get-Content $log -Raw } else { "" }
+            ($text -split "`n") | Select-String -Pattern "Using Device|QA_STATE|QA_RENDER|ERROR" | Select-Object -First 12 | ForEach-Object { Write-Output $_.Line }
+            if (-not (Test-Path $shot)) { Write-Output "$name: no screenshot"; $failed = $true }
+            if ($text -notmatch "QA_STATE $state screen=$screen") { Write-Output "$name: expected state not reached"; $failed = $true }
+          }
+          if ($failed) { exit 1 }
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: windows-smoke
+          path: |
+            *.png
+            *.log
+  publish:
+    needs: [export, windows-smoke]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: doodle-rally-*
+          merge-multiple: true
+      - name: Attach to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" --title "Doodle Rally $GITHUB_REF_NAME" --generate-notes || true
+          gh release upload "$GITHUB_REF_NAME" Doodle_Rally_*_Linux.tar.gz Doodle_Rally_*_Windows.zip --clobber
